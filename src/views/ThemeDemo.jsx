@@ -1,6 +1,5 @@
 import React from 'react';
 import { useThemeContext } from '../components/ThemeProvider';
-import Container from '../components/ui/Container';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -9,7 +8,7 @@ export default function ThemeDemo() {
   const { theme, isDark, setTheme } = useThemeContext();
 
   return (
-    <Container className="min-h-screen py-8">
+    <div className="min-h-screen py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gradient mb-4">
@@ -139,6 +138,6 @@ export default function ThemeDemo() {
           </Card>
         </div>
       </div>
-    </Container>
+    </div>
   );
 }

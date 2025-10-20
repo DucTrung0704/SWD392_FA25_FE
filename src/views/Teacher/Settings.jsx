@@ -1,0 +1,445 @@
+import React, { useState } from 'react';
+import { User, Bell, Lock, Settings as SettingsIcon, Shield } from 'lucide-react';
+
+export default function TeacherSettings() {
+  const [activeTab, setActiveTab] = useState('profile');
+  const [profileData, setProfileData] = useState({
+    name: 'Dr. Nguyen Van A',
+    email: 'teacher@school.edu',
+    phone: '+84 123 456 789',
+    department: 'Mathematics',
+    bio: 'Experienced mathematics teacher with 10+ years of teaching experience.',
+    office: 'Room 201',
+    officeHours: 'Mon-Fri 9:00-17:00'
+  });
+
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: true,
+    assignmentReminders: true,
+    examAlerts: true,
+    studentMessages: true,
+    weeklyReports: false,
+    gradeUpdates: true
+  });
+
+  const [privacySettings, setPrivacySettings] = useState({
+    showProfile: true,
+    showContactInfo: false,
+    showSchedule: true,
+    allowStudentMessages: true,
+    showGradeHistory: false
+  });
+
+  const tabs = [
+    { id: 'profile', label: 'Profile', icon: 'profile' },
+    { id: 'notifications', label: 'Notifications', icon: 'bell' },
+    { id: 'privacy', label: 'Privacy', icon: 'lock' },
+    { id: 'preferences', label: 'Preferences', icon: 'settings' },
+    { id: 'security', label: 'Security', icon: 'shield' }
+  ];
+
+  const handleProfileUpdate = (field, value) => {
+    setProfileData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleNotificationToggle = (setting) => {
+    setNotificationSettings(prev => ({ ...prev, [setting]: !prev[setting] }));
+  };
+
+  const handlePrivacyToggle = (setting) => {
+    setPrivacySettings(prev => ({ ...prev, [setting]: !prev[setting] }));
+  };
+
+  return (
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Settings
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">
+            Manage your account settings, preferences, and privacy options.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100 dark:border-gray-700">
+              <nav className="space-y-2">
+                {tabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+                      activeTab === tab.id
+                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {tab.icon === 'profile' && <User className="w-4 h-4" />}
+                    {tab.icon === 'notifications' && <Bell className="w-4 h-4" />}
+                    {tab.icon === 'privacy' && <Lock className="w-4 h-4" />}
+                    {tab.icon === 'preferences' && <SettingsIcon className="w-4 h-4" />}
+                    {tab.icon === 'security' && <Shield className="w-4 h-4" />}
+                    <span className="font-medium">{tab.label}</span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            {/* Profile Tab */}
+            {activeTab === 'profile' && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Profile Information</h2>
+                
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-6">
+                    <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-2xl">{profileData.name.charAt(0)}</span>
+                    </div>
+                    <div>
+                      <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Change Avatar
+                      </button>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        JPG, PNG or GIF. Max size 2MB.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        value={profileData.name}
+                        onChange={(e) => handleProfileUpdate('name', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={profileData.email}
+                        onChange={(e) => handleProfileUpdate('email', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        value={profileData.phone}
+                        onChange={(e) => handleProfileUpdate('phone', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Department
+                      </label>
+                      <select
+                        value={profileData.department}
+                        onChange={(e) => handleProfileUpdate('department', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Biology">Biology</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="English">English</option>
+                        <option value="History">History</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Office Location
+                      </label>
+                      <input
+                        type="text"
+                        value={profileData.office}
+                        onChange={(e) => handleProfileUpdate('office', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Office Hours
+                      </label>
+                      <input
+                        type="text"
+                        value={profileData.officeHours}
+                        onChange={(e) => handleProfileUpdate('officeHours', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Bio
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={profileData.bio}
+                      onChange={(e) => handleProfileUpdate('bio', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      placeholder="Tell us about yourself..."
+                    />
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Notifications Tab */}
+            {activeTab === 'notifications' && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Notification Settings</h2>
+                
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Email Notifications</h3>
+                    {Object.entries(notificationSettings).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {key === 'emailNotifications' && 'Receive notifications via email'}
+                            {key === 'assignmentReminders' && 'Get reminded about upcoming assignments'}
+                            {key === 'examAlerts' && 'Receive alerts for scheduled exams'}
+                            {key === 'studentMessages' && 'Get notified when students send messages'}
+                            {key === 'weeklyReports' && 'Receive weekly performance reports'}
+                            {key === 'gradeUpdates' && 'Get notified when grades are updated'}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleNotificationToggle(key)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            value ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              value ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Privacy Tab */}
+            {activeTab === 'privacy' && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Privacy Settings</h2>
+                
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Profile Visibility</h3>
+                    {Object.entries(privacySettings).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {key === 'showProfile' && 'Make your profile visible to students'}
+                            {key === 'showContactInfo' && 'Show contact information to students'}
+                            {key === 'showSchedule' && 'Display your schedule to students'}
+                            {key === 'allowStudentMessages' && 'Allow students to send you messages'}
+                            {key === 'showGradeHistory' && 'Show grade history to students'}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handlePrivacyToggle(key)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            value ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              value ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Preferences Tab */}
+            {activeTab === 'preferences' && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Preferences</h2>
+                
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Language
+                    </label>
+                    <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <option value="en">English</option>
+                      <option value="vi">Tiếng Việt</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Time Zone
+                    </label>
+                    <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <option value="UTC+7">UTC+7 (Vietnam)</option>
+                      <option value="UTC+0">UTC+0 (GMT)</option>
+                      <option value="UTC-5">UTC-5 (EST)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Date Format
+                    </label>
+                    <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                      <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                      <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Default Page Size
+                    </label>
+                    <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <option value="10">10 items per page</option>
+                      <option value="25">25 items per page</option>
+                      <option value="50">50 items per page</option>
+                      <option value="100">100 items per page</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Security Tab */}
+            {activeTab === 'security' && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Security Settings</h2>
+                
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Change Password</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Current Password
+                        </label>
+                        <input
+                          type="password"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          New Password
+                        </label>
+                        <input
+                          type="password"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Confirm New Password
+                        </label>
+                        <input
+                          type="password"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <button className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
+                        Update Password
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Two-Factor Authentication</h3>
+                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                      <div>
+                        <div className="font-medium text-gray-900 dark:text-white">Enable 2FA</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Add an extra layer of security to your account
+                        </div>
+                      </div>
+                      <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        Enable
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Login Sessions</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Current Session</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            Chrome on Windows • Last active now
+                          </div>
+                        </div>
+                        <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-400 rounded-full text-xs">
+                          Active
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Mobile App</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            iOS App • Last active 2 hours ago
+                          </div>
+                        </div>
+                        <button className="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-400 rounded-lg text-sm hover:bg-red-200 dark:hover:bg-red-800 transition-colors">
+                          Revoke
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

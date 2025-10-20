@@ -1,25 +1,28 @@
 import React, { useState } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import ThemeToggle from '../ThemeToggle';
+import Icon from '../ui/Icon';
 
 const TeacherLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard/teacher', icon: '📊', current: location.pathname === '/dashboard/teacher' },
-    { name: 'Students', href: '/dashboard/teacher/students', icon: '👥', current: location.pathname.startsWith('/dashboard/teacher/students') },
-    { name: 'Flashcards', href: '/dashboard/teacher/flashcards', icon: '🎴', current: location.pathname.startsWith('/dashboard/teacher/flashcards') },
-    { name: 'Exams', href: '/dashboard/teacher/exams', icon: '📝', current: location.pathname.startsWith('/dashboard/teacher/exams') },
-    { name: 'Classes', href: '/dashboard/teacher/classes', icon: '🏫', current: location.pathname.startsWith('/dashboard/teacher/classes') },
-    { name: 'Analytics', href: '/dashboard/teacher/analytics', icon: '📈', current: location.pathname.startsWith('/dashboard/teacher/analytics') },
-    { name: 'Settings', href: '/dashboard/teacher/settings', icon: '⚙️', current: location.pathname.startsWith('/dashboard/teacher/settings') },
+    { name: 'Dashboard', href: '/dashboard/teacher', icon: 'stats', current: location.pathname === '/dashboard/teacher' },
+    { name: 'Students', href: '/dashboard/teacher/students', icon: 'users', current: location.pathname.startsWith('/dashboard/teacher/students') },
+    { name: 'Flashcards', href: '/dashboard/teacher/flashcards', icon: 'flashcards', current: location.pathname.startsWith('/dashboard/teacher/flashcards') },
+    { name: 'Exams', href: '/dashboard/teacher/exams', icon: 'exams', current: location.pathname.startsWith('/dashboard/teacher/exams') },
+    { name: 'Classes', href: '/dashboard/teacher/classes', icon: 'home', current: location.pathname.startsWith('/dashboard/teacher/classes') },
+    { name: 'Analytics', href: '/dashboard/teacher/analytics', icon: 'stats', current: location.pathname.startsWith('/dashboard/teacher/analytics') },
+    { name: 'Settings', href: '/dashboard/teacher/settings', icon: 'settings', current: location.pathname.startsWith('/dashboard/teacher/settings') },
   ];
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   return (
@@ -35,7 +38,7 @@ const TeacherLayout = () => {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
@@ -70,7 +73,7 @@ const TeacherLayout = () => {
                     : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                 }`}
               >
-                <span className="text-lg mr-3">{item.icon}</span>
+                <Icon name={item.icon} className="w-4 h-4 mr-3" />
                 {item.name}
               </Link>
             ))}
@@ -102,9 +105,9 @@ const TeacherLayout = () => {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:ml-64">
         {/* Top bar */}
-        <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <div className="flex items-center justify-between h-16 px-6">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -127,7 +130,7 @@ const TeacherLayout = () => {
         </div>
 
         {/* Page content */}
-        <main className="flex-1">
+        <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
       </div>

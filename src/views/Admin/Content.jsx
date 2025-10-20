@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Container from '../../components/ui/Container';
+import Icon from '../../components/ui/Icon';
 
 export default function Content() {
   const [activeTab, setActiveTab] = useState('reported');
@@ -66,10 +66,10 @@ export default function Content() {
   };
 
   const tabs = [
-    { id: 'reported', name: 'Reported Content', count: contentStats.pendingReview, icon: '🚩' },
-    { id: 'resolved', name: 'Resolved Cases', count: contentStats.resolved, icon: '✅' },
-    { id: 'removed', name: 'Removed Content', count: contentStats.removed, icon: '🗑️' },
-    { id: 'analytics', name: 'Content Analytics', icon: '📊' }
+    { id: 'reported', name: 'Reported Content', count: contentStats.pendingReview, icon: 'warning' },
+    { id: 'resolved', name: 'Resolved Cases', count: contentStats.resolved, icon: 'check' },
+    { id: 'removed', name: 'Removed Content', count: contentStats.removed, icon: 'delete' },
+    { id: 'analytics', name: 'Content Analytics', icon: 'stats' }
   ];
 
   const severityColors = {
@@ -187,13 +187,16 @@ export default function Content() {
                           <span>Reported: {new Date(item.reportedAt).toLocaleString()}</span>
                         </div>
                         <div className="flex gap-2">
-                          <button className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+                          <button className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm flex items-center gap-1">
+                            <Icon name="check" className="w-3 h-3" />
                             Approve
                           </button>
-                          <button className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">
+                          <button className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm flex items-center gap-1">
+                            <Icon name="delete" className="w-3 h-3" />
                             Remove
                           </button>
-                          <button className="px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                          <button className="px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm flex items-center gap-1">
+                            <Icon name="eye" className="w-3 h-3" />
                             Review
                           </button>
                         </div>
@@ -266,7 +269,7 @@ export default function Content() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 py-8">
-      <Container size="7xl" padding="lg">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         {/* Header */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-6">
           <div>
@@ -298,7 +301,7 @@ export default function Content() {
                   : 'bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'
               }`}
             >
-              <span className="text-xl">{tab.icon}</span>
+              <Icon name={tab.icon} className="w-5 h-5" />
               {tab.name}
               {tab.count && (
                 <span className={`px-2 py-1 rounded-full text-xs ${
@@ -337,7 +340,7 @@ export default function Content() {
             <div className="text-blue-100 text-sm">Avg Response Time</div>
           </div>
         </div>
-      </Container>
+      </div>
     </div>
   );
 }

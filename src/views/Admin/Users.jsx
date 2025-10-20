@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Container from '../../components/ui/Container';
+import Icon from '../../components/ui/Icon';
 
 export default function Users() {
   const [activeTab, setActiveTab] = useState('all');
@@ -97,11 +97,11 @@ export default function Users() {
   };
 
   const tabs = [
-    { id: 'all', name: 'All Users', count: userStats.total, icon: '👥' },
-    { id: 'active', name: 'Active', count: userStats.active, icon: '🟢' },
-    { id: 'pending', name: 'Pending', count: userStats.pending, icon: '🟡' },
-    { id: 'teachers', name: 'Teachers', count: userStats.teachers, icon: '👨‍🏫' },
-    { id: 'students', name: 'Students', count: userStats.students, icon: '🎓' }
+    { id: 'all', name: 'All Users', count: userStats.total, icon: 'users' },
+    { id: 'active', name: 'Active', count: userStats.active, icon: 'check' },
+    { id: 'pending', name: 'Pending', count: userStats.pending, icon: 'clock' },
+    { id: 'teachers', name: 'Teachers', count: userStats.teachers, icon: 'teacher' },
+    { id: 'students', name: 'Students', count: userStats.students, icon: 'student' }
   ];
 
   const roles = [
@@ -210,7 +210,7 @@ export default function Users() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 py-8">
-      <Container size="7xl" padding="lg">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         {/* Header */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-6">
           <div>
@@ -280,7 +280,7 @@ export default function Users() {
                   : 'bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'
               }`}
             >
-              <span className="text-xl">{tab.icon}</span>
+              <Icon name={tab.icon} className="w-5 h-5" />
               {tab.name}
               <span className={`px-2 py-1 rounded-full text-xs ${
                 activeTab === tab.id
@@ -495,13 +495,13 @@ export default function Users() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <button className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Edit">
-                          ✏️
+                          <Icon name="edit" className="w-4 h-4" />
                         </button>
                         <button className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" title="Message">
-                          💬
+                          <Icon name="message" className="w-4 h-4" />
                         </button>
                         <button className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Suspend">
-                          ⏸️
+                          <Icon name="pause" className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -531,7 +531,8 @@ export default function Users() {
             Showing {filteredUsers.length} of {users.length} users
           </div>
           <div className="flex gap-2">
-            <button className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <button className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">
+              <Icon name="arrowLeft" className="w-4 h-4" />
               Previous
             </button>
             <button className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
@@ -540,8 +541,9 @@ export default function Users() {
             <button className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
               2
             </button>
-            <button className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <button className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">
               Next
+              <Icon name="arrowRight" className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -593,7 +595,8 @@ export default function Users() {
                   >
                     Cancel
                   </button>
-                  <button className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300">
+                  <button className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2">
+                    <Icon name="plus" className="w-4 h-4" />
                     Create User
                   </button>
                 </div>
@@ -601,7 +604,7 @@ export default function Users() {
             </div>
           </div>
         )}
-      </Container>
+      </div>
     </div>
   );
 }

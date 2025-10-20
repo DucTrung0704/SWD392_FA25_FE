@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
-import Container from '../../components/ui/Container';
 import Button from '../../components/ui/Button';
 
 export default function DeckDetail() {
@@ -54,7 +53,7 @@ export default function DeckDetail() {
 
   if (loading) {
     return (
-      <Container className="min-h-screen py-8">
+      <div className="min-h-screen py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
@@ -62,13 +61,13 @@ export default function DeckDetail() {
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
           </div>
         </div>
-      </Container>
+      </div>
     );
   }
 
   if (error || !deck) {
     return (
-      <Container className="min-h-screen py-8">
+      <div className="min-h-screen py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-8">
             <h2 className="text-2xl font-bold text-red-800 dark:text-red-200 mb-4">
@@ -82,7 +81,7 @@ export default function DeckDetail() {
             </Button>
           </div>
         </div>
-      </Container>
+      </div>
     );
   }
 
@@ -90,7 +89,7 @@ export default function DeckDetail() {
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <Container size="6xl" padding="sm">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 mb-6 sm:mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -282,7 +281,7 @@ export default function DeckDetail() {
             </p>
           </div>
         )}
-      </Container>
+      </div>
     </div>
   );
 }

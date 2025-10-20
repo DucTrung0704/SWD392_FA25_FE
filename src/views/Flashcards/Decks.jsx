@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { flashcardService } from '../../services/flashcardService';
-import Container from '../../components/ui/Container';
 import Button from '../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
+import { Search, BookOpen, Eye, Plus } from 'lucide-react';
 
 export default function Decks() {
   const navigate = useNavigate();
@@ -88,7 +88,7 @@ export default function Decks() {
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <Container size="6xl" padding="sm">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2 sm:mb-4">
@@ -133,7 +133,7 @@ export default function Decks() {
                   className="w-full px-4 py-3 pl-12 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 />
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                  <span className="text-gray-400 text-lg">🔍</span>
+                  <Search className="w-4 h-4 text-gray-400" />
                 </div>
               </div>
             </div>
@@ -193,7 +193,7 @@ export default function Decks() {
 
               {/* Deck Icon */}
               <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-md">
-                <span className="text-2xl text-white">🎴</span>
+                <BookOpen className="w-7 h-7 text-white" />
               </div>
               
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
@@ -229,7 +229,8 @@ export default function Decks() {
                     {deck.cards.length} cards
                   </span>
                   <span className="flex items-center">
-                    👁️ {deck.stats?.views || 0}
+                    <Eye className="w-3 h-3 mr-1" />
+                    {deck.stats?.views || 0}
                   </span>
                 </div>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -271,7 +272,7 @@ export default function Decks() {
         {!loading && filteredDecks.length === 0 && (
           <div className="text-center py-16">
             <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-3xl">🔍</span>
+              <Search className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">No decks found</h3>
             <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-6">
@@ -302,11 +303,11 @@ export default function Decks() {
             variant="primary"
             className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-600 rounded-xl font-bold hover:bg-gray-100 transition-colors duration-200 shadow-lg hover:shadow-xl"
           >
-            <span>+</span>
+            <Plus className="w-4 h-4" />
             Create New Deck
           </Button>
         </div>
-      </Container>
+      </div>
     </div>
   );
 }

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import Container from './ui/Container';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
 import RoleBadge from './RoleBadge';
+import Icon from './ui/Icon';
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -11,12 +11,12 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigation = [
-    { name: 'Home', href: '/', icon: '🏠' },
-    { name: 'Flashcards', href: '/flashcards', icon: '🎴' },
-    { name: 'Exams', href: '/exams', icon: '📝' },
-    ...(user?.role === 'Teacher' ? [{ name: 'Teacher', href: '/dashboard/teacher', icon: '👨‍🏫' }] : []),
-    ...(user?.role === 'Admin' ? [{ name: 'Admin', href: '/dashboard/admin', icon: '⚙️' }] : []),
-    ...(user?.role === 'Student' ? [{ name: 'Student', href: '/dashboard/student', icon: '👨‍🎓' }] : []),
+    { name: 'Home', href: '/', icon: 'home' },
+    { name: 'Flashcards', href: '/flashcards', icon: 'flashcards' },
+    { name: 'Exams', href: '/exams', icon: 'exams' },
+    ...(user?.role === 'Teacher' ? [{ name: 'Teacher', href: '/dashboard/teacher', icon: 'teacher' }] : []),
+    ...(user?.role === 'Admin' ? [{ name: 'Admin', href: '/dashboard/admin', icon: 'admin' }] : []),
+    ...(user?.role === 'Student' ? [{ name: 'Student', href: '/dashboard/student', icon: 'student' }] : []),
   ];
 
   const isActiveLink = (href) => {
@@ -26,7 +26,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-lg supports-[backdrop-filter]:bg-white/70 dark:bg-gray-900/80 dark:border-gray-800 shadow-sm">
-      <Container size="6xl" padding="sm" className="flex h-16 items-center justify-between">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4 flex h-16 items-center justify-between">
         {/* Logo */}
         <Link 
           to="/" 
@@ -50,7 +50,7 @@ export default function Navbar() {
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
-              <span className="text-base">{item.icon}</span>
+              <Icon name={item.icon} className="w-4 h-4" />
               {item.name}
             </Link>
           ))}
@@ -121,12 +121,12 @@ export default function Navbar() {
             </div>
           </button>
         </div>
-      </Container>
+      </div>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-16 inset-x-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800 shadow-lg">
-          <Container className="py-4">
+          <div className="py-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="space-y-2">
               {navigation.map((item) => (
                 <Link
@@ -139,7 +139,7 @@ export default function Navbar() {
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
-                  <span className="text-lg">{item.icon}</span>
+                  <Icon name={item.icon} className="w-4 h-4" />
                   {item.name}
                 </Link>
               ))}
@@ -151,7 +151,7 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
-                    <span className="text-lg">🔑</span>
+                    <Icon name="login" className="w-4 h-4" />
                     Login
                   </Link>
                   <Link
@@ -159,13 +159,13 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                   >
-                    <span className="text-lg">🚀</span>
+                    <Icon name="register" className="w-4 h-4" />
                     Get Started
                   </Link>
                 </div>
               )}
             </nav>
-          </Container>
+          </div>
         </div>
       )}
     </header>

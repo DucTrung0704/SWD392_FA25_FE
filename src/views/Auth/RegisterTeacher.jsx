@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { authService } from '../../services/authService';
 import { useNavigate, Link } from 'react-router-dom';
-import Container from '../../components/ui/Container';
 import { Card, CardHeader, CardFooter } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
+import { UserCheck, Clock, AlertTriangle, User, Building, Mail, Target, Calendar, Lock, Check, Clipboard, ScrollText, GraduationCap, Phone, FileText, BookOpen, BarChart3, Users } from 'lucide-react';
 
 export default function RegisterTeacher() {
   const [formData, setFormData] = useState({
@@ -94,22 +94,22 @@ export default function RegisterTeacher() {
   }
 
   const verificationTypes = [
-    { value: 'certificate', label: 'Teaching Certificate', icon: '📜' },
-    { value: 'degree', label: 'Academic Degree', icon: '🎓' },
-    { value: 'phone', label: 'Phone Verification', icon: '📞' },
-    { value: 'other', label: 'Other Document', icon: '📄' }
+    { value: 'certificate', label: 'Teaching Certificate', icon: <ScrollText className="w-4 h-4" /> },
+    { value: 'degree', label: 'Academic Degree', icon: <GraduationCap className="w-4 h-4" /> },
+    { value: 'phone', label: 'Phone Verification', icon: <Phone className="w-4 h-4" /> },
+    { value: 'other', label: 'Other Document', icon: <FileText className="w-4 h-4" /> }
   ];
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <Container size="2xl" padding="sm">
+      <div className="max-w-2xl mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-center min-h-[90vh]">
         <Card className="w-full max-w-2xl mx-4 shadow-2xl border-0">
           {/* Header Section */}
           <CardHeader className="text-center pb-2">
             <div className="flex justify-center mb-4">
               <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg">
-                <span className="text-3xl text-white">👨‍🏫</span>
+                <UserCheck className="w-10 h-10 text-white" />
               </div>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
@@ -123,7 +123,7 @@ export default function RegisterTeacher() {
           {/* Approval Notice */}
           <div className="mx-6 mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
             <div className="flex items-start gap-3">
-              <span className="text-xl mt-0.5">⏳</span>
+              <Clock className="w-5 h-5 mt-0.5 text-yellow-600" />
               <div>
                 <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">Admin Approval Required</h4>
                 <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
@@ -138,7 +138,7 @@ export default function RegisterTeacher() {
           {error && (
             <div className="mx-6 mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
               <div className="flex items-center gap-2 text-red-700 dark:text-red-400 text-sm">
-                <span className="text-lg">⚠️</span>
+                <AlertTriangle className="w-4 h-4" />
                 {error}
               </div>
             </div>
@@ -154,7 +154,7 @@ export default function RegisterTeacher() {
                 onChange={(e) => handleChange('name', e.target.value)} 
                 placeholder="Tran Thi B" 
                 required
-                icon="👤"
+                icon={<User className="w-4 h-4" />}
                 className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
               />
               
@@ -163,7 +163,7 @@ export default function RegisterTeacher() {
                 value={formData.institution} 
                 onChange={(e) => handleChange('institution', e.target.value)} 
                 placeholder="University / School" 
-                icon="🏫"
+                icon={<Building className="w-4 h-4" />}
                 className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -175,7 +175,7 @@ export default function RegisterTeacher() {
               placeholder="you@example.com" 
               type="email"
               required
-              icon="📧"
+              icon={<Mail className="w-4 h-4" />}
               className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
             />
 
@@ -185,7 +185,7 @@ export default function RegisterTeacher() {
                 value={formData.specialization} 
                 onChange={(e) => handleChange('specialization', e.target.value)} 
                 placeholder="Mathematics, Science, etc." 
-                icon="🎯"
+                icon={<Target className="w-4 h-4" />}
                 className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
               />
               
@@ -195,7 +195,7 @@ export default function RegisterTeacher() {
                 onChange={(e) => handleChange('experience', e.target.value)} 
                 placeholder="5" 
                 type="number"
-                icon="📅"
+                icon={<Calendar className="w-4 h-4" />}
                 className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -209,7 +209,7 @@ export default function RegisterTeacher() {
                 placeholder="••••••••" 
                 type="password"
                 required
-                icon="🔒"
+                icon={<Lock className="w-4 h-4" />}
                 className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
               />
 
@@ -220,7 +220,7 @@ export default function RegisterTeacher() {
                 placeholder="••••••••" 
                 type="password"
                 required
-                icon="✅"
+                icon={<Check className="w-4 h-4" />}
                 className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -243,7 +243,7 @@ export default function RegisterTeacher() {
                           : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-400'
                       }`}
                     >
-                      <div className="text-lg mb-1">{type.icon}</div>
+                      <div className="mb-1">{type.icon}</div>
                       <div className="text-xs font-medium">{type.label}</div>
                     </button>
                   ))}
@@ -261,7 +261,7 @@ export default function RegisterTeacher() {
                   'Please provide relevant verification details'
                 }
                 required
-                icon="📋"
+                icon={<Clipboard className="w-4 h-4" />}
                 className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -300,7 +300,7 @@ export default function RegisterTeacher() {
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
-                  <span>👨‍🏫</span>
+                  <UserCheck className="w-4 h-4" />
                   Apply for Teacher Account
                 </div>
               )}
@@ -339,24 +339,24 @@ export default function RegisterTeacher() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
-              icon: '📚',
+              icon: <BookOpen className="w-8 h-8 text-white" />,
               title: 'Create Content',
               description: 'Build and share your own flashcard decks with students'
             },
             {
-              icon: '📊',
+              icon: <BarChart3 className="w-8 h-8 text-white" />,
               title: 'Track Performance',
               description: 'Monitor student progress and engagement with your materials'
             },
             {
-              icon: '👥',
+              icon: <Users className="w-8 h-8 text-white" />,
               title: 'Build Reputation',
               description: 'Establish yourself as an expert educator in your field'
             }
           ].map((benefit, index) => (
             <div key={index} className="text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
               <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl text-white">{benefit.icon}</span>
+                {benefit.icon}
               </div>
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{benefit.title}</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">{benefit.description}</p>
@@ -364,7 +364,7 @@ export default function RegisterTeacher() {
           ))}
         </div>
         </div>
-      </Container>
+      </div>
     </div>
   );
 }

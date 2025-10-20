@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
-import Container from '../../components/ui/Container';
 import Button from '../../components/ui/Button';
 
 export default function StudySimple() {
@@ -95,7 +94,7 @@ export default function StudySimple() {
 
   if (loading) {
     return (
-      <Container className="min-h-screen py-8">
+      <div className="min-h-screen py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
@@ -103,13 +102,13 @@ export default function StudySimple() {
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
           </div>
         </div>
-      </Container>
+      </div>
     );
   }
 
   if (error || !deck) {
     return (
-      <Container className="min-h-screen py-8">
+      <div className="min-h-screen py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-8">
             <h2 className="text-2xl font-bold text-red-800 dark:text-red-200 mb-4">
@@ -128,13 +127,13 @@ export default function StudySimple() {
             </div>
           </div>
         </div>
-      </Container>
+      </div>
     );
   }
 
   if (deck.cards.length === 0) {
   return (
-    <Container className="min-h-screen py-8">
+    <div className="min-h-screen py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-8">
             <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-800 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -156,7 +155,7 @@ export default function StudySimple() {
             </div>
           </div>
         </div>
-      </Container>
+      </div>
     );
   }
 
@@ -165,7 +164,7 @@ export default function StudySimple() {
     const accuracy = totalCards > 0 ? Math.round((studyStats.correct / totalCards) * 100) : 0;
     
     return (
-      <Container className="min-h-screen py-8 bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen py-8 bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 text-center">
             <div className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -233,7 +232,7 @@ export default function StudySimple() {
             </div>
           </div>
         </div>
-      </Container>
+      </div>
     );
   }
 
@@ -242,7 +241,7 @@ export default function StudySimple() {
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
-      <Container size="4xl" padding="sm">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 mb-6 sm:mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -400,7 +399,7 @@ export default function StudySimple() {
             Thẻ tiếp →
           </Button>
         </div>
-      </Container>
+      </div>
     </div>
   );
 }

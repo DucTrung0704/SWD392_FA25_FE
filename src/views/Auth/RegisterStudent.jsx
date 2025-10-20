@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { authService } from '../../services/authService';
 import { useNavigate, Link } from 'react-router-dom';
-import Container from '../../components/ui/Container';
 import { Card, CardHeader, CardFooter } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
+import { GraduationCap, AlertTriangle, User, Ticket, Mail, Lock, Check, Rocket, BookOpen, Target, Users } from 'lucide-react';
 
 export default function RegisterStudent() {
   const [formData, setFormData] = useState({
@@ -85,14 +85,14 @@ export default function RegisterStudent() {
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <Container size="lg" padding="sm">
+      <div className="max-w-lg mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-center min-h-[90vh]">
         <Card className="w-full max-w-lg mx-4 shadow-2xl border-0">
           {/* Header Section */}
           <CardHeader className="text-center pb-2">
             <div className="flex justify-center mb-4">
               <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg">
-                <span className="text-3xl text-white">🎓</span>
+                <GraduationCap className="w-10 h-10 text-white" />
               </div>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
@@ -107,7 +107,7 @@ export default function RegisterStudent() {
           {error && (
             <div className="mx-6 mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
               <div className="flex items-center gap-2 text-red-700 dark:text-red-400 text-sm">
-                <span className="text-lg">⚠️</span>
+                <AlertTriangle className="w-4 h-4" />
                 {error}
               </div>
             </div>
@@ -122,7 +122,7 @@ export default function RegisterStudent() {
                 onChange={(e) => handleChange('name', e.target.value)} 
                 placeholder="Nguyen Van A" 
                 required
-                icon="👤"
+                icon={<User className="w-4 h-4" />}
                 className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
               />
               
@@ -131,7 +131,7 @@ export default function RegisterStudent() {
                 value={formData.studentId} 
                 onChange={(e) => handleChange('studentId', e.target.value)} 
                 placeholder="SV001" 
-                icon="🎫"
+                icon={<Ticket className="w-4 h-4" />}
                 className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
               />
             </div>
@@ -143,7 +143,7 @@ export default function RegisterStudent() {
               placeholder="you@example.com" 
               type="email"
               required
-              icon="📧"
+              icon={<Mail className="w-4 h-4" />}
               className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
             />
 
@@ -156,7 +156,7 @@ export default function RegisterStudent() {
                   placeholder="••••••••" 
                   type="password"
                   required
-                  icon="🔒"
+                  icon={<Lock className="w-4 h-4" />}
                   className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
                 />
                 
@@ -192,7 +192,7 @@ export default function RegisterStudent() {
                 placeholder="••••••••" 
                 type="password"
                 required
-                icon="✅"
+                icon={<Check className="w-4 h-4" />}
                 className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
               />
             </div>
@@ -230,7 +230,7 @@ export default function RegisterStudent() {
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
-                  <span>🚀</span>
+                  <Rocket className="w-4 h-4" />
                   Create Student Account
                 </div>
               )}
@@ -269,24 +269,24 @@ export default function RegisterStudent() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
-              icon: '📚',
+              icon: <BookOpen className="w-8 h-8 text-white" />,
               title: 'Access to Courses',
               description: 'Unlock unlimited access to all learning materials and flashcard decks'
             },
             {
-              icon: '🎯',
+              icon: <Target className="w-8 h-8 text-white" />,
               title: 'Track Progress',
               description: 'Monitor your learning journey with detailed analytics and insights'
             },
             {
-              icon: '👥',
+              icon: <Users className="w-8 h-8 text-white" />,
               title: 'Join Community',
               description: 'Connect with fellow students and educators in our learning community'
             }
           ].map((benefit, index) => (
             <div key={index} className="text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
               <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl text-white">{benefit.icon}</span>
+                {benefit.icon}
               </div>
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{benefit.title}</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">{benefit.description}</p>
@@ -294,7 +294,7 @@ export default function RegisterStudent() {
           ))}
         </div>
         </div>
-      </Container>
+      </div>
     </div>
   );
 }

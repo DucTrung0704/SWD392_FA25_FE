@@ -1,26 +1,29 @@
 import React, { useState } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import ThemeToggle from '../ThemeToggle';
+import Icon from '../ui/Icon';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard/admin', icon: '📊', current: location.pathname === '/dashboard/admin' },
-    { name: 'Users', href: '/dashboard/admin/users', icon: '👥', current: location.pathname.startsWith('/dashboard/admin/users') },
-    { name: 'Roles', href: '/dashboard/admin/roles', icon: '🔐', current: location.pathname.startsWith('/dashboard/admin/roles') },
-    { name: 'Content', href: '/dashboard/admin/content', icon: '📄', current: location.pathname.startsWith('/dashboard/admin/content') },
-    { name: 'Analytics', href: '/dashboard/admin/analytics', icon: '📈', current: location.pathname.startsWith('/dashboard/admin/analytics') },
-    { name: 'System', href: '/dashboard/admin/system', icon: '⚙️', current: location.pathname.startsWith('/dashboard/admin/system') },
-    { name: 'Reports', href: '/dashboard/admin/reports', icon: '📋', current: location.pathname.startsWith('/dashboard/admin/reports') },
-    { name: 'Settings', href: '/dashboard/admin/settings', icon: '🔧', current: location.pathname.startsWith('/dashboard/admin/settings') },
+    { name: 'Dashboard', href: '/dashboard/admin', icon: 'stats', current: location.pathname === '/dashboard/admin' },
+    { name: 'Users', href: '/dashboard/admin/users', icon: 'users', current: location.pathname.startsWith('/dashboard/admin/users') },
+    { name: 'Roles', href: '/dashboard/admin/roles', icon: 'lock', current: location.pathname.startsWith('/dashboard/admin/roles') },
+    { name: 'Content', href: '/dashboard/admin/content', icon: 'file', current: location.pathname.startsWith('/dashboard/admin/content') },
+    { name: 'Analytics', href: '/dashboard/admin/analytics', icon: 'stats', current: location.pathname.startsWith('/dashboard/admin/analytics') },
+    { name: 'System', href: '/dashboard/admin/system', icon: 'settings', current: location.pathname.startsWith('/dashboard/admin/system') },
+    { name: 'Reports', href: '/dashboard/admin/reports', icon: 'file', current: location.pathname.startsWith('/dashboard/admin/reports') },
+    { name: 'Settings', href: '/dashboard/admin/settings', icon: 'settings', current: location.pathname.startsWith('/dashboard/admin/settings') },
   ];
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   return (
@@ -36,7 +39,7 @@ const AdminLayout = () => {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
@@ -71,7 +74,7 @@ const AdminLayout = () => {
                     : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                 }`}
               >
-                <span className="text-lg mr-3">{item.icon}</span>
+                <Icon name={item.icon} className="w-4 h-4 mr-3" />
                 {item.name}
               </Link>
             ))}
@@ -103,9 +106,9 @@ const AdminLayout = () => {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:ml-64">
         {/* Top bar */}
-        <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <div className="flex items-center justify-between h-16 px-6">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -128,7 +131,7 @@ const AdminLayout = () => {
         </div>
 
         {/* Page content */}
-        <main className="flex-1">
+        <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
       </div>

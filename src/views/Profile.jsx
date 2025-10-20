@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/authService';
-import Container from '../components/ui/Container';
 import Button from '../components/ui/Button';
+import Icon from '../components/ui/Icon';
+import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
   const { user, refresh, logout } = useAuth();
+  const navigate = useNavigate();
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -14,7 +16,7 @@ export default function Profile() {
   const [messageType, setMessageType] = useState('success');
   const [activeTab, setActiveTab] = useState('profile');
 
-  if (!user) return <Container className="py-10">Not logged in.</Container>;
+  if (!user) return <div className="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">Not logged in.</div>;
 
   async function handleUpdate(e) {
     e.preventDefault();
@@ -45,6 +47,7 @@ export default function Profile() {
   async function handleLogout() {
     await authService.logout();
     refresh();
+    navigate('/', { replace: true });
   }
 
   const cancelEdit = () => {
@@ -65,7 +68,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <Container size="4xl" padding="sm">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -98,9 +101,9 @@ export default function Profile() {
               {/* Navigation */}
               <nav className="space-y-2">
                 {[
-                  { id: 'profile', label: 'Profile', icon: '👤' },
-                  { id: 'stats', label: 'Statistics', icon: '📊' },
-                  { id: 'settings', label: 'Settings', icon: '⚙️' }
+                  { id: 'profile', label: 'Profile', icon: 'profile' },
+                  { id: 'stats', label: 'Statistics', icon: 'stats' },
+                  { id: 'settings', label: 'Settings', icon: 'settings' }
                 ].map(item => (
                   <button
                     key={item.id}
@@ -111,7 +114,7 @@ export default function Profile() {
                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                   >
-                    <span className="text-lg">{item.icon}</span>
+                    <Icon name={item.icon} className="w-4 h-4" />
                     <span className="font-medium">{item.label}</span>
                   </button>
                 ))}
@@ -123,7 +126,7 @@ export default function Profile() {
                   onClick={handleLogout}
                   className="w-full justify-center text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
-                  <span className="mr-2">🚪</span>
+                  <Icon name="logout" className="w-4 h-4 mr-2" />
                   Logout
                 </Button>
               </div>
@@ -155,7 +158,7 @@ export default function Profile() {
                       onClick={() => setIsEditing(true)}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
-                      <span className="mr-2">✏️</span>
+                      <Icon name="edit" className="w-4 h-4 mr-2" />
                       Edit Profile
                     </Button>
                   ) : (
@@ -171,7 +174,7 @@ export default function Profile() {
                         onClick={handleUpdate}
                         className="bg-green-600 hover:bg-green-700"
                       >
-                        <span className="mr-2">💾</span>
+                        <Icon name="save" className="w-4 h-4 mr-2" />
                         Save Changes
                       </Button>
                     </div>
@@ -225,7 +228,7 @@ export default function Profile() {
                   {isEditing && (
                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                       <p className="text-sm text-blue-700 dark:text-blue-400">
-                        💡 Make sure to save your changes before leaving this page.
+                        <Icon name="info" className="w-4 h-4 mr-2" /> Make sure to save your changes before leaving this page.
                       </p>
                     </div>
                   )}
@@ -242,16 +245,18 @@ export default function Profile() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                   {[
-                    { label: 'Flashcards Created', value: userStats.flashcardsCreated, icon: '🎴', color: 'blue' },
-                    { label: 'Decks Completed', value: userStats.decksCompleted, icon: '✅', color: 'green' },
-                    { label: 'Current Streak', value: `${userStats.streak} days`, icon: '🔥', color: 'orange' },
-                    { label: 'Accuracy', value: `${userStats.accuracy}%`, icon: '🎯', color: 'purple' }
+                    { label: 'Flashcards Created', value: userStats.flashcardsCreated, icon: 'flashcards', color: 'blue' },
+                    { label: 'Decks Completed', value: userStats.decksCompleted, icon: 'check', color: 'green' },
+                    { label: 'Current Streak', value: `${userStats.streak} days`, icon: 'clock', color: 'orange' },
+                    { label: 'Accuracy', value: `${userStats.accuracy}%`, icon: 'progress', color: 'purple' }
                   ].map((stat, index) => (
                     <div
                       key={index}
                       className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-4 text-center"
                     >
-                      <div className="text-2xl mb-2">{stat.icon}</div>
+                      <div className="mb-2 flex justify-center">
+                        <Icon name={stat.icon} className="w-6 h-6" />
+                      </div>
                       <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                         {stat.value}
                       </div>
@@ -307,25 +312,25 @@ export default function Profile() {
                     {
                       title: 'Notifications',
                       description: 'Manage how you receive notifications',
-                      icon: '🔔',
+                      icon: 'settings',
                       action: 'Configure'
                     },
                     {
                       title: 'Privacy',
                       description: 'Control your privacy settings',
-                      icon: '🛡️',
+                      icon: 'lock',
                       action: 'Manage'
                     },
                     {
                       title: 'Language',
                       description: 'Change your preferred language',
-                      icon: '🌐',
+                      icon: 'settings',
                       action: 'Select'
                     },
                     {
                       title: 'Appearance',
                       description: 'Switch between light and dark mode',
-                      icon: '🎨',
+                      icon: 'settings',
                       action: 'Customize'
                     }
                   ].map((setting, index) => (
@@ -335,7 +340,7 @@ export default function Profile() {
                     >
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center">
-                          <span className="text-xl">{setting.icon}</span>
+                          <Icon name={setting.icon} className="w-5 h-5" />
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-900 dark:text-white">
@@ -356,7 +361,7 @@ export default function Profile() {
             )}
           </div>
         </div>
-      </Container>
+      </div>
     </div>
   );
 }

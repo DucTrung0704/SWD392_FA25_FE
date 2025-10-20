@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { examService } from '../../services/examService';
-import Container from '../../components/ui/Container';
 import { Link } from 'react-router-dom';
 
 export default function Exams() {
@@ -37,7 +36,7 @@ export default function Exams() {
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <Container size="6xl" padding="sm">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2 sm:mb-4">
@@ -251,7 +250,7 @@ export default function Exams() {
             </div>
           </div>
         </div>
-      </Container>
+      </div>
     </div>
   );
 }

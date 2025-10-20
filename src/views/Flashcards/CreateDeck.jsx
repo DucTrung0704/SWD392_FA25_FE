@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
-import Container from '../../components/ui/Container';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 
@@ -97,7 +96,7 @@ export default function CreateDeck() {
   ];
 
   return (
-    <Container className="min-h-screen py-8 bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen py-8 bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-4">
@@ -329,7 +328,7 @@ export default function CreateDeck() {
           </div>
         )}
       </div>
-    </Container>
+    </div>
   );
 }
 

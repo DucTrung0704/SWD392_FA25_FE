@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
-import Container from '../../components/ui/Container';
 import Button from '../../components/ui/Button';
 
 export default function Study() {
@@ -94,7 +93,7 @@ export default function Study() {
 
   if (loading) {
     return (
-      <Container className="min-h-screen py-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen py-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded w-1/3 mx-auto mb-4"></div>
@@ -102,13 +101,13 @@ export default function Study() {
           </div>
           <p className="text-gray-600 dark:text-gray-400">Loading deck...</p>
         </div>
-      </Container>
+      </div>
     );
   }
 
   if (error || !deck) {
     return (
-      <Container className="min-h-screen py-8">
+      <div className="min-h-screen py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Deck not found</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">{error || 'The deck you are looking for does not exist.'}</p>
@@ -116,13 +115,13 @@ export default function Study() {
             Back to Decks
           </Button>
         </div>
-      </Container>
+      </div>
     );
   }
 
   if (!currentCard) {
     return (
-      <Container className="min-h-screen py-8">
+      <div className="min-h-screen py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">No cards in deck</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">This deck doesn't have any cards to study.</p>
@@ -130,12 +129,12 @@ export default function Study() {
             Back to Decks
           </Button>
         </div>
-      </Container>
+      </div>
     );
   }
 
   return (
-    <Container className="min-h-screen py-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen py-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -279,6 +278,6 @@ export default function Study() {
           </div>
         </div>
       </div>
-    </Container>
+    </div>
   );
 }

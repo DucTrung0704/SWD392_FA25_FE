@@ -1,7 +1,7 @@
 import React from 'react';
-import Container from '../../components/ui/Container';
 import RoleBadge from '../../components/RoleBadge';
 import { Link } from 'react-router-dom';
+import Icon from '../../components/ui/Icon';
 
 export default function StudentDashboard() {
   // Mock data for student progress
@@ -21,7 +21,7 @@ export default function StudentDashboard() {
     {
       title: 'Study',
       description: 'Học theo thứ tự hoặc ngẫu nhiên',
-      icon: '📚',
+      icon: 'study',
       color: 'from-blue-500 to-blue-600',
       bgColor: 'bg-blue-50 dark:bg-blue-900/20',
       link: '/study'
@@ -29,7 +29,7 @@ export default function StudentDashboard() {
     {
       title: 'Smart Review',
       description: 'Gợi ý ôn dựa trên thẻ chưa nhớ',
-      icon: '🧠',
+      icon: 'review',
       color: 'from-green-500 to-green-600',
       bgColor: 'bg-green-50 dark:bg-green-900/20',
       link: '/review'
@@ -37,7 +37,7 @@ export default function StudentDashboard() {
     {
       title: 'Exams',
       description: 'Làm bài thi thử trực tuyến',
-      icon: '📝',
+      icon: 'exams',
       color: 'from-purple-500 to-purple-600',
       bgColor: 'bg-purple-50 dark:bg-purple-900/20',
       link: '/exams'
@@ -45,7 +45,7 @@ export default function StudentDashboard() {
     {
       title: 'Progress',
       description: 'Theo dõi tiến độ học tập',
-      icon: '📊',
+      icon: 'progress',
       color: 'from-orange-500 to-orange-600',
       bgColor: 'bg-orange-50 dark:bg-orange-900/20',
       link: '/progress'
@@ -53,7 +53,7 @@ export default function StudentDashboard() {
     {
       title: 'Flashcards',
       description: 'Quản lý bộ thẻ của bạn',
-      icon: '🎴',
+      icon: 'flashcards',
       color: 'from-pink-500 to-pink-600',
       bgColor: 'bg-pink-50 dark:bg-pink-900/20',
       link: '/flashcards'
@@ -61,7 +61,7 @@ export default function StudentDashboard() {
     {
       title: 'Achievements',
       description: 'Xem thành tích đạt được',
-      icon: '🏆',
+      icon: 'achievements',
       color: 'from-yellow-500 to-yellow-600',
       bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
       link: '/achievements'
@@ -76,7 +76,7 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <Container size="6xl" padding="sm">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
           <div className="flex items-center gap-4">
@@ -94,7 +94,9 @@ export default function StudentDashboard() {
             <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               Day {studentStats.studyStreak}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Study Streak 🔥</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                Study Streak <Icon name="clock" className="w-3 h-3" />
+              </div>
           </div>
         </div>
 
@@ -107,7 +109,7 @@ export default function StudentDashboard() {
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{studentStats.totalDecks}</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center">
-                <span className="text-lg sm:text-xl">📚</span>
+                <Icon name="study" className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
             </div>
           </div>
@@ -119,7 +121,7 @@ export default function StudentDashboard() {
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{studentStats.completedDecks}</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center">
-                <span className="text-lg sm:text-xl">✅</span>
+                <Icon name="check" className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
             </div>
           </div>
@@ -131,7 +133,7 @@ export default function StudentDashboard() {
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{studentStats.accuracy}%</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center">
-                <span className="text-lg sm:text-xl">🎯</span>
+                <Icon name="progress" className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
             </div>
           </div>
@@ -143,7 +145,7 @@ export default function StudentDashboard() {
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">12.5h</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 dark:bg-orange-900 rounded-xl flex items-center justify-center">
-                <span className="text-lg sm:text-xl">⏱️</span>
+                <Icon name="clock" className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
             </div>
           </div>
@@ -161,7 +163,7 @@ export default function StudentDashboard() {
                   className="group block bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${action.bgColor} flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                    <span className="text-xl sm:text-2xl">{action.icon}</span>
+                    <Icon name={action.icon} className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2 text-sm sm:text-base">{action.title}</h3>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
@@ -211,7 +213,7 @@ export default function StudentDashboard() {
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{exam.subject}</p>
                     <div className="flex items-center text-sm text-orange-600 dark:text-orange-400">
-                      <span className="mr-2">📅</span>
+                      <Icon name="calendar" className="w-3 h-3 mr-2" />
                       {new Date(exam.date).toLocaleDateString()}
                     </div>
                   </div>
@@ -236,7 +238,7 @@ export default function StudentDashboard() {
             </Link>
           </div>
         </div>
-      </Container>
+      </div>
     </div>
   );
 }

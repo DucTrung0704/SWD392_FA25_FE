@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Container from './ui/Container';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -34,7 +33,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
-      <Container size="6xl" padding="sm">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4">
         {/* Main Footer Content */}
         <div className="py-8 sm:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8">
@@ -186,7 +185,7 @@ export default function Footer() {
 
         {/* Stats Section */}
         
-      </Container>
+      </div>
     </footer>
   );
 }

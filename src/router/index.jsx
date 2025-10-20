@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import RoleRoute from '../components/RoleRoute';
+import GuestRoute from '../components/GuestRoute';
 
 // Layouts
 import TeacherLayout from '../components/layouts/TeacherLayout';
@@ -30,6 +31,14 @@ import Settings from '../views/Admin/Settings';
 import TeacherDashboard from '../views/Dashboards/TeacherDashboard';
 import StudentDashboard from '../views/Dashboards/StudentDashboard';
 
+// Teacher Views
+import TeacherStudents from '../views/Teacher/Students';
+import TeacherFlashcards from '../views/Teacher/Flashcards';
+import TeacherExams from '../views/Teacher/Exams';
+import TeacherClasses from '../views/Teacher/Classes';
+import TeacherAnalytics from '../views/Teacher/Analytics';
+import TeacherSettings from '../views/Teacher/Settings';
+
 // Flashcard Views
 import Decks from '../views/Flashcards/Decks';
 import CreateDeck from '../views/Flashcards/CreateDeck';
@@ -40,17 +49,17 @@ import DeckDetail from '../views/Flashcards/DeckDetail';
 export function AppRouter() {
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<Home />} />
+      {/* Public Routes (guest-only) */}
+      <Route path="/" element={<GuestRoute><Home /></GuestRoute>} />
       <Route path="/exams" element={<Exams />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/not-authorized" element={<NotAuthorized />} />
       
-      {/* Auth Routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register/student" element={<RegisterStudent />} />
-      <Route path="/register/teacher" element={<RegisterTeacher />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
+      {/* Auth Routes (guest-only) */}
+      <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+      <Route path="/register/student" element={<GuestRoute><RegisterStudent /></GuestRoute>} />
+      <Route path="/register/teacher" element={<GuestRoute><RegisterTeacher /></GuestRoute>} />
+      <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
       
       {/* Dashboard Routes */}
       <Route
@@ -80,12 +89,12 @@ export function AppRouter() {
         }
       >
         <Route index element={<TeacherDashboard />} />
-        <Route path="students" element={<div className="p-6">Student Management Page</div>} />
-        <Route path="flashcards" element={<div className="p-6">Flashcard Management Page</div>} />
-        <Route path="exams" element={<div className="p-6">Exam Management Page</div>} />
-        <Route path="classes" element={<div className="p-6">Class Management Page</div>} />
-        <Route path="analytics" element={<div className="p-6">Teacher Analytics Page</div>} />
-        <Route path="settings" element={<div className="p-6">Teacher Settings Page</div>} />
+        <Route path="students" element={<TeacherStudents />} />
+        <Route path="flashcards" element={<TeacherFlashcards />} />
+        <Route path="exams" element={<TeacherExams />} />
+        <Route path="classes" element={<TeacherClasses />} />
+        <Route path="analytics" element={<TeacherAnalytics />} />
+        <Route path="settings" element={<TeacherSettings />} />
       </Route>
       
       <Route

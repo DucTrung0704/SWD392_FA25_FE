@@ -1,18 +1,11 @@
 import React from 'react';
-import Container, { 
-  ContainerSmall, 
-  ContainerMedium, 
-  ContainerLarge, 
-  ContainerNarrow,
-  ContainerFluid 
-} from '../components/ui/Container';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
 export default function ResponsiveDemo() {
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <Container size="6xl" padding="sm">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gradient mb-2 sm:mb-4">
@@ -32,49 +25,49 @@ export default function ResponsiveDemo() {
                 {/* Small Container */}
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Small (md - 448px)</h3>
-                  <ContainerSmall>
+                  <div className="max-w-md mx-auto px-2 sm:px-4">
                     <div className="bg-blue-100 dark:bg-blue-900 p-4 rounded-lg">
                       <p className="text-sm text-blue-800 dark:text-blue-200">
                         ContainerSmall - Perfect for forms and narrow content
                       </p>
                     </div>
-                  </ContainerSmall>
+                  </div>
                 </div>
 
                 {/* Medium Container */}
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Medium (4xl - 896px)</h3>
-                  <ContainerMedium>
+                  <div className="max-w-4xl mx-auto px-2 sm:px-4">
                     <div className="bg-green-100 dark:bg-green-900 p-4 rounded-lg">
                       <p className="text-sm text-green-800 dark:text-green-200">
                         ContainerMedium - Good for articles and main content
                       </p>
                     </div>
-                  </ContainerMedium>
+                  </div>
                 </div>
 
                 {/* Large Container */}
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Large (6xl - 1152px)</h3>
-                  <ContainerLarge>
+                  <div className="max-w-6xl mx-auto px-2 sm:px-4">
                     <div className="bg-purple-100 dark:bg-purple-900 p-4 rounded-lg">
                       <p className="text-sm text-purple-800 dark:text-purple-200">
                         ContainerLarge - Ideal for dashboards and wide layouts
                       </p>
                     </div>
-                  </ContainerLarge>
+                  </div>
                 </div>
 
                 {/* Narrow Container */}
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Narrow (2xl - 672px)</h3>
-                  <ContainerNarrow>
+                  <div className="max-w-2xl mx-auto px-6 sm:px-8 lg:px-12">
                     <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-lg">
                       <p className="text-sm text-yellow-800 dark:text-yellow-200">
                         ContainerNarrow - Great for reading content with extra padding
                       </p>
                     </div>
-                  </ContainerNarrow>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -145,14 +138,14 @@ export default function ResponsiveDemo() {
           <Card>
             <CardHeader title="Fluid Container" subtitle="Container không giới hạn width" />
             <CardContent>
-              <ContainerFluid>
+              <div className="w-full px-4 sm:px-6 lg:px-8">
                 <div className="bg-gradient-to-r from-pink-500 to-red-500 p-6 rounded-xl text-white text-center">
                   <h3 className="text-xl font-bold mb-2">Full Width Container</h3>
                   <p className="text-sm opacity-90">
                     This container spans the full width of its parent
                   </p>
                 </div>
-              </ContainerFluid>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -181,7 +174,7 @@ export default function ResponsiveDemo() {
             </div>
           </CardContent>
         </Card>
-      </Container>
+      </div>
     </div>
   );
 }

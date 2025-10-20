@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Container from '../../components/ui/Container';
+import Icon from '../../components/ui/Icon';
 import { Link } from 'react-router-dom';
 
 export default function Analytics() {
@@ -55,17 +55,17 @@ export default function Analytics() {
   ];
 
   const metrics = [
-    { id: 'engagement', name: 'Engagement', icon: '🔥', color: 'from-orange-500 to-red-500' },
-    { id: 'performance', name: 'Performance', icon: '📊', color: 'from-blue-500 to-cyan-500' },
-    { id: 'content', name: 'Content', icon: '📚', color: 'from-green-500 to-teal-500' },
-    { id: 'growth', name: 'Growth', icon: '📈', color: 'from-purple-500 to-pink-500' }
+    { id: 'engagement', name: 'Engagement', icon: 'clock', color: 'from-orange-500 to-red-500' },
+    { id: 'performance', name: 'Performance', icon: 'stats', color: 'from-blue-500 to-cyan-500' },
+    { id: 'content', name: 'Content', icon: 'study', color: 'from-green-500 to-teal-500' },
+    { id: 'growth', name: 'Growth', icon: 'arrowUp', color: 'from-purple-500 to-pink-500' }
   ];
 
   const StatCard = ({ title, value, change, trend, icon }) => (
     <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400">{title}</h3>
-        <span className="text-2xl">{icon}</span>
+        <Icon name={icon} className="w-6 h-6" />
       </div>
       <div className="flex items-end justify-between">
         <div className="text-2xl font-bold text-gray-900 dark:text-white">{value}</div>
@@ -109,7 +109,7 @@ export default function Analytics() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 py-8">
-      <Container size="7xl" padding="lg">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         {/* Header */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-6">
           <div>
@@ -159,7 +159,7 @@ export default function Analytics() {
                   : 'bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'
               }`}
             >
-              <span className="text-xl">{metric.icon}</span>
+              <Icon name={metric.icon} className="w-5 h-5" />
               {metric.name}
             </button>
           ))}
@@ -412,14 +412,17 @@ export default function Analytics() {
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 text-white">
               <h3 className="text-lg font-semibold mb-4">Analytics Actions</h3>
               <div className="space-y-3">
-                <button className="w-full text-left px-4 py-3 bg-white/20 hover:bg-white/30 rounded-xl transition-colors duration-200">
-                  📊 Generate Detailed Report
+                <button className="w-full text-left px-4 py-3 bg-white/20 hover:bg-white/30 rounded-xl transition-colors duration-200 flex items-center gap-3">
+                  <Icon name="stats" className="w-4 h-4" />
+                  Generate Detailed Report
                 </button>
-                <button className="w-full text-left px-4 py-3 bg-white/20 hover:bg-white/30 rounded-xl transition-colors duration-200">
-                  📧 Export to Email
+                <button className="w-full text-left px-4 py-3 bg-white/20 hover:bg-white/30 rounded-xl transition-colors duration-200 flex items-center gap-3">
+                  <Icon name="email" className="w-4 h-4" />
+                  Export to Email
                 </button>
-                <button className="w-full text-left px-4 py-3 bg-white/20 hover:bg-white/30 rounded-xl transition-colors duration-200">
-                  🔔 Set Up Alerts
+                <button className="w-full text-left px-4 py-3 bg-white/20 hover:bg-white/30 rounded-xl transition-colors duration-200 flex items-center gap-3">
+                  <Icon name="bell" className="w-4 h-4" />
+                  Set Up Alerts
                 </button>
               </div>
             </div>
@@ -453,7 +456,7 @@ export default function Analytics() {
             </div>
           </div>
         </div>
-      </Container>
+      </div>
     </div>
   );
 }

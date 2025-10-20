@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { authService } from '../../services/authService';
-import Container from '../../components/ui/Container';
 import { Card, CardHeader } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -23,7 +22,7 @@ export default function ForgotPassword() {
   }
 
   return (
-    <Container className="py-16">
+    <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <Card className="mx-auto max-w-md">
         <CardHeader title="Forgot Password" subtitle="Nhập email để nhận liên kết reset" />
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -33,7 +32,7 @@ export default function ForgotPassword() {
           <Button type="submit" className="w-full">Send Reset Link</Button>
         </form>
       </Card>
-    </Container>
+    </div>
   );
 }
 

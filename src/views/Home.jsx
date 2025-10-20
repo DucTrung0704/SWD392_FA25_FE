@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { flashcardService } from '../services/flashcardService';
 import { useEffect, useState } from 'react';
-import Container from '../components/ui/Container';
+import { BookOpen, Target, Users } from 'lucide-react';
 
 export default function Home() {
   const [featured, setFeatured] = useState([]);
@@ -17,7 +17,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <Container size="6xl" padding="sm">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4">
         {/* Hero Section */}
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 sm:mb-4">
@@ -74,7 +74,7 @@ export default function Home() {
               
               {/* Deck Icon */}
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 shadow-md">
-                <span className="text-white font-bold text-lg">📚</span>
+                <BookOpen className="w-6 h-6 text-white" />
               </div>
               
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
@@ -110,7 +110,8 @@ export default function Home() {
                     {deck.cardCount} thẻ
                   </span>
                   <span className="flex items-center">
-                    👥 {deck.followers || 0}
+                    <Users className="w-3 h-3 mr-1" />
+                    {deck.followers || 0}
                   </span>
                 </div>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -137,7 +138,7 @@ export default function Home() {
             className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 group border border-gray-100 dark:border-gray-700"
           >
             <div className="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-              <span className="text-2xl">🎴</span>
+              <BookOpen className="w-7 h-7 text-white" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               Bộ Thẻ
@@ -152,7 +153,7 @@ export default function Home() {
             className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 group border border-gray-100 dark:border-gray-700"
           >
             <div className="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-              <span className="text-2xl">📝</span>
+              <Target className="w-7 h-7 text-white" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               Bài Kiểm Tra
@@ -167,7 +168,7 @@ export default function Home() {
             className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 group border border-gray-100 dark:border-gray-700"
           >
             <div className="w-14 h-14 bg-purple-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-              <span className="text-2xl">👤</span>
+              <Users className="w-7 h-7 text-white" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               Hồ Sơ
@@ -199,7 +200,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </Container>
+      </div>
     </div>
   );
 }
