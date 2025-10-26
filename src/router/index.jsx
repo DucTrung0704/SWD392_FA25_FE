@@ -57,7 +57,6 @@ export function AppRouter() {
       {/* Public Routes (guest-only) */}
       <Route path="/" element={<GuestRoute><Home /></GuestRoute>} />
       <Route path="/exams" element={<Exams />} />
-      <Route path="/profile" element={<Profile />} />
       <Route path="/not-authorized" element={<NotAuthorized />} />
       
       {/* Auth Routes (guest-only) */}
@@ -114,6 +113,16 @@ export function AppRouter() {
         <Route path="study" element={<StudentStudy />} />
         <Route path="progress" element={<StudentProgress />} />
       </Route>
+      
+      {/* Protected Profile Route for logged-in users */}
+      <Route
+        path="/profile"
+        element={
+          <RoleRoute roles={["Student", "Teacher", "Admin"]}>
+            <Profile />
+          </RoleRoute>
+        }
+      />
       
       {/* Flashcard Routes */}
       <Route path="/flashcards" element={<Decks />} />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/authService';
 import Button from '../components/ui/Button';
@@ -8,22 +8,70 @@ import { useNavigate } from 'react-router-dom';
 export default function Profile() {
   const { user, refresh, logout } = useAuth();
   const navigate = useNavigate();
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [bio, setBio] = useState(user?.bio || '');
+  
+  // Initialize with user data or empty strings
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [bio, setBio] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('success');
   const [activeTab, setActiveTab] = useState('profile');
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!user) return <div className="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">Not logged in.</div>;
+  // Debug log
+  console.log('Profile component - user:', user);
+
+  // Load user data when component mounts or user changes
+  useEffect(() => {
+    // Check localStorage directly for immediate data
+    const storedUser = authService.currentUser();
+    console.log('Profile useEffect - stored user:', storedUser);
+    
+    if (storedUser) {
+      setName(storedUser.name || '');
+      setEmail(storedUser.email || '');
+      setBio(storedUser.bio || '');
+      setIsLoading(false);
+    } else if (user) {
+      setName(user.name || '');
+      setEmail(user.email || '');
+      setBio(user.bio || '');
+      setIsLoading(false);
+    }
+    // Also set loading to false after a short delay if still loading
+    const timeout = setTimeout(() => setIsLoading(false), 100);
+    return () => clearTimeout(timeout);
+  }, [user]);
+
+  // Show loading only briefly
+  if (isLoading && !user && !authService.currentUser()) {
+    return (
+      <div className="min-h-screen py-10 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="flex items-center justify-center">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading profile...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Use stored user if hook user is not available yet
+  const currentUser = user || authService.currentUser();
+  
+  if (!currentUser) {
+    navigate('/login');
+    return null;
+  }
 
   async function handleUpdate(e) {
     e.preventDefault();
     try {
       // Mock update profile
       const updated = { 
-        ...user, 
+        ...currentUser, 
         name,
         email,
         bio,
@@ -51,9 +99,9 @@ export default function Profile() {
   }
 
   const cancelEdit = () => {
-    setName(user.name || '');
-    setEmail(user.email || '');
-    setBio(user.bio || '');
+    setName(currentUser.name || '');
+    setEmail(currentUser.email || '');
+    setBio(currentUser.bio || '');
     setIsEditing(false);
     setMessage('');
   };
@@ -87,14 +135,14 @@ export default function Profile() {
               <div className="text-center mb-6">
                 <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <span className="text-2xl text-white font-bold">
-                    {user.name?.charAt(0).toUpperCase() || 'U'}
+                    {currentUser.name?.charAt(0).toUpperCase() || 'U'}
                   </span>
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  {user.name || 'User'}
+                  {currentUser.name || 'User'}
                 </h2>
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  {user.email || 'user@example.com'}
+                  {currentUser.email || 'user@example.com'}
                 </p>
               </div>
 

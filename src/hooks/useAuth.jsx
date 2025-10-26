@@ -16,32 +16,25 @@ export function useAuth() {
   }, [refresh]);
 
   useEffect(() => {
-    // Initial refresh
-    refresh();
+    // Initial load - ensure user is set from localStorage
+    const storedUser = authService.currentUser();
+    if (storedUser) {
+      setUser(storedUser);
+    }
     
     // Listen for storage changes (when user logs in/out in another tab)
-    const handleStorageChange = () => {
-      refresh();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Also check for localStorage changes (current tab)
-    const checkAuthChange = () => {
-      const currentUser = authService.currentUser();
-      if (JSON.stringify(currentUser) !== JSON.stringify(user)) {
+    const handleStorageChange = (e) => {
+      if (e.key === 'app_auth_user') {
         refresh();
       }
     };
     
-    // Poll every 500ms to catch local changes
-    const interval = setInterval(checkAuthChange, 500);
+    window.addEventListener('storage', handleStorageChange);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
     };
-  }, [refresh, user]);
+  }, [refresh]);
 
   return { user, setUser, refresh, logout };
 }

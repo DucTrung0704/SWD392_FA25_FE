@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authService } from '../../services/authService';
 import { getDashboardPathForRole } from '../../config/constants';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardHeader, CardFooter } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
-import { Lock, AlertTriangle, Mail, Rocket, GraduationCap, UserCheck } from 'lucide-react';
+import { Lock, AlertTriangle, Mail, Rocket, GraduationCap, UserCheck, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 // Google Logo Component
@@ -22,9 +22,30 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check for success message from registration
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      if (location.state?.email) {
+        setEmail(location.state.email);
+      }
+      // Clear the message after 5 seconds
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+      
+      // Clear location state
+      window.history.replaceState({}, document.title);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location]);
   const { refresh } = useAuth();
 
   async function handleLogin(e) {
@@ -90,6 +111,16 @@ export default function Login() {
               <div className="flex items-center gap-2 text-red-700 dark:text-red-400 text-sm">
                 <AlertTriangle className="w-4 h-4" />
                 {error}
+              </div>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mx-6 mb-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 text-sm font-medium">
+                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                {successMessage}
               </div>
             </div>
           )}

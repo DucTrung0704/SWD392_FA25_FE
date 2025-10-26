@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardHeader, CardFooter } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
-import { UserCheck, AlertTriangle, User, Mail, Lock, Check, BookOpen, BarChart3, Users, Sparkles, Award, TrendingUp, Star, Rocket } from 'lucide-react';
+import { UserCheck, AlertTriangle, User, Mail, Lock, Check, BookOpen, BarChart3, Users, Sparkles, Award, TrendingUp, Star, Rocket, CheckCircle } from 'lucide-react';
 
 export default function RegisterTeacher() {
   const [formData, setFormData] = useState({
@@ -14,6 +14,7 @@ export default function RegisterTeacher() {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
@@ -56,20 +57,28 @@ export default function RegisterTeacher() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    setSuccess(false);
     
     if (!validateForm()) return;
 
     setLoading(true);
     try {
       await authService.registerTeacher(formData.name, formData.email, formData.password);
-      navigate('/login', { 
-        state: { 
-          message: 'Registration successful! Please login to continue.'
-        }
-      });
+      
+      // Show success message
+      setSuccess(true);
+      
+      // Wait 2 seconds then redirect to login
+      setTimeout(() => {
+        navigate('/login', { 
+          state: { 
+            message: 'Teacher registration successful! Please login with your credentials.',
+            email: formData.email
+          }
+        });
+      }, 2000);
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
-    } finally {
       setLoading(false);
     }
   }
@@ -172,6 +181,16 @@ export default function RegisterTeacher() {
             </div>
           )}
 
+          {/* Success Message */}
+          {success && (
+            <div className="mx-6 mb-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 text-sm font-medium">
+                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                Teacher account created successfully! Redirecting to login...
+              </div>
+            </div>
+          )}
+
           {/* Registration Form */}
           <form onSubmit={handleSubmit} className="space-y-5 px-6">
             {/* Personal Information */}
@@ -246,12 +265,12 @@ export default function RegisterTeacher() {
             <Button 
               type="submit" 
               className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-              disabled={loading}
+              disabled={loading || success}
             >
-              {loading ? (
+              {loading || success ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Submitting Application...
+                  {success ? 'Success! Redirecting...' : 'Submitting Application...'}
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">

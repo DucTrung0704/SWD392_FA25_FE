@@ -75,28 +75,35 @@ export default function StudentDashboard() {
   ];
 
   return (
-    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-6xl mx-auto px-2 sm:px-4">
+    <div className="pt-2 sm:pt-4 lg:pt-6 pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Student Dashboard
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Student Dashboard
+                </h1>
+                <div className="sm:hidden">
+                  <RoleBadge role="Student" />
+                </div>
+              </div>
               <p className="text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">
                 Welcome back! Continue your learning journey
               </p>
             </div>
-            <RoleBadge role="Student" />
+            <div className="hidden sm:block">
+              <RoleBadge role="Student" />
+            </div>
           </div>
-          <div className="text-center sm:text-right">
+          <div className="text-left sm:text-right w-full sm:w-auto">
             <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               Day {studentStats.studyStreak}
             </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                Study Streak <Icon name="clock" className="w-3 h-3" />
-              </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              Study Streak <Icon name="clock" className="w-3 h-3" />
+            </div>
           </div>
         </div>
 
@@ -174,21 +181,21 @@ export default function StudentDashboard() {
           </div>
 
           {/* Recent Activity & Upcoming Exams */}
-          <div className="space-y-6">
+          <div className="space-y-6 lg:space-y-6">
             {/* Recent Activity */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
-              <div className="space-y-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
+              <div className="space-y-3 sm:space-y-4">
                 {studentStats.recentActivity.map((activity, index) => (
                   <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{activity.deck}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{activity.time}</p>
+                    <div className="min-w-0 flex-1 mr-3">
+                      <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{activity.deck}</p>
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{activity.time}</p>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-semibold text-gray-900 dark:text-white">{activity.progress}%</div>
-                      <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                        <div 
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{activity.progress}%</div>
+                      <div className="w-12 sm:w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                        <div
                           className="bg-green-500 h-2 rounded-full transition-all duration-500"
                           style={{ width: `${activity.progress}%` }}
                         ></div>
@@ -200,19 +207,19 @@ export default function StudentDashboard() {
             </div>
 
             {/* Upcoming Exams */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Upcoming Exams</h3>
-              <div className="space-y-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4">Upcoming Exams</h3>
+              <div className="space-y-3 sm:space-y-4">
                 {upcomingExams.map((exam, index) => (
-                  <div key={index} className="p-4 rounded-xl border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
+                  <div key={index} className="p-3 sm:p-4 rounded-xl border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-gray-900 dark:text-white">{exam.name}</h4>
-                      <span className="text-sm bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200 px-2 py-1 rounded-full">
+                      <h4 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">{exam.name}</h4>
+                      <span className="text-xs sm:text-sm bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200 px-2 py-1 rounded-full whitespace-nowrap">
                         {exam.duration}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{exam.subject}</p>
-                    <div className="flex items-center text-sm text-orange-600 dark:text-orange-400">
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2">{exam.subject}</p>
+                    <div className="flex items-center text-xs sm:text-sm text-orange-600 dark:text-orange-400">
                       <Icon name="calendar" className="w-3 h-3 mr-2" />
                       {new Date(exam.date).toLocaleDateString()}
                     </div>
@@ -224,15 +231,15 @@ export default function StudentDashboard() {
         </div>
 
         {/* Study Recommendations */}
-        <div className="mt-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
-          <div className="flex items-center justify-between">
+        <div className="mt-6 sm:mt-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 sm:p-8 text-white">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold mb-2">Ready to Study?</h3>
+              <h3 className="text-xl sm:text-2xl font-bold mb-2">Ready to Study?</h3>
               <p className="text-blue-100">Continue from where you left off or start a new deck</p>
             </div>
-            <Link 
-              to="/dashboard/student/study" 
-              className="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors duration-200"
+            <Link
+              to="/dashboard/student/study"
+              className="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors duration-200 whitespace-nowrap"
             >
               Start Studying
             </Link>

@@ -1,6 +1,6 @@
 import { AUTH_KEY, ROLES } from '../config/constants';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
 function getStoredUser() {
   const raw = localStorage.getItem(AUTH_KEY);

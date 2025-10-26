@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardHeader, CardFooter } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
-import { GraduationCap, AlertTriangle, User, Mail, Lock, Check, Rocket, BookOpen, Target, Users, Sparkles, Award, TrendingUp } from 'lucide-react';
+import { GraduationCap, AlertTriangle, User, Mail, Lock, Check, Rocket, BookOpen, Target, Users, Sparkles, Award, TrendingUp, CheckCircle } from 'lucide-react';
 
 export default function RegisterStudent() {
   const [formData, setFormData] = useState({
@@ -14,6 +14,7 @@ export default function RegisterStudent() {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
@@ -56,21 +57,28 @@ export default function RegisterStudent() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    setSuccess(false);
     
     if (!validateForm()) return;
 
     setLoading(true);
     try {
       await authService.registerStudent(formData.name, formData.email, formData.password);
-      navigate('/verify-email', { 
-        state: { 
-          email: formData.email,
-          message: 'Please check your email to verify your account'
-        }
-      });
+      
+      // Show success message
+      setSuccess(true);
+      
+      // Wait 2 seconds then redirect to login
+      setTimeout(() => {
+        navigate('/login', { 
+          state: { 
+            message: 'Registration successful! Please login with your credentials.',
+            email: formData.email
+          }
+        });
+      }, 2000);
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
-    } finally {
       setLoading(false);
     }
   }
@@ -183,6 +191,16 @@ export default function RegisterStudent() {
                 </div>
               )}
 
+              {/* Success Message */}
+              {success && (
+                <div className="mx-6 mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border-l-4 border-emerald-500 rounded-lg">
+                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 text-sm font-medium">
+                    <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                    Account created successfully! Redirecting to login...
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-5 px-6 pb-6">
                 <Input 
                   label="Full Name" 
@@ -280,12 +298,12 @@ export default function RegisterStudent() {
                 <Button 
                   type="submit" 
                   className="w-full py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
-                  disabled={loading}
+                  disabled={loading || success}
                 >
-                  {loading ? (
+                  {loading || success ? (
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Creating Account...
+                      {success ? 'Success! Redirecting...' : 'Creating Account...'}
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
