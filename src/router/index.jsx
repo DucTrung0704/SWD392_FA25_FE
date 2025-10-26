@@ -6,6 +6,7 @@ import GuestRoute from '../components/GuestRoute';
 // Layouts
 import TeacherLayout from '../components/layouts/TeacherLayout';
 import AdminLayout from '../components/layouts/AdminLayout';
+import StudentLayout from '../components/layouts/StudentLayout';
 
 // Views
 import Home from '../views/Home';
@@ -30,6 +31,10 @@ import Reports from '../views/Admin/Reports';
 import Settings from '../views/Admin/Settings';
 import TeacherDashboard from '../views/Dashboards/TeacherDashboard';
 import StudentDashboard from '../views/Dashboards/StudentDashboard';
+
+// Student Views
+import StudentStudy from '../views/Student/Study';
+import StudentProgress from '../views/Student/Progress';
 
 // Teacher Views
 import TeacherStudents from '../views/Teacher/Students';
@@ -101,10 +106,14 @@ export function AppRouter() {
         path="/dashboard/student"
         element={
           <RoleRoute roles={["Student"]}>
-            <StudentDashboard />
+            <StudentLayout />
           </RoleRoute>
         }
-      />
+      >
+        <Route index element={<StudentDashboard />} />
+        <Route path="study" element={<StudentStudy />} />
+        <Route path="progress" element={<StudentProgress />} />
+      </Route>
       
       {/* Flashcard Routes */}
       <Route path="/flashcards" element={<Decks />} />

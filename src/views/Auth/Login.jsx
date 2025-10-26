@@ -6,6 +6,7 @@ import { Card, CardHeader, CardFooter } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { Lock, AlertTriangle, Mail, Rocket, GraduationCap, UserCheck } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 // Google Logo Component
 const GoogleIcon = ({ className }) => (
@@ -24,6 +25,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+  const { refresh } = useAuth();
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -39,6 +41,7 @@ export default function Login() {
 
     try {
       const loggedIn = await authService.loginWithCredentials(email, password);
+      refresh(); // Refresh auth state
       navigate(getDashboardPathForRole(loggedIn.role));
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
@@ -52,6 +55,7 @@ export default function Login() {
     setGoogleLoading(true);
     try {
       const loggedIn = await authService.loginWithGoogle();
+      refresh(); // Refresh auth state
       navigate(getDashboardPathForRole(loggedIn.role));
     } catch (err) {
       setError(err.message || 'Google login failed. Please try again.');

@@ -4,16 +4,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardHeader, CardFooter } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
-import { GraduationCap, AlertTriangle, User, Ticket, Mail, Lock, Check, Rocket, BookOpen, Target, Users } from 'lucide-react';
+import { GraduationCap, AlertTriangle, User, Mail, Lock, Check, Rocket, BookOpen, Target, Users, Sparkles, Award, TrendingUp } from 'lucide-react';
 
 export default function RegisterStudent() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    phone: '',
-    studentId: ''
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -84,215 +82,241 @@ export default function RegisterStudent() {
   };
 
   return (
-    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="max-w-lg mx-auto px-2 sm:px-4">
-        <div className="flex items-center justify-center min-h-[90vh]">
-        <Card className="w-full max-w-lg mx-4 shadow-2xl border-0">
-          {/* Header Section */}
-          <CardHeader className="text-center pb-2">
-            <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg">
-                <GraduationCap className="w-10 h-10 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          {/* Left Side - Benefits */}
+          <div className="hidden lg:block space-y-8 pt-12">
+            {/* Main Heading */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-14 h-14 bg-gradient-to-r from-emerald-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <GraduationCap className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">FlashLearn</div>
+              </div>
+              <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                Start Your Learning<br/>Journey Today
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-300">
+                Join thousands of students already learning with our interactive flashcards and smart study tools.
+              </p>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">10K+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Students</div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">5K+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Decks</div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">500+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Teachers</div>
               </div>
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
-              Join as Student
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Start your learning journey with us
-            </p>
-          </CardHeader>
 
-          {/* Error Message */}
-          {error && (
-            <div className="mx-6 mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-              <div className="flex items-center gap-2 text-red-700 dark:text-red-400 text-sm">
-                <AlertTriangle className="w-4 h-4" />
-                {error}
-              </div>
-            </div>
-          )}
-
-          {/* Registration Form */}
-          <form onSubmit={handleSubmit} className="space-y-5 px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input 
-                label="Full Name" 
-                value={formData.name} 
-                onChange={(e) => handleChange('name', e.target.value)} 
-                placeholder="Nguyen Van A" 
-                required
-                icon={<User className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
-              />
-              
-              <Input 
-                label="Student ID (Optional)" 
-                value={formData.studentId} 
-                onChange={(e) => handleChange('studentId', e.target.value)} 
-                placeholder="SV001" 
-                icon={<Ticket className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-
-            <Input 
-              label="Email Address" 
-              value={formData.email} 
-              onChange={(e) => handleChange('email', e.target.value)} 
-              placeholder="you@example.com" 
-              type="email"
-              required
-              icon={<Mail className="w-4 h-4" />}
-              className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Input 
-                  label="Password" 
-                  value={formData.password} 
-                  onChange={(e) => handleChange('password', e.target.value)} 
-                  placeholder="••••••••" 
-                  type="password"
-                  required
-                  icon={<Lock className="w-4 h-4" />}
-                  className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
-                />
-                
-                {/* Password Strength Indicator */}
-                {formData.password && (
-                  <div className="mt-2">
-                    <div className="flex gap-1 mb-1">
-                      {[1, 2, 3].map((index) => (
-                        <div
-                          key={index}
-                          className={`flex-1 h-1 rounded-full ${
-                            passwordStrength.strong ? 'bg-green-500' :
-                            passwordStrength.medium ? 'bg-yellow-500' :
-                            passwordStrength.weak ? 'bg-red-500' : 'bg-gray-200'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      {passwordStrength.strong ? 'Strong password' :
-                       passwordStrength.medium ? 'Medium strength' :
-                       passwordStrength.weak ? 'Weak password' :
-                       'At least 6 characters with uppercase, lowercase, and numbers'}
-                    </p>
+            {/* Benefits Grid */}
+            <div className="space-y-4">
+              {[
+                { icon: <Sparkles className="w-6 h-6" />, title: 'Interactive Learning', desc: 'Engage with AI-powered study tools' },
+                { icon: <Target className="w-6 h-6" />, title: 'Track Progress', desc: 'Monitor your learning journey' },
+                { icon: <TrendingUp className="w-6 h-6" />, title: 'Improve Performance', desc: 'Boost your grades with smart revision' },
+                { icon: <Users className="w-6 h-6" />, title: 'Join Community', desc: 'Connect with fellow learners' }
+              ].map((benefit, idx) => (
+                <div key={idx} className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-100 to-cyan-100 dark:from-emerald-900/30 dark:to-cyan-900/30 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    {benefit.icon}
                   </div>
-                )}
-              </div>
-
-              <Input 
-                label="Confirm Password" 
-                value={formData.confirmPassword} 
-                onChange={(e) => handleChange('confirmPassword', e.target.value)} 
-                placeholder="••••••••" 
-                type="password"
-                required
-                icon={<Check className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
-              />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">{benefit.title}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{benefit.desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {/* Terms and Conditions */}
-            <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
-              <input
-                type="checkbox"
-                checked={agreedToTerms}
-                onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="mt-1 w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
-              />
-              <label className="text-sm text-gray-600 dark:text-gray-400">
-                I agree to the{' '}
-                <Link to="/terms" className="text-green-600 dark:text-green-400 hover:underline font-medium">
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link to="/privacy" className="text-green-600 dark:text-green-400 hover:underline font-medium">
-                  Privacy Policy
-                </Link>
-              </label>
-            </div>
-
-            {/* Submit Button */}
-            <Button 
-              type="submit" 
-              className="w-full py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-              disabled={loading}
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Creating Account...
+            {/* Quote */}
+            <div className="bg-gradient-to-r from-emerald-500 to-cyan-600 p-6 rounded-3xl text-white shadow-xl">
+              <div className="flex items-start gap-4">
+                <Award className="w-8 h-8 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="text-lg font-medium mb-2">"The best investment you can make is in yourself."</p>
+                  <p className="text-emerald-100 text-sm">Start learning today and unlock your potential.</p>
                 </div>
-              ) : (
-                <div className="flex items-center justify-center gap-2">
-                  <Rocket className="w-4 h-4" />
-                  Create Student Account
-                </div>
-              )}
-            </Button>
-          </form>
-
-          {/* Divider */}
-          <div className="px-6 my-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Already have an account?</span>
               </div>
             </div>
           </div>
 
-          {/* Login Link */}
-          <CardFooter className="text-center">
-            <Link 
-              to="/login" 
-              className="inline-flex items-center gap-2 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium transition-colors duration-200"
-            >
-              ← Back to Sign In
-            </Link>
-          </CardFooter>
-        </Card>
-        </div>
+          {/* Right Side - Registration Form */}
+          <div className="w-full">
+            <Card className="w-full shadow-2xl border-0 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90">
+              <CardHeader className="text-center pb-6 pt-8">
+                <div className="flex justify-center mb-6">
+                  <div className="relative">
+                    <div className="w-20 h-20 bg-gradient-to-r from-emerald-500 to-cyan-600 rounded-3xl flex items-center justify-center shadow-xl">
+                      <GraduationCap className="w-10 h-10 text-white" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                      <Sparkles className="w-3 h-3 text-yellow-900" />
+                    </div>
+                  </div>
+                </div>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+                  Create Student Account
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Join thousands of students already learning
+                </p>
+              </CardHeader>
 
-        {/* Student Benefits */}
-        <div className="mt-8 sm:mt-12">
-        <h3 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">
-          Why Join as a Student?
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              icon: <BookOpen className="w-8 h-8 text-white" />,
-              title: 'Access to Courses',
-              description: 'Unlock unlimited access to all learning materials and flashcard decks'
-            },
-            {
-              icon: <Target className="w-8 h-8 text-white" />,
-              title: 'Track Progress',
-              description: 'Monitor your learning journey with detailed analytics and insights'
-            },
-            {
-              icon: <Users className="w-8 h-8 text-white" />,
-              title: 'Join Community',
-              description: 'Connect with fellow students and educators in our learning community'
-            }
-          ].map((benefit, index) => (
-            <div key={index} className="text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                {benefit.icon}
+              {/* Error Message */}
+              {error && (
+                <div className="mx-6 mb-6 p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg">
+                  <div className="flex items-center gap-2 text-red-700 dark:text-red-400 text-sm font-medium">
+                    <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                    {error}
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-5 px-6 pb-6">
+                <Input 
+                  label="Full Name" 
+                  value={formData.name} 
+                  onChange={(e) => handleChange('name', e.target.value)} 
+                  placeholder="Nguyen Van A" 
+                  required
+                  icon={<User className="w-4 h-4" />}
+                  className="transition-all duration-200"
+                />
+
+                <Input 
+                  label="Email Address" 
+                  value={formData.email} 
+                  onChange={(e) => handleChange('email', e.target.value)} 
+                  placeholder="you@example.com" 
+                  type="email"
+                  required
+                  icon={<Mail className="w-4 h-4" />}
+                  className="transition-all duration-200"
+                />
+
+                <div>
+                  <Input 
+                    label="Password" 
+                    value={formData.password} 
+                    onChange={(e) => handleChange('password', e.target.value)} 
+                    placeholder="••••••••" 
+                    type="password"
+                    required
+                    icon={<Lock className="w-4 h-4" />}
+                    className="transition-all duration-200"
+                  />
+                  
+                  {formData.password && (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex gap-1">
+                        {[1, 2, 3].map((index) => (
+                          <div
+                            key={index}
+                            className={`flex-1 h-2 rounded-full transition-all duration-300 ${
+                              passwordStrength.strong ? 'bg-emerald-500' :
+                              passwordStrength.medium ? 'bg-yellow-500' :
+                              passwordStrength.weak ? 'bg-red-500' : 'bg-gray-200 dark:bg-gray-700'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className={`text-xs font-medium ${
+                        passwordStrength.strong ? 'text-emerald-600 dark:text-emerald-400' :
+                        passwordStrength.medium ? 'text-yellow-600 dark:text-yellow-400' :
+                        passwordStrength.weak ? 'text-red-600 dark:text-red-400' :
+                        'text-gray-500'
+                      }`}>
+                        {passwordStrength.strong ? '✓ Strong password' :
+                         passwordStrength.medium ? '⚠ Medium strength' :
+                         passwordStrength.weak ? '✗ Weak password' :
+                         'At least 6 characters with uppercase, lowercase, and numbers'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <Input 
+                  label="Confirm Password" 
+                  value={formData.confirmPassword} 
+                  onChange={(e) => handleChange('confirmPassword', e.target.value)} 
+                  placeholder="••••••••" 
+                  type="password"
+                  required
+                  icon={<Check className="w-4 h-4" />}
+                  className="transition-all duration-200"
+                />
+
+                {/* Terms */}
+                <div className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-800">
+                  <input
+                    type="checkbox"
+                    checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    className="mt-1 w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                  />
+                  <label className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                    I agree to the{' '}
+                    <Link to="/terms" className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium">
+                      Terms of Service
+                    </Link>{' '}
+                    and{' '}
+                    <Link to="/privacy" className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium">
+                      Privacy Policy
+                    </Link>
+                  </label>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Creating Account...
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <Rocket className="w-5 h-5" />
+                      Create Student Account
+                    </div>
+                  )}
+                </Button>
+              </form>
+
+              <div className="px-6 pb-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white dark:bg-gray-800 text-gray-500">Already have an account?</span>
+                  </div>
+                </div>
               </div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{benefit.title}</h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{benefit.description}</p>
-            </div>
-          ))}
-        </div>
+
+              <CardFooter className="text-center pb-8">
+                <Link 
+                  to="/login" 
+                  className="inline-flex items-center gap-2 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium transition-colors"
+                >
+                  ← Back to Sign In
+                </Link>
+              </CardFooter>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

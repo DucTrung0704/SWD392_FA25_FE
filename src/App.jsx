@@ -13,7 +13,8 @@ function Layout({ children }) {
   
   // Check if current route is a dashboard route that should use sidebar layout
   const isDashboardRoute = location.pathname.startsWith('/dashboard/teacher') || 
-                          location.pathname.startsWith('/dashboard/admin');
+                          location.pathname.startsWith('/dashboard/admin') ||
+                          location.pathname.startsWith('/dashboard/student');
   
   // If it's a dashboard route, don't show navbar and footer (they're handled by the layout components)
   if (isDashboardRoute) {

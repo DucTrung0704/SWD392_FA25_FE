@@ -24,7 +24,7 @@ export default function StudentDashboard() {
       icon: 'study',
       color: 'from-blue-500 to-blue-600',
       bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-      link: '/study'
+      link: '/dashboard/student/study'
     },
     {
       title: 'Smart Review',
@@ -48,7 +48,7 @@ export default function StudentDashboard() {
       icon: 'progress',
       color: 'from-orange-500 to-orange-600',
       bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-      link: '/progress'
+      link: '/dashboard/student/progress'
     },
     {
       title: 'Flashcards',
@@ -231,7 +231,7 @@ export default function StudentDashboard() {
               <p className="text-blue-100">Continue from where you left off or start a new deck</p>
             </div>
             <Link 
-              to="/study" 
+              to="/dashboard/student/study" 
               className="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors duration-200"
             >
               Start Studying

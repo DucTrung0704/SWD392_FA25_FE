@@ -4,23 +4,18 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardHeader, CardFooter } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
-import { UserCheck, Clock, AlertTriangle, User, Building, Mail, Target, Calendar, Lock, Check, Clipboard, ScrollText, GraduationCap, Phone, FileText, BookOpen, BarChart3, Users } from 'lucide-react';
+import { UserCheck, AlertTriangle, User, Mail, Lock, Check, BookOpen, BarChart3, Users, Sparkles, Award, TrendingUp, Star, Rocket } from 'lucide-react';
 
 export default function RegisterTeacher() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    verificationInfo: '',
-    specialization: '',
-    experience: '',
-    institution: ''
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [verificationType, setVerificationType] = useState('certificate');
   const navigate = useNavigate();
 
   const handleChange = (field, value) => {
@@ -43,16 +38,12 @@ export default function RegisterTeacher() {
       setError('Please enter a valid email address');
       return false;
     }
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
-      return false;
-    }
-    if (!formData.verificationInfo.trim()) {
-      setError('Please provide verification information');
       return false;
     }
     if (!agreedToTerms) {
@@ -70,20 +61,10 @@ export default function RegisterTeacher() {
 
     setLoading(true);
     try {
-      await authService.registerTeacher(
-        formData.name, 
-        formData.email, 
-        formData.password, 
-        formData.verificationInfo,
-        formData.specialization,
-        formData.experience,
-        formData.institution
-      );
-      navigate('/pending-approval', { 
+      await authService.registerTeacher(formData.name, formData.email, formData.password);
+      navigate('/login', { 
         state: { 
-          email: formData.email,
-          role: 'teacher',
-          message: 'Your teacher account is pending admin approval. You will receive an email once approved.'
+          message: 'Registration successful! Please login to continue.'
         }
       });
     } catch (err) {
@@ -93,20 +74,81 @@ export default function RegisterTeacher() {
     }
   }
 
-  const verificationTypes = [
-    { value: 'certificate', label: 'Teaching Certificate', icon: <ScrollText className="w-4 h-4" /> },
-    { value: 'degree', label: 'Academic Degree', icon: <GraduationCap className="w-4 h-4" /> },
-    { value: 'phone', label: 'Phone Verification', icon: <Phone className="w-4 h-4" /> },
-    { value: 'other', label: 'Other Document', icon: <FileText className="w-4 h-4" /> }
-  ];
-
   return (
-    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="max-w-2xl mx-auto px-2 sm:px-4">
-        <div className="flex items-center justify-center min-h-[90vh]">
-        <Card className="w-full max-w-2xl mx-4 shadow-2xl border-0">
-          {/* Header Section */}
-          <CardHeader className="text-center pb-2">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          {/* Left Side - Benefits */}
+          <div className="hidden lg:block space-y-8 pt-12">
+            {/* Main Heading */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <UserCheck className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-sm font-semibold text-purple-600 dark:text-purple-400">FlashLearn</div>
+              </div>
+              <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                Share Your Knowledge<br/>With Students Worldwide
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-300">
+                Join our community of educators and create interactive learning experiences for your students.
+              </p>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">500+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Teachers</div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">5K+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Courses</div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">10K+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Students</div>
+              </div>
+            </div>
+
+            {/* Benefits Grid */}
+            <div className="space-y-4">
+              {[
+                { icon: <BookOpen className="w-6 h-6" />, title: 'Create Content', desc: 'Build and share interactive courses' },
+                { icon: <BarChart3 className="w-6 h-6" />, title: 'Track Performance', desc: 'Monitor student progress' },
+                { icon: <Star className="w-6 h-6" />, title: 'Build Reputation', desc: 'Establish your expertise' },
+                { icon: <Users className="w-6 h-6" />, title: 'Engage Students', desc: 'Connect with your learners' }
+              ].map((benefit, idx) => (
+                <div key={idx} className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-400">
+                    {benefit.icon}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">{benefit.title}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{benefit.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quote */}
+            <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-6 rounded-3xl text-white shadow-xl">
+              <div className="flex items-start gap-4">
+                <Award className="w-8 h-8 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="text-lg font-medium mb-2">"Teaching is the greatest act of optimism."</p>
+                  <p className="text-purple-100 text-sm">Join us and make a difference in student learning.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side - Registration Form */}
+          <div className="w-full">
+            <Card className="w-full shadow-2xl border-0 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90">
+              {/* Header Section */}
+              <CardHeader className="text-center pb-2 pt-8">
             <div className="flex justify-center mb-4">
               <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg">
                 <UserCheck className="w-10 h-10 text-white" />
@@ -119,20 +161,6 @@ export default function RegisterTeacher() {
               Create and share knowledge with students worldwide
             </p>
           </CardHeader>
-
-          {/* Approval Notice */}
-          <div className="mx-6 mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
-            <div className="flex items-start gap-3">
-              <Clock className="w-5 h-5 mt-0.5 text-yellow-600" />
-              <div>
-                <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">Admin Approval Required</h4>
-                <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                  Your account will be reviewed by our team before you can create and manage flashcards. 
-                  This process typically takes 1-2 business days.
-                </p>
-              </div>
-            </div>
-          </div>
 
           {/* Error Message */}
           {error && (
@@ -147,26 +175,15 @@ export default function RegisterTeacher() {
           {/* Registration Form */}
           <form onSubmit={handleSubmit} className="space-y-5 px-6">
             {/* Personal Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input 
-                label="Full Name" 
-                value={formData.name} 
-                onChange={(e) => handleChange('name', e.target.value)} 
-                placeholder="Tran Thi B" 
-                required
-                icon={<User className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
-              />
-              
-              <Input 
-                label="Institution" 
-                value={formData.institution} 
-                onChange={(e) => handleChange('institution', e.target.value)} 
-                placeholder="University / School" 
-                icon={<Building className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
+            <Input 
+              label="Full Name" 
+              value={formData.name} 
+              onChange={(e) => handleChange('name', e.target.value)} 
+              placeholder="Tran Thi B" 
+              required
+              icon={<User className="w-4 h-4" />}
+              className="transition-all duration-200"
+            />
 
             <Input 
               label="Email Address" 
@@ -176,29 +193,8 @@ export default function RegisterTeacher() {
               type="email"
               required
               icon={<Mail className="w-4 h-4" />}
-              className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
+              className="transition-all duration-200"
             />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input 
-                label="Specialization" 
-                value={formData.specialization} 
-                onChange={(e) => handleChange('specialization', e.target.value)} 
-                placeholder="Mathematics, Science, etc." 
-                icon={<Target className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
-              />
-              
-              <Input 
-                label="Years of Experience" 
-                value={formData.experience} 
-                onChange={(e) => handleChange('experience', e.target.value)} 
-                placeholder="5" 
-                type="number"
-                icon={<Calendar className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
 
             {/* Password Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -210,7 +206,7 @@ export default function RegisterTeacher() {
                 type="password"
                 required
                 icon={<Lock className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
+                className="transition-all duration-200"
               />
 
               <Input 
@@ -221,48 +217,7 @@ export default function RegisterTeacher() {
                 type="password"
                 required
                 icon={<Check className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-
-            {/* Verification Section */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Verification Type
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {verificationTypes.map((type) => (
-                    <button
-                      key={type.value}
-                      type="button"
-                      onClick={() => setVerificationType(type.value)}
-                      className={`p-3 rounded-xl border-2 text-center transition-all duration-200 ${
-                        verificationType === type.value
-                          ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
-                          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-400'
-                      }`}
-                    >
-                      <div className="mb-1">{type.icon}</div>
-                      <div className="text-xs font-medium">{type.label}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <Input 
-                label="Verification Information" 
-                value={formData.verificationInfo} 
-                onChange={(e) => handleChange('verificationInfo', e.target.value)} 
-                placeholder={
-                  verificationType === 'certificate' ? 'Certificate number or upload reference' :
-                  verificationType === 'degree' ? 'Degree details and institution' :
-                  verificationType === 'phone' ? 'Phone number for verification' :
-                  'Please provide relevant verification details'
-                }
-                required
-                icon={<Clipboard className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-purple-500"
+                className="transition-all duration-200"
               />
             </div>
 
@@ -327,42 +282,9 @@ export default function RegisterTeacher() {
             >
               ← Back to Sign In
             </Link>
-          </CardFooter>
-        </Card>
-        </div>
-
-        {/* Teacher Benefits */}
-        <div className="mt-8 sm:mt-12">
-        <h3 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">
-          Benefits for Educators
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              icon: <BookOpen className="w-8 h-8 text-white" />,
-              title: 'Create Content',
-              description: 'Build and share your own flashcard decks with students'
-            },
-            {
-              icon: <BarChart3 className="w-8 h-8 text-white" />,
-              title: 'Track Performance',
-              description: 'Monitor student progress and engagement with your materials'
-            },
-            {
-              icon: <Users className="w-8 h-8 text-white" />,
-              title: 'Build Reputation',
-              description: 'Establish yourself as an expert educator in your field'
-            }
-          ].map((benefit, index) => (
-            <div key={index} className="text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                {benefit.icon}
-              </div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{benefit.title}</h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{benefit.description}</p>
-            </div>
-          ))}
-        </div>
+              </CardFooter>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
