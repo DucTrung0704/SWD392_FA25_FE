@@ -38,6 +38,7 @@ import StudentProgress from '../views/Student/Progress';
 // Teacher Views
 import TeacherStudents from '../views/Teacher/Students';
 import TeacherFlashcards from '../views/Teacher/Flashcards';
+import TeacherDeckDetail from '../views/Teacher/DeckDetail';
 import TeacherExams from '../views/Teacher/Exams';
 import TeacherClasses from '../views/Teacher/Classes';
 import TeacherAnalytics from '../views/Teacher/Analytics';
@@ -94,6 +95,7 @@ export function AppRouter() {
         <Route index element={<TeacherDashboard />} />
         <Route path="students" element={<TeacherStudents />} />
         <Route path="flashcards" element={<TeacherFlashcards />} />
+        <Route path="flashcards/:id" element={<TeacherDeckDetail />} />
         <Route path="exams" element={<TeacherExams />} />
         <Route path="classes" element={<TeacherClasses />} />
         <Route path="analytics" element={<TeacherAnalytics />} />

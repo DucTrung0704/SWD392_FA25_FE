@@ -364,6 +364,179 @@ const mockDecks = [
 ];
 
 export const flashcardService = {
+  // Get all decks from API
+  getAllDecks: async () => {
+    try {
+      const token = localStorage.getItem('app_auth_user_token') || 
+                    localStorage.getItem('accessToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch('/api/deck/all', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      // API returns array directly, not { decks: [...] }
+      return Array.isArray(data) ? data : (data.decks || []);
+    } catch (error) {
+      console.error('Error fetching decks:', error);
+      throw error;
+    }
+  },
+
+  // Get deck by ID from API
+  getDeckById: async (id) => {
+    try {
+      const token = localStorage.getItem('app_auth_user_token') || 
+                    localStorage.getItem('accessToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`/api/deck/all/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Deck not found');
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching deck:', error);
+      throw error;
+    }
+  },
+
+  // Create new deck (Teacher/Admin only)
+  createDeck: async (deckData) => {
+    try {
+      const token = localStorage.getItem('app_auth_user_token') || 
+                    localStorage.getItem('accessToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch('/api/deck/teacher/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(deckData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error creating deck:', error);
+      throw error;
+    }
+  },
+
+  // Update deck (Teacher/Admin only)
+  updateDeck: async (id, deckData) => {
+    try {
+      const token = localStorage.getItem('app_auth_user_token') || 
+                    localStorage.getItem('accessToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      console.log('Updating deck with ID:', id);
+      console.log('Update data:', deckData);
+
+      const response = await fetch(`/api/deck/teacher/update/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(deckData),
+      });
+
+      console.log('Update response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Update error response:', errorData);
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Update success:', data);
+      return data;
+    } catch (error) {
+      console.error('Error updating deck:', error);
+      throw error;
+    }
+  },
+
+  // Delete deck (Teacher/Admin only)
+  deleteDeck: async (id) => {
+    try {
+      const token = localStorage.getItem('app_auth_user_token') || 
+                    localStorage.getItem('accessToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      console.log('Deleting deck with ID:', id);
+
+      const response = await fetch(`/api/deck/teacher/delete/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      console.log('Delete response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Delete error response:', errorData);
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Delete success:', data);
+      return data;
+    } catch (error) {
+      console.error('Error deleting deck:', error);
+      throw error;
+    }
+  },
+  
+  // Mock functions for student dashboard (keep for backward compatibility)
   getFeatured: async () => {
     return [...mockDecks].sort((a, b) => b.views + b.likes + b.completionRate - (a.views + a.likes + a.completionRate));
   },
@@ -374,24 +547,6 @@ export const flashcardService = {
     const found = mockDecks.find(d => d.id === id);
     if (!found) throw new Error('Deck not found');
     return found;
-  },
-  createDeck: async (deck) => {
-    const id = `d${Date.now()}`;
-    const newDeck = { ...deck, id, cards: [], views: 0, likes: 0, completionRate: 0 };
-    mockDecks.push(newDeck);
-    return newDeck;
-  },
-  updateDeck: async (id, payload) => {
-    const idx = mockDecks.findIndex(d => d.id === id);
-    if (idx === -1) throw new Error('Deck not found');
-    mockDecks[idx] = { ...mockDecks[idx], ...payload };
-    return mockDecks[idx];
-  },
-  deleteDeck: async (id) => {
-    const idx = mockDecks.findIndex(d => d.id === id);
-    if (idx === -1) throw new Error('Deck not found');
-    const [removed] = mockDecks.splice(idx, 1);
-    return removed;
   },
   addFlashcard: async (deckId, card) => {
     const deck = mockDecks.find(d => d.id === deckId);
