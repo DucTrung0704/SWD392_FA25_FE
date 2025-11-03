@@ -6,7 +6,6 @@ import GuestRoute from '../components/GuestRoute';
 // Layouts
 import TeacherLayout from '../components/layouts/TeacherLayout';
 import AdminLayout from '../components/layouts/AdminLayout';
-import StudentLayout from '../components/layouts/StudentLayout';
 
 // Views
 import Home from '../views/Home';
@@ -101,18 +100,31 @@ export function AppRouter() {
         <Route path="settings" element={<TeacherSettings />} />
       </Route>
       
+      {/* Student Dashboard Routes - Using common Navbar */}
       <Route
         path="/dashboard/student"
         element={
           <RoleRoute roles={["Student"]}>
-            <StudentLayout />
+            <StudentDashboard />
           </RoleRoute>
         }
-      >
-        <Route index element={<StudentDashboard />} />
-        <Route path="study" element={<StudentStudy />} />
-        <Route path="progress" element={<StudentProgress />} />
-      </Route>
+      />
+      <Route
+        path="/dashboard/student/study"
+        element={
+          <RoleRoute roles={["Student"]}>
+            <StudentStudy />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/dashboard/student/progress"
+        element={
+          <RoleRoute roles={["Student"]}>
+            <StudentProgress />
+          </RoleRoute>
+        }
+      />
       
       {/* Protected Profile Route for logged-in users */}
       <Route

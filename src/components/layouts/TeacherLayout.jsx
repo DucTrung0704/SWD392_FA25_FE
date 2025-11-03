@@ -82,8 +82,20 @@ const TeacherLayout = () => {
           {/* User info */}
           <div className="border-t border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">{user?.name?.charAt(0) || 'T'}</span>
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center overflow-hidden">
+                {user?.avatar ? (
+                  <img 
+                    src={user.avatar.startsWith('http') ? user.avatar : user.avatar}
+                    alt={user.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = `<span class="text-white font-bold text-sm">${user?.name?.charAt(0) || 'T'}</span>`;
+                    }}
+                  />
+                ) : (
+                  <span className="text-white font-bold text-sm">{user?.name?.charAt(0) || 'T'}</span>
+                )}
               </div>
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Teacher'}</p>

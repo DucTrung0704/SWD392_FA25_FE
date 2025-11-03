@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import RoleBadge from '../RoleBadge';
 import Icon from '../ui/Icon';
@@ -7,7 +7,13 @@ import Icon from '../ui/Icon';
 export default function StudentLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard/student', icon: 'home' },
@@ -93,7 +99,7 @@ export default function StudentLayout() {
           {/* Logout */}
           <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white rounded-lg transition-colors duration-200"
             >
               <Icon name="logout" className="w-5 h-5" />

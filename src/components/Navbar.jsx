@@ -69,8 +69,20 @@ export default function Navbar() {
                   to="/profile" 
                   className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    {user.name?.charAt(0).toUpperCase() || 'U'}
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                    {user.avatar ? (
+                      <img 
+                        src={user.avatar.startsWith('http') ? user.avatar : user.avatar}
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.parentElement.innerHTML = `<span class="text-sm font-bold text-white">${user.name?.charAt(0).toUpperCase() || 'U'}</span>`;
+                        }}
+                      />
+                    ) : (
+                      user.name?.charAt(0).toUpperCase() || 'U'
+                    )}
                   </div>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-24 truncate">
                     {user.name || 'User'}
@@ -81,9 +93,21 @@ export default function Navbar() {
               {/* Mobile User Avatar Only */}
               <Link 
                 to="/profile" 
-                className="sm:hidden w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                className="sm:hidden w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold overflow-hidden"
               >
-                {user.name?.charAt(0).toUpperCase() || 'U'}
+                {user.avatar ? (
+                  <img 
+                    src={user.avatar.startsWith('http') ? user.avatar : user.avatar}
+                    alt={user.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = `<span class="text-sm font-bold text-white">${user.name?.charAt(0).toUpperCase() || 'U'}</span>`;
+                    }}
+                  />
+                ) : (
+                  user.name?.charAt(0).toUpperCase() || 'U'
+                )}
               </Link>
             </div>
           ) : (

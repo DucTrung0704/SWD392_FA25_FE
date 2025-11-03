@@ -1,17 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, Bell, Lock, Settings as SettingsIcon, Shield } from 'lucide-react';
+import { authService } from '../../services/authService';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function TeacherSettings() {
+  const { user, refresh } = useAuth();
+  const fileInputRef = useRef(null);
+  
   const [activeTab, setActiveTab] = useState('profile');
-  const [profileData, setProfileData] = useState({
-    name: 'Dr. Nguyen Van A',
-    email: 'teacher@school.edu',
-    phone: '+84 123 456 789',
-    department: 'Mathematics',
-    bio: 'Experienced mathematics teacher with 10+ years of teaching experience.',
-    office: 'Room 201',
-    officeHours: 'Mon-Fri 9:00-17:00'
-  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
+  
+  // Profile data from API
+  const [profileData, setProfileData] = useState(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [avatar, setAvatar] = useState('');
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [role, setRole] = useState('');
+  const [createdAt, setCreatedAt] = useState('');
+  
+  // Keep existing states
+  const [phone, setPhone] = useState('');
+  const [department, setDepartment] = useState('Mathematics');
+  const [bio, setBio] = useState('');
+  const [office, setOffice] = useState('');
+  const [officeHours, setOfficeHours] = useState('');
 
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
@@ -38,8 +56,146 @@ export default function TeacherSettings() {
     { id: 'security', label: 'Security', icon: 'shield' }
   ];
 
-  const handleProfileUpdate = (field, value) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+  // Helper function to get full avatar URL
+  const getAvatarUrl = (avatarPath) => {
+    if (!avatarPath) return '';
+    if (avatarPath.startsWith('http://') || avatarPath.startsWith('https://')) {
+      return avatarPath;
+    }
+    if (avatarPath.startsWith('/')) {
+      return `${window.location.origin}${avatarPath}`;
+    }
+    return avatarPath;
+  };
+
+  // Load profile from API on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setIsLoading(true);
+        const profile = await authService.getUserProfile();
+        const avatarUrl = getAvatarUrl(profile.avatar);
+        
+        setProfileData(profile);
+        setName(profile.name || '');
+        setEmail(profile.email || '');
+        setAvatar(profile.avatar || '');
+        setAvatarPreview(avatarUrl);
+        setRole(profile.role || '');
+        setCreatedAt(profile.createdAt || '');
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+        const storedUser = authService.currentUser();
+        if (storedUser) {
+          const avatarUrl = getAvatarUrl(storedUser.avatar);
+          
+          setProfileData(storedUser);
+          setName(storedUser.name || '');
+          setEmail(storedUser.email || '');
+          setAvatar(storedUser.avatar || '');
+          setAvatarPreview(avatarUrl);
+          setRole(storedUser.role || '');
+          setCreatedAt(storedUser.createdAt || '');
+        }
+        setIsLoading(false);
+        setMessage('Failed to load profile from server. Showing cached data.');
+        setMessageType('error');
+        setTimeout(() => setMessage(''), 3000);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  // Handle file change
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setMessage('Please select an image file');
+        setMessageType('error');
+        setTimeout(() => setMessage(''), 3000);
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage('File size must be less than 5MB');
+        setMessageType('error');
+        setTimeout(() => setMessage(''), 3000);
+        return;
+      }
+      
+      setAvatarFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setAvatarPreview(previewUrl);
+    }
+  };
+
+  // Handle profile update
+  const handleProfileUpdate = async () => {
+    try {
+      setIsUpdating(true);
+      
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('email', email);
+      
+      if (avatarFile) {
+        formData.append('avatar', avatarFile);
+      }
+      
+      const data = await authService.updateUserProfile(formData);
+      
+      if (data.user) {
+        const avatarUrl = getAvatarUrl(data.user.avatar);
+        
+        setProfileData(data.user);
+        setName(data.user.name);
+        setEmail(data.user.email);
+        setAvatar(data.user.avatar);
+        setAvatarPreview(avatarUrl);
+        setRole(data.user.role);
+        setCreatedAt(data.user.createdAt);
+      }
+      
+      refresh();
+      
+      setMessage(data.message || 'Profile updated successfully!');
+      setMessageType('success');
+      setIsEditing(false);
+      setAvatarFile(null);
+      
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      setMessage(error.message || 'Failed to update profile. Please try again.');
+      setMessageType('error');
+      setTimeout(() => setMessage(''), 5000);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    const currentUser = profileData || user || authService.currentUser();
+    const avatarUrl = getAvatarUrl(currentUser?.avatar);
+    
+    setName(currentUser?.name || '');
+    setEmail(currentUser?.email || '');
+    setAvatar(currentUser?.avatar || '');
+    setAvatarPreview(avatarUrl);
+    setAvatarFile(null);
+    setIsEditing(false);
+    setMessage('');
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleNotificationToggle = (setting) => {
@@ -95,19 +251,111 @@ export default function TeacherSettings() {
             {/* Profile Tab */}
             {activeTab === 'profile' && (
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Profile Information</h2>
+                {/* Success/Error Message */}
+                {message && (
+                  <div className={`mb-6 p-4 rounded-xl border ${
+                    messageType === 'success' 
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400'
+                      : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400'
+                  }`}>
+                    {message}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Profile Information</h2>
+                  {!isEditing ? (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                    >
+                      Edit Profile
+                    </button>
+                  ) : (
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={handleCancelEdit}
+                        disabled={isUpdating}
+                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleProfileUpdate}
+                        disabled={isUpdating}
+                        className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      >
+                        {isUpdating ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block mr-2"></div>
+                            Saving...
+                          </>
+                        ) : (
+                          'Save Changes'
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
                 
                 <div className="space-y-6">
                   <div className="flex items-center space-x-6">
-                    <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-2xl">{profileData.name.charAt(0)}</span>
+                    <div className="relative">
+                      <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden">
+                        {avatarPreview ? (
+                          <img 
+                            src={avatarPreview}
+                            alt={name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              setAvatarPreview('');
+                            }}
+                          />
+                        ) : (
+                          <span className="text-white font-bold text-2xl">
+                            {name?.charAt(0)?.toUpperCase() || 'U'}
+                          </span>
+                        )}
+                      </div>
+                      {isEditing && (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute -bottom-1 -right-1 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                        </button>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
                     </div>
                     <div>
-                      <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        Change Avatar
-                      </button>
+                      {isEditing ? (
+                        <>
+                          <button 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                          >
+                            Choose File
+                          </button>
+                          {avatarFile && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              {avatarFile.name}
+                            </p>
+                          )}
+                        </>
+                      ) : null}
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        JPG, PNG or GIF. Max size 2MB.
+                        JPG, PNG or GIF. Max size 5MB.
                       </p>
                     </div>
                   </div>
@@ -119,9 +367,10 @@ export default function TeacherSettings() {
                       </label>
                       <input
                         type="text"
-                        value={profileData.name}
-                        onChange={(e) => handleProfileUpdate('name', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        disabled={!isEditing}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                       />
                     </div>
 
@@ -131,84 +380,42 @@ export default function TeacherSettings() {
                       </label>
                       <input
                         type="email"
-                        value={profileData.email}
-                        onChange={(e) => handleProfileUpdate('email', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={!isEditing}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        value={profileData.phone}
-                        onChange={(e) => handleProfileUpdate('phone', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Department
-                      </label>
-                      <select
-                        value={profileData.department}
-                        onChange={(e) => handleProfileUpdate('department', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="Mathematics">Mathematics</option>
-                        <option value="Biology">Biology</option>
-                        <option value="Physics">Physics</option>
-                        <option value="Chemistry">Chemistry</option>
-                        <option value="English">English</option>
-                        <option value="History">History</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Office Location
+                        Role
                       </label>
                       <input
                         type="text"
-                        value={profileData.office}
-                        onChange={(e) => handleProfileUpdate('office', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={role}
+                        disabled
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Office Hours
-                      </label>
-                      <input
-                        type="text"
-                        value={profileData.officeHours}
-                        onChange={(e) => handleProfileUpdate('officeHours', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Bio
-                    </label>
-                    <textarea
-                      rows={4}
-                      value={profileData.bio}
-                      onChange={(e) => handleProfileUpdate('bio', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                      placeholder="Tell us about yourself..."
-                    />
-                  </div>
-
-                  <div className="flex justify-end">
-                    <button className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
-                      Save Changes
-                    </button>
+                    {createdAt && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Member Since
+                        </label>
+                        <input
+                          type="text"
+                          value={new Date(createdAt).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric'
+                          })}
+                          disabled
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -60,12 +60,22 @@ export const authService = {
         verified: true,
       };
 
-      // Store token separately
+      // Store all tokens from API response
       if (data.token) {
         setStoredToken(data.token);
+        localStorage.setItem('accessToken', data.token);
       }
-
+      if (data.accessToken) {
+        localStorage.setItem('accessToken', data.accessToken);
+      }
+      if (data.refreshToken) {
+        localStorage.setItem('refreshToken', data.refreshToken);
+      }
+      
+      // Store user data
       setStoredUser(user);
+      localStorage.setItem('user', JSON.stringify(user));
+      
       console.log('Login successful, user role:', user.role);
       return user;
     } catch (error) {
@@ -194,11 +204,146 @@ export const authService = {
   },
 
   logout: async () => {
+    // Remove all auth-related data from localStorage
     localStorage.removeItem(AUTH_KEY);
     localStorage.removeItem(`${AUTH_KEY}_token`);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('testDrives');
+    
+    // Clear all items that start with app_auth or _mui_
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('app_auth') || key.startsWith('_mui_') || key.includes('telemetry'))) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    console.log('Logout: All auth data cleared from localStorage');
   },
 
   getToken: () => getStoredToken(),
 
   currentUser: () => getStoredUser(),
+  
+  // Get user profile from API
+  getUserProfile: async () => {
+    try {
+      const token = getStoredToken() || localStorage.getItem('accessToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/user/profile`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        throw new Error('Invalid response from server');
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch profile');
+      }
+
+      // Transform API response
+      const user = {
+        id: data.user._id || data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        role: data.user.role,
+        avatar: data.user.avatar,
+        createdAt: data.user.createdAt,
+        verified: true,
+      };
+
+      // Update stored user
+      setStoredUser(user);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      console.log('Profile fetched successfully:', user);
+      return user;
+    } catch (error) {
+      console.error('Get profile error:', error);
+      throw new Error(error.message || 'Failed to fetch profile');
+    }
+  },
+
+  // Update user profile with multipart/form-data
+  updateUserProfile: async (formData) => {
+    try {
+      const token = getStoredToken() || localStorage.getItem('accessToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/user/update`, {
+        method: 'PUT',
+        headers: {
+          // Don't set Content-Type - browser will set it with boundary for multipart/form-data
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData, // FormData object
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        throw new Error('Invalid response from server');
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update profile');
+      }
+
+      // Transform and update stored user
+      if (data.user) {
+        const user = {
+          id: data.user._id || data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+          avatar: data.user.avatar,
+          createdAt: data.user.createdAt,
+          verified: true,
+        };
+
+        setStoredUser(user);
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        // Dispatch event to notify other components
+        window.dispatchEvent(new Event('authStateChanged'));
+        
+        console.log('Profile updated successfully:', user);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Update profile error:', error);
+      throw new Error(error.message || 'Failed to update profile');
+    }
+  },
+  
+  // Clear all localStorage (for complete cleanup)
+  clearAllStorage: () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    console.log('All storage cleared');
+  },
 };

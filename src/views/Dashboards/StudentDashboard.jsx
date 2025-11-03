@@ -75,7 +75,7 @@ export default function StudentDashboard() {
   ];
 
   return (
-    <div className="pt-2 sm:pt-4 lg:pt-6 pb-10">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
