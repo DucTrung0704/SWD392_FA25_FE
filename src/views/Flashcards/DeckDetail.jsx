@@ -19,8 +19,25 @@ export default function DeckDetail() {
   const loadDeck = async () => {
     try {
       setLoading(true);
-      const deckData = await flashcardService.getDeck(id);
-      setDeck(deckData);
+      const deckData = await flashcardService.getDeckById(id);
+      const cards = await flashcardService.getFlashcardsByDeckId(id);
+      const normalized = {
+        id: deckData._id || deckData.id,
+        title: deckData.title,
+        description: deckData.description,
+        tags: Array.isArray(deckData.tags) ? deckData.tags : [],
+        difficulty: (deckData.difficulty || 'beginner').toLowerCase(),
+        stats: { views: deckData.views || 0 },
+        cards: Array.isArray(cards) ? cards.map(c => ({
+          id: c._id || c.id,
+          question: c.question,
+          answer: c.answer,
+          explanation: c.explanation,
+          questionImage: c.questionImage || null,
+          answerImage: c.answerImage || null,
+        })) : [],
+      };
+      setDeck(normalized);
     } catch (err) {
       setError('Không thể tải deck. Vui lòng thử lại.');
       console.error('Error loading deck:', err);

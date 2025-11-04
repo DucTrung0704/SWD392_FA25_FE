@@ -286,74 +286,7 @@ export default function TeacherFlashcards() {
     setShowDeleteModal(true);
   };
 
-  // Remove mock data
-  const oldFlashcardDecks = [
-    {
-      id: 1,
-      title: 'Biology - Cell Structure',
-      subject: 'Biology',
-      cardCount: 45,
-      difficulty: 'Medium',
-      createdDate: '2024-01-15',
-      lastModified: '2 days ago',
-      students: 28,
-      avgScore: 87,
-      status: 'active',
-      description: 'Comprehensive flashcards covering cell organelles and their functions.'
-    },
-    {
-      id: 2,
-      title: 'Mathematics - Calculus Basics',
-      subject: 'Mathematics',
-      cardCount: 32,
-      difficulty: 'Hard',
-      createdDate: '2024-01-10',
-      lastModified: '1 week ago',
-      students: 35,
-      avgScore: 72,
-      status: 'active',
-      description: 'Fundamental concepts of differential and integral calculus.'
-    },
-    {
-      id: 3,
-      title: 'Physics - Mechanics',
-      subject: 'Physics',
-      cardCount: 58,
-      difficulty: 'Hard',
-      createdDate: '2024-01-05',
-      lastModified: '3 days ago',
-      students: 42,
-      avgScore: 79,
-      status: 'active',
-      description: 'Newton\'s laws, forces, and motion principles.'
-    },
-    {
-      id: 4,
-      title: 'Chemistry - Periodic Table',
-      subject: 'Chemistry',
-      cardCount: 118,
-      difficulty: 'Easy',
-      createdDate: '2023-12-20',
-      lastModified: '1 month ago',
-      students: 56,
-      avgScore: 91,
-      status: 'active',
-      description: 'Complete periodic table with element properties and trends.'
-    },
-    {
-      id: 5,
-      title: 'English - Vocabulary Builder',
-      subject: 'English',
-      cardCount: 200,
-      difficulty: 'Medium',
-      createdDate: '2023-12-15',
-      lastModified: '2 weeks ago',
-      students: 23,
-      avgScore: 85,
-      status: 'draft',
-      description: 'Advanced vocabulary words with definitions and usage examples.'
-    }
-  ];
+  // Removed legacy mock deck list
 
   // Extract unique subjects from decks
   const subjects = ['all', ...new Set(flashcardDecks.map(deck => deck.subject).filter(Boolean))];

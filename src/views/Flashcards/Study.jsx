@@ -22,15 +22,25 @@ export default function Study() {
     try {
       setLoading(true);
       setError('');
-      const deckData = await flashcardService.getDeck(id);
-      setDeck(deckData);
-      
-      // Shuffle cards if random mode
-      let deckCards = [...deckData.cards];
+      const deckData = await flashcardService.getDeckById(id);
+      const flashcards = await flashcardService.getFlashcardsByDeckId(id);
+      const normalizedDeck = {
+        id: deckData._id || deckData.id,
+        title: deckData.title,
+      };
+      setDeck(normalizedDeck);
+
+      let deckCards = (flashcards || []).map(fc => ({
+        id: fc._id || fc.id,
+        question: fc.question,
+        answer: fc.answer,
+        explanation: fc.explanation,
+        questionImage: fc.questionImage || null,
+        answerImage: fc.answerImage || null,
+      }));
       if (studyMode === 'random') {
         deckCards = deckCards.sort(() => Math.random() - 0.5);
       }
-      
       setCards(deckCards);
     } catch (error) {
       console.error('Error loading deck:', error);
@@ -69,25 +79,11 @@ export default function Study() {
     setIsFlipped(!isFlipped);
   };
 
-  const handleKnow = async () => {
-    if (currentCard) {
-      try {
-        await flashcardService.markCardAsKnown(currentCard.id);
-      } catch (error) {
-        console.error('Error marking card as known:', error);
-      }
-    }
+  const handleKnow = () => {
     handleNext();
   };
 
-  const handleDontKnow = async () => {
-    if (currentCard) {
-      try {
-        await flashcardService.markCardForReview(currentCard.id);
-      } catch (error) {
-        console.error('Error marking card for review:', error);
-      }
-    }
+  const handleDontKnow = () => {
     handleNext();
   };
 

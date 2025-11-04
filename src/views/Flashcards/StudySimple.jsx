@@ -25,8 +25,21 @@ export default function StudySimple() {
   const loadDeck = async () => {
     try {
       setLoading(true);
-      const deckData = await flashcardService.getDeck(id);
-      setDeck(deckData);
+      const deckData = await flashcardService.getDeckById(id);
+      const flashcards = await flashcardService.getFlashcardsByDeckId(id);
+      const normalized = {
+        id: deckData._id || deckData.id,
+        title: deckData.title,
+        cards: (flashcards || []).map(fc => ({
+          id: fc._id || fc.id,
+          question: fc.question,
+          answer: fc.answer,
+          explanation: fc.explanation,
+          questionImage: fc.questionImage || null,
+          answerImage: fc.answerImage || null,
+        })),
+      };
+      setDeck(normalized);
     } catch (err) {
       setError('Không thể tải deck. Vui lòng thử lại.');
       console.error('Error loading deck:', err);
@@ -60,24 +73,14 @@ export default function StudySimple() {
     }
   };
 
-  const markCardCorrect = async () => {
-    try {
-      await flashcardService.markCardAsKnown(deck.cards[currentCardIndex].id);
-      setStudyStats(prev => ({ ...prev, correct: prev.correct + 1 }));
-      nextCard();
-    } catch (err) {
-      console.error('Error marking card:', err);
-    }
+  const markCardCorrect = () => {
+    setStudyStats(prev => ({ ...prev, correct: prev.correct + 1 }));
+    nextCard();
   };
 
-  const markCardIncorrect = async () => {
-    try {
-      await flashcardService.markCardForReview(deck.cards[currentCardIndex].id);
-      setStudyStats(prev => ({ ...prev, incorrect: prev.incorrect + 1 }));
-      nextCard();
-    } catch (err) {
-      console.error('Error marking card:', err);
-    }
+  const markCardIncorrect = () => {
+    setStudyStats(prev => ({ ...prev, incorrect: prev.incorrect + 1 }));
+    nextCard();
   };
 
   const skipCard = () => {

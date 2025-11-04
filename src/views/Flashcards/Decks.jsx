@@ -14,11 +14,32 @@ export default function Decks() {
   const [sortBy, setSortBy] = useState('newest');
 
   useEffect(() => {
-    flashcardService.listDecks().then(data => {
-      setDecks(data);
-      setFilteredDecks(data);
-      setLoading(false);
-    });
+    const load = async () => {
+      try {
+        const data = await flashcardService.getAllDecks();
+        // Normalize to expected shape used by UI
+        const normalized = (data || []).map((d) => ({
+          id: d._id || d.id,
+          title: d.title,
+          description: d.description,
+          tags: Array.isArray(d.tags) ? d.tags : [],
+          category: d.category || d.subject || 'general',
+          difficulty: (d.difficulty || 'beginner').toLowerCase(),
+          stats: { views: d.views || d.stats?.views || 0 },
+          premium: !!d.premium,
+          cards: Array.isArray(d.cards) ? d.cards : [],
+          createdAt: d.createdAt || d.created_at || new Date().toISOString(),
+          lastStudied: d.lastStudied || null,
+        }));
+        setDecks(normalized);
+        setFilteredDecks(normalized);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
   useEffect(() => {
@@ -81,8 +102,8 @@ export default function Decks() {
   // Mock statistics
   const deckStats = {
     totalDecks: decks.length,
-    totalCards: decks.reduce((sum, deck) => sum + deck.cards.length, 0),
-    averageCards: Math.round(decks.reduce((sum, deck) => sum + deck.cards.length, 0) / decks.length) || 0,
+    totalCards: decks.reduce((sum, deck) => sum + (deck.cards?.length || 0), 0),
+    averageCards: Math.round((decks.reduce((sum, deck) => sum + (deck.cards?.length || 0), 0) / (decks.length || 1))) || 0,
     studiedToday: decks.filter(deck => deck.lastStudied).length
   };
 
@@ -226,7 +247,7 @@ export default function Decks() {
                 <div className="flex items-center space-x-4">
                   <span className="flex items-center">
                     <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                    {deck.cards.length} cards
+                  {(deck.cards?.length || 0)} cards
                   </span>
                   <span className="flex items-center">
                     <Eye className="w-3 h-3 mr-1" />

@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import RoleRoute from '../components/RoleRoute';
 import GuestRoute from '../components/GuestRoute';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 // Layouts
 import TeacherLayout from '../components/layouts/TeacherLayout';
@@ -139,10 +140,38 @@ export function AppRouter() {
       />
       
       {/* Flashcard Routes */}
-      <Route path="/flashcards" element={<Decks />} />
-      <Route path="/decks/create" element={<CreateDeck />} />
-      <Route path="/decks/:id/study" element={<Study />} />
-      <Route path="/decks/:id" element={<DeckDetail />} />
+      <Route
+        path="/flashcards"
+        element={
+          <ProtectedRoute>
+            <Decks />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/decks/create"
+        element={
+          <RoleRoute roles={["Teacher", "Admin"]}>
+            <CreateDeck />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/decks/:id/study"
+        element={
+          <ProtectedRoute>
+            <Study />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/decks/:id"
+        element={
+          <ProtectedRoute>
+            <DeckDetail />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
