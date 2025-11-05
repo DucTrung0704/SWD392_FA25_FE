@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from '../../components/ui/Icon';
+import { userService } from '../../services/userService';
 
 export default function Users() {
   const [activeTab, setActiveTab] = useState('all');
@@ -7,93 +8,112 @@ export default function Users() {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [showUserModal, setShowUserModal] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [newRole, setNewRole] = useState('');
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'Student'
+  });
+  const [createError, setCreateError] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
-  // Mock data for users
-  const users = [
-    {
-      id: 1,
-      name: 'Nguyen Van A',
-      email: 'nguyenvana@email.com',
-      role: 'Student',
-      status: 'active',
-      joinDate: '2024-01-10',
-      lastActive: '2 hours ago',
-      progress: 85,
-      verified: true,
-      classes: ['Math 101', 'Physics 201']
-    },
-    {
-      id: 2,
-      name: 'Tran Thi B',
-      email: 'tranthib@email.com',
-      role: 'Teacher',
-      status: 'active',
-      joinDate: '2024-01-08',
-      lastActive: '1 hour ago',
-      students: 45,
-      rating: 4.8,
-      verified: true,
-      classes: []
-    },
-    {
-      id: 3,
-      name: 'Le Van C',
-      email: 'levanc@email.com',
-      role: 'Student',
-      status: 'pending',
-      joinDate: '2024-01-12',
-      lastActive: '3 hours ago',
-      progress: 78,
-      verified: false,
-      classes: ['Chemistry 102']
-    },
-    {
-      id: 4,
-      name: 'Pham Thi D',
-      email: 'phamthid@email.com',
-      role: 'Student',
-      status: 'active',
-      joinDate: '2024-01-09',
-      lastActive: '30 minutes ago',
-      progress: 95,
-      verified: true,
-      classes: ['Math 101', 'Biology 150']
-    },
-    {
-      id: 5,
-      name: 'Hoang Van E',
-      email: 'hoangvane@email.com',
-      role: 'Moderator',
-      status: 'active',
-      joinDate: '2024-01-05',
-      lastActive: '5 minutes ago',
-      reportsHandled: 23,
-      verified: true,
-      classes: []
-    },
-    {
-      id: 6,
-      name: 'Mai Thi F',
-      email: 'maithif@email.com',
-      role: 'Teacher',
-      status: 'inactive',
-      joinDate: '2024-01-03',
-      lastActive: '2 days ago',
-      students: 32,
-      rating: 4.6,
-      verified: true,
-      classes: []
+  // Fetch users from API
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await userService.getAllUsers();
+      
+      // Log raw API data for debugging
+      // console.log('Raw API users data:', data.users);
+      
+      // Transform API response to match component expectations
+      const transformedUsers = (data.users || []).map(user => {
+        let joinDate = 'Unknown';
+        if (user.createdAt) {
+          try {
+            const date = new Date(user.createdAt);
+            if (!isNaN(date.getTime())) {
+              joinDate = date.toISOString().split('T')[0];
+            }
+          } catch (e) {
+            console.warn('Invalid createdAt date:', user.createdAt);
+          }
+        }
+        
+        // Get progress from API if available, otherwise default to 0
+        const progress = user.progress !== undefined ? user.progress : 
+                        (user.role === 'Student' ? 0 : null);
+        
+        // Get students count for Teachers
+        const students = user.students || user.studentCount || null;
+        
+        return {
+          id: user._id || user.id,
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          status: user.status || (user.isActive !== undefined ? (user.isActive === false ? 'inactive' : 'active') : 'active'),
+          joinDate: joinDate,
+          lastActive: formatLastActive(user.lastActive || user.lastLogin || user.updatedAt || user.createdAt),
+          progress: progress,
+          students: students,
+          verified: user.verified !== undefined ? user.verified : true,
+          avatar: user.avatar,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+          lastActiveDate: user.lastActive || user.lastLogin || user.updatedAt || user.createdAt
+        };
+      });
+      
+      setUsers(transformedUsers);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setError(err.message || 'Failed to fetch users');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
+  // Helper function to format last active time
+  const formatLastActive = (dateString) => {
+    if (!dateString) return 'Unknown';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    return `${diffDays} days ago`;
+  };
+
+  // Calculate stats from users
   const userStats = {
-    total: 2910,
-    active: 2847,
-    pending: 12,
-    teachers: 156,
-    students: 2689,
-    moderators: 8,
-    newToday: 23
+    total: users.length,
+    active: users.filter(u => u.status === 'active').length,
+    pending: users.filter(u => u.status === 'pending').length,
+    teachers: users.filter(u => u.role === 'Teacher').length,
+    students: users.filter(u => u.role === 'Student').length,
+    moderators: users.filter(u => u.role === 'Moderator').length,
+    newToday: users.filter(u => {
+      const created = new Date(u.createdAt);
+      const today = new Date();
+      return created.toDateString() === today.toDateString();
+    }).length
   };
 
   const tabs = [
@@ -176,9 +196,169 @@ export default function Users() {
     }
   };
 
-  const handleBulkAction = (action) => {
-    console.log(`Performing ${action} on:`, selectedUsers);
-    setSelectedUsers([]);
+  const handleBulkAction = async (action) => {
+    if (selectedUsers.length === 0) return;
+
+    const actionText = action === 'activate' ? 'activate' : action === 'suspend' ? 'suspend' : 'export';
+    if (!window.confirm(`Are you sure you want to ${actionText} ${selectedUsers.length} user(s)?`)) {
+      return;
+    }
+
+    if (action === 'export') {
+      // console.log('Exporting users:', selectedUsers);
+      setSelectedUsers([]);
+      return;
+    }
+
+    try {
+      const newStatus = action === 'activate' ? 'active' : 'inactive';
+      
+      const updatePromises = selectedUsers.map(userId => {
+        const user = users.find(u => u.id === userId);
+        if (!user) return Promise.resolve();
+        
+        return userService.updateUserStatus(user._id || user.id, newStatus)
+          .catch(() => {
+            return null;
+          });
+      });
+
+      await Promise.all(updatePromises);
+      
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          selectedUsers.includes(user.id) 
+            ? { ...user, status: newStatus }
+            : user
+        )
+      );
+      
+      setSelectedUsers([]);
+      await fetchUsers();
+    } catch (err) {
+      console.error(`Error ${action}ing users:`, err);
+      const newStatus = action === 'activate' ? 'active' : 'inactive';
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          selectedUsers.includes(user.id) 
+            ? { ...user, status: newStatus }
+            : user
+        )
+      );
+      setSelectedUsers([]);
+    }
+  };
+
+  // Handle delete user
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) {
+      return;
+    }
+
+    try {
+      await userService.deleteUser(userId);
+      // Refresh users list
+      await fetchUsers();
+      setSelectedUsers(prev => prev.filter(id => id !== userId));
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      alert(err.message || 'Failed to delete user');
+    }
+  };
+
+  const handleEditUser = (user) => {
+    setEditingUser(user);
+    setNewRole(user.role);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateRole = async () => {
+    if (!editingUser || !newRole) return;
+
+    try {
+      await userService.updateUserRole(editingUser._id || editingUser.id, newRole);
+      await fetchUsers();
+      setShowEditModal(false);
+      setEditingUser(null);
+      setNewRole('');
+    } catch (err) {
+      console.error('Error updating user role:', err);
+      alert(err.message || 'Failed to update user role');
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!newUser.name.trim()) {
+      setCreateError('Please enter full name');
+      return;
+    }
+    if (!newUser.email.trim()) {
+      setCreateError('Please enter email address');
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(newUser.email)) {
+      setCreateError('Please enter a valid email address');
+      return;
+    }
+    if (!newUser.password || newUser.password.length < 6) {
+      setCreateError('Password must be at least 6 characters long');
+      return;
+    }
+
+    try {
+      setIsCreating(true);
+      setCreateError('');
+      
+      const userData = {
+        name: newUser.name.trim(),
+        email: newUser.email.trim(),
+        password: newUser.password,
+        role: newUser.role
+      };
+
+      await userService.createUser(userData);
+      
+      setNewUser({ name: '', email: '', password: '', role: 'Student' });
+      setShowUserModal(false);
+      setCreateError('');
+      
+      await fetchUsers();
+    } catch (err) {
+      console.error('Error creating user:', err);
+      setCreateError(err.message || 'Failed to create user. Please try again.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleToggleStatus = async (user) => {
+    const newStatus = user.status === 'active' ? 'inactive' : 'active';
+    const actionText = newStatus === 'active' ? 'activate' : 'deactivate';
+    
+    if (!window.confirm(`Are you sure you want to ${actionText} ${user.name}?`)) {
+      return;
+    }
+
+    try {
+      await userService.updateUserStatus(user._id || user.id, newStatus);
+      setUsers(prevUsers => 
+        prevUsers.map(u => 
+          u.id === user.id ? { ...u, status: newStatus } : u
+        )
+      );
+      await fetchUsers();
+    } catch (err) {
+      console.error('Error updating user status:', err);
+      if (err.status === 404 || err.message?.includes('not found')) {
+        setUsers(prevUsers => 
+          prevUsers.map(u => 
+            u.id === user.id ? { ...u, status: newStatus } : u
+          )
+        );
+      } else {
+        alert(err.message || 'Failed to update user status');
+      }
+    }
   };
 
   const getRoleColor = (role) => {
@@ -349,7 +529,8 @@ export default function Users() {
                 {selectedUsers.length} users selected
               </span>
               <div className="flex gap-2">
-                <button
+                {/* Temporarily hidden - Bulk Activate/Deactivate buttons */}
+                {/* <button
                   onClick={() => handleBulkAction('activate')}
                   className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors"
                 >
@@ -357,10 +538,10 @@ export default function Users() {
                 </button>
                 <button
                   onClick={() => handleBulkAction('suspend')}
-                  className="px-3 py-1 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors"
+                  className="px-3 py-1 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors"
                 >
-                  Suspend
-                </button>
+                  Deactivate
+                </button> */}
                 <button
                   onClick={() => handleBulkAction('export')}
                   className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
@@ -372,156 +553,213 @@ export default function Users() {
           </div>
         )}
 
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <span className="text-red-800 dark:text-red-300 text-sm font-medium">
+                {error}
+              </span>
+              <button
+                onClick={() => setError(null)}
+                className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Users Table */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="px-6 py-4 text-left">
-                    <input
-                      type="checkbox"
-                      checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                    />
-                  </th>
-                  <th 
-                    className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                    onClick={() => handleSort('name')}
-                  >
-                    <div className="flex items-center gap-2">
-                      User
-                      <SortIcon columnKey="name" />
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                    Role
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                    Status
-                  </th>
-                  <th 
-                    className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                    onClick={() => handleSort('joinDate')}
-                  >
-                    <div className="flex items-center gap-2">
-                      Join Date
-                      <SortIcon columnKey="joinDate" />
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                    Last Active
-                  </th>
-                  <th 
-                    className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                    onClick={() => handleSort('progress')}
-                  >
-                    <div className="flex items-center gap-2">
-                      Progress
-                      <SortIcon columnKey="progress" />
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredUsers.map((user) => (
-                  <tr 
-                    key={user.id} 
-                    className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
-                      selectedUsers.includes(user.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                    }`}
-                  >
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedUsers.includes(user.id)}
-                        onChange={() => handleSelectUser(user.id)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                          {user.name.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">
-                            {user.name}
-                            {user.verified && (
-                              <span className="ml-2 text-blue-500" title="Verified">✓</span>
-                            )}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                      {user.joinDate}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {user.lastActive}
-                    </td>
-                    <td className="px-6 py-4">
-                      {user.role === 'Student' ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                            <div 
-                              className="bg-gradient-to-r from-green-500 to-teal-600 h-2 rounded-full transition-all duration-500"
-                              style={{ width: `${user.progress}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-sm text-gray-600 dark:text-gray-400 w-8">{user.progress}%</span>
-                        </div>
-                      ) : user.role === 'Teacher' ? (
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{user.students} students</span>
-                      ) : (
-                        <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Edit">
-                          <Icon name="edit" className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" title="Message">
-                          <Icon name="message" className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Suspend">
-                          <Icon name="pause" className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Empty State */}
-          {filteredUsers.length === 0 && (
+          {loading ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">👥</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No users found</h3>
-              <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-                {searchTerm ? 'Try adjusting your search terms or filters' : 'No users match the current criteria'}
-              </p>
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">Loading users...</p>
             </div>
+          ) : (
+            <>
+              {filteredUsers.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">👥</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No users found</h3>
+                  <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                    {searchTerm ? 'Try adjusting your search terms or filters' : 'No users match the current criteria'}
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-700">
+                        <th className="px-6 py-4 text-left">
+                          <input
+                            type="checkbox"
+                            checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                            onChange={handleSelectAll}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                          />
+                        </th>
+                        <th 
+                          className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                          onClick={() => handleSort('name')}
+                        >
+                          <div className="flex items-center gap-2">
+                            User
+                            <SortIcon columnKey="name" />
+                          </div>
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                          Role
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                          Status
+                        </th>
+                        <th 
+                          className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                          onClick={() => handleSort('joinDate')}
+                        >
+                          <div className="flex items-center gap-2">
+                            Join Date
+                            <SortIcon columnKey="joinDate" />
+                          </div>
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                          Last Active
+                        </th>
+                        <th 
+                          className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                          onClick={() => handleSort('progress')}
+                        >
+                          <div className="flex items-center gap-2">
+                            Progress
+                            <SortIcon columnKey="progress" />
+                          </div>
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {filteredUsers.map((user) => (
+                        <tr 
+                          key={user.id} 
+                          className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
+                            selectedUsers.includes(user.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                          }`}
+                        >
+                          <td className="px-6 py-4">
+                            <input
+                              type="checkbox"
+                              checked={selectedUsers.includes(user.id)}
+                              onChange={() => handleSelectUser(user.id)}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                            />
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                                {user.name.charAt(0)}
+                              </div>
+                              <div>
+                                <div className="font-medium text-gray-900 dark:text-white">
+                                  {user.name}
+                                  {user.verified && (
+                                    <span className="ml-2 text-blue-500" title="Verified">✓</span>
+                                  )}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
+                              {user.role}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
+                              {user.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                            {user.joinDate || 'Unknown'}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                            {user.lastActive || 'Unknown'}
+                          </td>
+                          <td className="px-6 py-4">
+                            {user.role === 'Student' ? (
+                              user.progress !== null && user.progress !== undefined ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                                    <div 
+                                      className="bg-gradient-to-r from-green-500 to-teal-600 h-2 rounded-full transition-all duration-500"
+                                      style={{ width: `${Math.min(100, Math.max(0, user.progress))}%` }}
+                                    ></div>
+                                  </div>
+                                  <span className="text-sm text-gray-600 dark:text-gray-400 w-8">{user.progress}%</span>
+                                </div>
+                              ) : (
+                                <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
+                              )
+                            ) : user.role === 'Teacher' ? (
+                              user.students !== null && user.students !== undefined ? (
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{user.students} students</span>
+                              ) : (
+                                <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
+                              )
+                            ) : (
+                              <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <button 
+                                onClick={() => handleEditUser(user)}
+                                className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" 
+                                title="Edit Role"
+                              >
+                                <Icon name="edit" className="w-4 h-4" />
+                              </button>
+                              {/* Temporarily hidden - Active/Deactivate button */}
+                              {/* <button 
+                                onClick={() => handleToggleStatus(user)}
+                                className={`p-2 rounded-lg transition-colors ${
+                                  user.status === 'active' 
+                                    ? 'text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20' 
+                                    : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
+                                }`}
+                                title={user.status === 'active' ? 'Deactivate' : 'Activate'}
+                              >
+                                {user.status === 'active' ? (
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="6" y="4" width="4" height="16"/>
+                                    <rect x="14" y="4" width="4" height="16"/>
+                                  </svg>
+                                ) : (
+                                  <Icon name="check" className="w-4 h-4" />
+                                )}
+                              </button> */}
+                              <button 
+                                onClick={() => handleDeleteUser(user._id || user.id)}
+                                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
+                                title="Delete"
+                              >
+                                <Icon name="close" className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -554,13 +792,21 @@ export default function Users() {
             <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-2xl border border-gray-200/50 dark:border-gray-700/50 max-w-md w-full mx-4">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Add New User</h3>
               
+              {createError && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                  <p className="text-sm text-red-800 dark:text-red-300">{createError}</p>
+                </div>
+              )}
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Full Name
+                    Full Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
+                    value={newUser.name}
+                    onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                     placeholder="Enter full name"
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -568,10 +814,12 @@ export default function Users() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Email Address
+                    Email Address <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                     placeholder="Enter email address"
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -579,25 +827,115 @@ export default function Users() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Role
+                    Password <span className="text-red-500">*</span>
                   </label>
-                  <select className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="student">Student</option>
-                    <option value="teacher">Teacher</option>
-                    <option value="moderator">Moderator</option>
+                  <input
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                    placeholder="Enter password (min 6 characters)"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Role <span className="text-red-500">*</span>
+                  </label>
+                  <select 
+                    value={newUser.role}
+                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="Student">Student</option>
+                    <option value="Teacher">Teacher</option>
+                    <option value="Admin">Admin</option>
                   </select>
                 </div>
 
                 <div className="flex gap-3 pt-4">
                   <button
-                    onClick={() => setShowUserModal(false)}
+                    onClick={() => {
+                      setShowUserModal(false);
+                      setNewUser({ name: '', email: '', password: '', role: 'Student' });
+                      setCreateError('');
+                    }}
+                    disabled={isCreating}
+                    className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleCreateUser}
+                    disabled={isCreating}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isCreating ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="plus" className="w-4 h-4" />
+                        Create User
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Role Modal */}
+        {showEditModal && editingUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-2xl border border-gray-200/50 dark:border-gray-700/50 max-w-md w-full mx-4">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Update User Role</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    User: <span className="font-medium text-gray-900 dark:text-white">{editingUser.name}</span>
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Email: <span className="font-medium text-gray-900 dark:text-white">{editingUser.email}</span>
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Select New Role
+                  </label>
+                  <select 
+                    value={newRole}
+                    onChange={(e) => setNewRole(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="Student">Student</option>
+                    <option value="Teacher">Teacher</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setEditingUser(null);
+                      setNewRole('');
+                    }}
                     className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                   >
                     Cancel
                   </button>
-                  <button className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2">
-                    <Icon name="plus" className="w-4 h-4" />
-                    Create User
+                  <button 
+                    onClick={handleUpdateRole}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                  >
+                    <Icon name="save" className="w-4 h-4" />
+                    Update Role
                   </button>
                 </div>
               </div>
