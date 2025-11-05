@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { flashcardService } from '../../services/flashcardService';
 import Button from '../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
-import { Search, BookOpen, Eye, Plus } from 'lucide-react';
+import { Search, BookOpen, Eye, Plus, Play } from 'lucide-react';
 
 export default function Decks() {
   const navigate = useNavigate();
@@ -266,7 +266,7 @@ export default function Decks() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <Button
                   onClick={() => handleStudyDeck(deck.id)}
                   variant="primary"
@@ -274,13 +274,13 @@ export default function Decks() {
                 >
                   Study
                 </Button>
-                <Button
+                <button
                   onClick={() => handlePreviewDeck(deck.id)}
-                  variant="secondary"
-                  className="flex-1 py-2 px-4 text-sm font-medium"
+                  className="p-2 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900 rounded-lg transition-colors"
+                  title="Preview Deck"
                 >
-                  Preview
-                </Button>
+                  <Play className="w-5 h-5" />
+                </button>
               </div>
 
               {/* Hover Effect Overlay */}

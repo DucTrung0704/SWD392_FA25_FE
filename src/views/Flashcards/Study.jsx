@@ -34,7 +34,7 @@ export default function Study() {
         id: fc._id || fc.id,
         question: fc.question,
         answer: fc.answer,
-        explanation: fc.explanation,
+        explanation: fc.explanation || fc.note,
         questionImage: fc.questionImage || null,
         answerImage: fc.answerImage || null,
       }));

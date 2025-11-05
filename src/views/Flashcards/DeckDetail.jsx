@@ -32,7 +32,7 @@ export default function DeckDetail() {
           id: c._id || c.id,
           question: c.question,
           answer: c.answer,
-          explanation: c.explanation,
+          explanation: c.explanation || c.note,
           questionImage: c.questionImage || null,
           answerImage: c.answerImage || null,
         })) : [],

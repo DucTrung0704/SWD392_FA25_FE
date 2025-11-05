@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Edit, Trash2, Plus, BookOpen, Clock, User, Globe, Lock } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Plus, BookOpen, Clock, User, Globe, Lock, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { flashcardService } from '../../services/flashcardService';
 
 export default function TeacherDeckDetail() {
@@ -13,6 +13,15 @@ export default function TeacherDeckDetail() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAddCardModal, setShowAddCardModal] = useState(false);
+  const [cardForm, setCardForm] = useState({ question: '', answer: '', explanation: '' });
+  const [showEditCardModal, setShowEditCardModal] = useState(false);
+  const [showDeleteCardModal, setShowDeleteCardModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedCard, setSelectedCard] = useState(null);
+  const [previewCardIndex, setPreviewCardIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [editCardForm, setEditCardForm] = useState({ question: '', answer: '', explanation: '' });
   
   // Form state for edit
   const [formData, setFormData] = useState({
@@ -29,7 +38,7 @@ export default function TeacherDeckDetail() {
         setIsLoading(true);
         setError('');
         const data = await flashcardService.getDeckById(id);
-        
+
         // Transform API response to match component expectations
         const transformedDeck = {
           ...data,
@@ -42,9 +51,14 @@ export default function TeacherDeckDetail() {
           difficulty: data.difficulty || 'Medium',
           isPublic: data.isPublic !== undefined ? data.isPublic : false,
           subject: data.subject || 'General',
-          flashcards: data.flashcards || []
+          flashcards: []
         };
-        
+
+        // Load flashcards for this deck
+        const fcRes = await flashcardService.getFlashcardsByDeckId(id);
+        const fcList = Array.isArray(fcRes) ? fcRes : (fcRes?.flashcards || []);
+        transformedDeck.flashcards = fcList;
+
         setDeck(transformedDeck);
       } catch (err) {
         console.error('Failed to load deck:', err);
@@ -161,6 +175,125 @@ export default function TeacherDeckDetail() {
     }
   };
 
+  const openAddCardModal = () => {
+    setCardForm({ question: '', answer: '', explanation: '' });
+    setShowAddCardModal(true);
+  };
+
+  const handleCreateCard = async (e) => {
+    e.preventDefault();
+    if (!cardForm.question.trim() || !cardForm.answer.trim()) {
+      setError('Please enter question and answer');
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      setError('');
+      await flashcardService.createFlashcard({
+        deck_id: id,
+        question: cardForm.question,
+        answer: cardForm.answer,
+        note: cardForm.explanation || '',
+        tag: ''
+      });
+      const refreshed = await flashcardService.getFlashcardsByDeckId(id);
+      const list = Array.isArray(refreshed) ? refreshed : (refreshed?.flashcards || []);
+      setDeck(prev => ({ ...prev, flashcards: list }));
+      setShowAddCardModal(false);
+    } catch (err) {
+      console.error('Failed to create flashcard:', err);
+      setError(err.message || 'Failed to create flashcard. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openEditCardModal = (card) => {
+    setSelectedCard(card);
+    const isObj = typeof card === 'object';
+    setEditCardForm({
+      question: isObj ? (card.question || '') : String(card || ''),
+      answer: isObj ? (card.answer || '') : '',
+      explanation: isObj ? (card.explanation || card.note || '') : ''
+    });
+    setShowEditCardModal(true);
+  };
+
+  const handleUpdateCard = async (e) => {
+    e.preventDefault();
+    if (!selectedCard) return;
+    if (!editCardForm.question.trim() || !editCardForm.answer.trim()) {
+      setError('Please enter question and answer');
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      setError('');
+      const cardId = selectedCard._id || selectedCard.id;
+      await flashcardService.updateFlashcard(cardId, {
+        question: editCardForm.question,
+        answer: editCardForm.answer,
+        note: editCardForm.explanation || '',
+        tag: selectedCard.tag || ''
+      });
+      const refreshed = await flashcardService.getFlashcardsByDeckId(id);
+      const list = Array.isArray(refreshed) ? refreshed : (refreshed?.flashcards || []);
+      setDeck(prev => ({ ...prev, flashcards: list }));
+      setShowEditCardModal(false);
+      setSelectedCard(null);
+    } catch (err) {
+      console.error('Failed to update flashcard:', err);
+      setError(err.message || 'Failed to update flashcard. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openDeleteCardModal = (card) => {
+    setSelectedCard(card);
+    setShowDeleteCardModal(true);
+  };
+
+  const openPreviewModal = (card, index) => {
+    setPreviewCardIndex(index);
+    setIsFlipped(false);
+    setShowPreviewModal(true);
+  };
+
+  const handlePrevCard = () => {
+    if (previewCardIndex > 0) {
+      setPreviewCardIndex(previewCardIndex - 1);
+      setIsFlipped(false);
+    }
+  };
+
+  const handleNextCard = () => {
+    if (deck?.flashcards && previewCardIndex < deck.flashcards.length - 1) {
+      setPreviewCardIndex(previewCardIndex + 1);
+      setIsFlipped(false);
+    }
+  };
+
+  const handleDeleteCard = async () => {
+    if (!selectedCard) return;
+    try {
+      setIsSubmitting(true);
+      setError('');
+      const cardId = selectedCard._id || selectedCard.id;
+      await flashcardService.deleteFlashcard(cardId);
+      const refreshed = await flashcardService.getFlashcardsByDeckId(id);
+      const list = Array.isArray(refreshed) ? refreshed : (refreshed?.flashcards || []);
+      setDeck(prev => ({ ...prev, flashcards: list }));
+      setShowDeleteCardModal(false);
+      setSelectedCard(null);
+    } catch (err) {
+      console.error('Failed to delete flashcard:', err);
+      setError(err.message || 'Failed to delete flashcard. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -265,6 +398,12 @@ export default function TeacherDeckDetail() {
 
             <div className="flex gap-3">
               <button 
+                onClick={() => navigate(`/decks/${id}/study`)}
+                className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-colors flex items-center gap-2"
+              >
+                Review
+              </button>
+              <button 
                 onClick={openEditModal}
                 className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2"
               >
@@ -288,7 +427,7 @@ export default function TeacherDeckDetail() {
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
               Flashcards ({deck.flashcards?.length || 0})
             </h2>
-            <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center gap-2">
+            <button onClick={openAddCardModal} className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center gap-2">
               <Plus className="w-4 h-4" />
               Add Card
             </button>
@@ -306,10 +445,13 @@ export default function TeacherDeckDetail() {
                       Card #{index + 1}
                     </span>
                     <div className="flex gap-2">
-                      <button className="p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded">
+                      <button onClick={() => openPreviewModal(card, index)} className="p-1 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900 rounded" title="Preview">
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => openEditCardModal(card)} className="p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded" title="Edit">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 rounded">
+                      <button onClick={() => openDeleteCardModal(card)} className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 rounded" title="Delete">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -342,7 +484,7 @@ export default function TeacherDeckDetail() {
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Start building your deck by adding flashcards
               </p>
-              <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2">
+              <button onClick={openAddCardModal} className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2">
                 <Plus className="w-5 h-5" />
                 Add Your First Card
               </button>
@@ -350,6 +492,203 @@ export default function TeacherDeckDetail() {
           )}
         </div>
 
+      {/* Add Card Modal */}
+      {showAddCardModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowAddCardModal(false)}></div>
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <form onSubmit={handleCreateCard}>
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Add Flashcard</h3>
+                </div>
+                <div className="px-6 py-4 space-y-4">
+                  {error && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
+                      <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Question <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={cardForm.question}
+                      onChange={(e) => setCardForm({ ...cardForm, question: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter question"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Answer <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={cardForm.answer}
+                      onChange={(e) => setCardForm({ ...cardForm, answer: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter answer"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Explanation (optional)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={cardForm.explanation}
+                      onChange={(e) => setCardForm({ ...cardForm, explanation: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Add explanation"
+                    />
+                  </div>
+                </div>
+                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCardModal(false)}
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4" />
+                        Add Card
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Card Modal */}
+      {showEditCardModal && selectedCard && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowEditCardModal(false)}></div>
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <form onSubmit={handleUpdateCard}>
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Flashcard</h3>
+                </div>
+                <div className="px-6 py-4 space-y-4">
+                  {error && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
+                      <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Question <span className="text-red-500">*</span></label>
+                    <textarea
+                      rows={3}
+                      value={editCardForm.question}
+                      onChange={(e) => setEditCardForm({ ...editCardForm, question: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter question"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Answer <span className="text-red-500">*</span></label>
+                    <textarea
+                      rows={3}
+                      value={editCardForm.answer}
+                      onChange={(e) => setEditCardForm({ ...editCardForm, answer: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter answer"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Explanation (optional)</label>
+                    <textarea
+                      rows={3}
+                      value={editCardForm.explanation}
+                      onChange={(e) => setEditCardForm({ ...editCardForm, explanation: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Add explanation"
+                    />
+                  </div>
+                </div>
+                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 flex gap-3">
+                  <button type="button" onClick={() => setShowEditCardModal(false)} disabled={isSubmitting} className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+                  <button type="submit" disabled={isSubmitting} className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <Edit className="w-4 h-4" />
+                        Update Card
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Card Modal */}
+      {showDeleteCardModal && selectedCard && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowDeleteCardModal(false)}></div>
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+              <div className="px-6 py-4">
+                <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full">
+                  <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">Delete Flashcard</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">Are you sure you want to delete this flashcard?</p>
+                {error && (
+                  <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
+                    <p className="text-red-700 dark:text-red-400 text-sm text-center">{error}</p>
+                  </div>
+                )}
+              </div>
+              <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 flex gap-3">
+                <button type="button" onClick={() => setShowDeleteCardModal(false)} disabled={isSubmitting} className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+                <button onClick={handleDeleteCard} disabled={isSubmitting} className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete Card
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
         {/* Edit Deck Modal */}
         {showEditModal && (
           <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -534,6 +873,131 @@ export default function TeacherDeckDetail() {
                       </>
                     )}
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Preview Card Modal */}
+        {showPreviewModal && deck?.flashcards && deck.flashcards.length > 0 && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowPreviewModal(false)}></div>
+              
+              <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Preview Flashcard
+                  </h3>
+                  <button
+                    onClick={() => setShowPreviewModal(false)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="px-6 py-6">
+                  {/* Card Counter */}
+                  <div className="text-center mb-6">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      Card {previewCardIndex + 1} of {deck.flashcards.length}
+                    </span>
+                  </div>
+
+                  {/* Flashcard */}
+                  {(() => {
+                    const currentCard = deck.flashcards[previewCardIndex];
+                    const cardObj = typeof currentCard === 'object' ? currentCard : { question: currentCard };
+                    
+                    return (
+                      <div className="relative">
+                        <div
+                          className={`relative w-full h-64 cursor-pointer transition-transform duration-500 ${
+                            isFlipped ? '[transform:rotateY(180deg)]' : ''
+                          }`}
+                          onClick={() => setIsFlipped(!isFlipped)}
+                          style={{ perspective: '1000px' }}
+                        >
+                          {/* Front - Question */}
+                          <div
+                            className={`absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 rounded-xl p-8 flex items-center justify-center border-2 border-blue-200 dark:border-blue-800 ${
+                              isFlipped ? 'opacity-0' : 'opacity-100'
+                            } transition-opacity duration-300`}
+                            style={{ backfaceVisibility: 'hidden' }}
+                          >
+                            <div className="text-center w-full">
+                              <div className="text-sm text-blue-600 dark:text-blue-400 mb-4 font-medium">
+                                QUESTION
+                              </div>
+                              <p className="text-xl font-bold text-gray-900 dark:text-white">
+                                {cardObj.question || 'No question'}
+                              </p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+                                Click to reveal answer
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Back - Answer */}
+                          <div
+                            className={`absolute inset-0 bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-600 dark:to-gray-700 rounded-xl p-8 flex items-center justify-center border-2 border-green-200 dark:border-green-800 ${
+                              isFlipped ? 'opacity-100' : 'opacity-0'
+                            } transition-opacity duration-300`}
+                            style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                          >
+                            <div className="text-center w-full">
+                              <div className="text-sm text-green-600 dark:text-green-400 mb-4 font-medium">
+                                ANSWER
+                              </div>
+                              <p className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                                {cardObj.answer || 'No answer'}
+                              </p>
+                              {cardObj.explanation || cardObj.note ? (
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mt-4">
+                                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                                    {cardObj.explanation || cardObj.note}
+                                  </p>
+                                </div>
+                              ) : null}
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+                                Click to see question again
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Navigation */}
+                  <div className="flex items-center justify-between mt-6">
+                    <button
+                      onClick={handlePrevCard}
+                      disabled={previewCardIndex === 0}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Previous
+                    </button>
+
+                    <button
+                      onClick={() => setIsFlipped(!isFlipped)}
+                      className="px-6 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all duration-300"
+                    >
+                      {isFlipped ? 'Show Question' : 'Show Answer'}
+                    </button>
+
+                    <button
+                      onClick={handleNextCard}
+                      disabled={previewCardIndex === (deck.flashcards?.length || 0) - 1}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

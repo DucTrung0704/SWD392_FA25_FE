@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Eye, Edit, Trash2, Search, FileText, Users, TrendingUp, BookOpen, Globe, Lock } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Search, FileText, Users, TrendingUp, BookOpen, Globe, Lock, Play } from 'lucide-react';
 import { flashcardService } from '../../services/flashcardService';
 
 export default function TeacherFlashcards() {
@@ -550,6 +550,13 @@ export default function TeacherFlashcards() {
                   >
                     <Eye className="w-4 h-4" />
                     View
+                  </button>
+                  <button 
+                    onClick={() => navigate(`/decks/${deck.id}/study`)}
+                    className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    title="Preview Deck"
+                  >
+                    <Play className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={() => openEditModal(deck)}
