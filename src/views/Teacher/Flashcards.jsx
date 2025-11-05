@@ -15,6 +15,10 @@ export default function TeacherFlashcards() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(6);
+  const [difficultyFilter, setDifficultyFilter] = useState('all'); // all | easy | medium | hard
+  const [visibilityFilter, setVisibilityFilter] = useState('all'); // all | public | private
   
   // Form state for create/edit
   const [formData, setFormData] = useState({
@@ -295,8 +299,24 @@ export default function TeacherFlashcards() {
     const matchesSearch = deck.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          deck.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSubject = selectedSubject === 'all' || deck.subject === selectedSubject;
-    return matchesSearch && matchesSubject;
+    const matchesDifficulty = difficultyFilter === 'all' || deck.difficulty.toLowerCase() === difficultyFilter;
+    const matchesVisibility =
+      visibilityFilter === 'all' ||
+      (visibilityFilter === 'public' && deck.status === 'active') ||
+      (visibilityFilter === 'private' && deck.status !== 'active');
+    return matchesSearch && matchesSubject && matchesDifficulty && matchesVisibility;
   });
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedSubject, difficultyFilter, visibilityFilter, flashcardDecks]);
+
+  // Pagination calculations
+  const totalPages = Math.max(1, Math.ceil((filteredDecks.length || 0) / pageSize));
+  const safePage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const currentPageDecks = filteredDecks.slice(startIndex, startIndex + pageSize);
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
@@ -446,6 +466,29 @@ export default function TeacherFlashcards() {
                 ))}
               </select>
             </div>
+            <div className="sm:w-48">
+              <select
+                value={difficultyFilter}
+                onChange={(e) => setDifficultyFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Difficulty</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            <div className="sm:w-48">
+              <select
+                value={visibilityFilter}
+                onChange={(e) => setVisibilityFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Visibility</option>
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -482,16 +525,17 @@ export default function TeacherFlashcards() {
             </button>
           </div>
         ) : (
+          <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredDecks.map((deck) => (
-            <div key={deck.id} className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg border overflow-hidden hover:shadow-xl transition-all duration-300 ${
+            {currentPageDecks.map((deck) => (
+            <div key={deck.id} className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg border overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full min-h-[480px] ${
               deck.status === 'active' 
                 ? 'border-green-300 dark:border-green-700 ring-2 ring-green-100 dark:ring-green-900' 
                 : 'border-gray-100 dark:border-gray-700'
             }`}>
-              {/* Public Badge Banner */}
+              {/* Public/Private Badge Banner */}
               {deck.status === 'active' && (
-                <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-2 flex items-center justify-between">
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-2 flex items-center justify-between flex-shrink-0">
                   <div className="flex items-center gap-2 text-white">
                     <Globe className="w-4 h-4" />
                     <span className="text-sm font-semibold">Public Deck</span>
@@ -499,11 +543,20 @@ export default function TeacherFlashcards() {
                   <span className="text-xs text-green-100">Visible to all students</span>
                 </div>
               )}
+              {deck.status !== 'active' && (
+                <div className="bg-gradient-to-r from-orange-500 to-amber-600 px-4 py-2 flex items-center justify-between flex-shrink-0">
+                  <div className="flex items-center gap-2 text-white">
+                    <Lock className="w-4 h-4" />
+                    <span className="text-sm font-semibold">Private Deck</span>
+                  </div>
+                  <span className="text-xs text-orange-100">Only visible to you</span>
+                </div>
+              )}
               
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
+              <div className="p-6 flex flex-col flex-1">
+                <div className="flex items-start justify-between mb-4 flex-shrink-0">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 min-h-[3rem]">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
                         {deck.title}
                       </h3>
@@ -511,18 +564,18 @@ export default function TeacherFlashcards() {
                         <Lock className="w-4 h-4 text-gray-400 flex-shrink-0" title="Private deck" />
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                      {deck.description}
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-3 min-h-[4rem]">
+                      {deck.description || 'No description available'}
                     </p>
                   </div>
-                  <div className="flex flex-col gap-2 ml-4">
+                  <div className="flex flex-col gap-2 ml-4 flex-shrink-0">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getDifficultyColor(deck.difficulty)}`}>
                       {deck.difficulty}
                     </span>
                   </div>
                 </div>
 
-                <div className="space-y-3 mb-4">
+                <div className="space-y-3 mb-4 flex-shrink-0">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Cards:</span>
                     <span className="font-medium text-gray-900 dark:text-white">{deck.cardCount}</span>
@@ -543,7 +596,7 @@ export default function TeacherFlashcards() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mt-auto flex-shrink-0">
                   <button 
                     onClick={() => navigate(`/dashboard/teacher/flashcards/${deck.id}`)}
                     className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
@@ -553,7 +606,7 @@ export default function TeacherFlashcards() {
                   </button>
                   <button 
                     onClick={() => navigate(`/decks/${deck.id}/study`)}
-                    className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex-shrink-0"
                     title="Preview Deck"
                   >
                     <Play className="w-4 h-4" />
@@ -577,6 +630,46 @@ export default function TeacherFlashcards() {
             </div>
             ))}
           </div>
+
+          {/* Pagination Controls */}
+          {filteredDecks.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-6">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Showing <span className="font-medium text-gray-900 dark:text-white">{filteredDecks.length === 0 ? 0 : startIndex + 1}</span>
+                -
+                <span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + pageSize, filteredDecks.length)}</span>
+                of <span className="font-medium text-gray-900 dark:text-white">{filteredDecks.length}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={safePage === 1}
+                  className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
+                    safePage === 1
+                      ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Prev
+                </button>
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  Page <span className="font-semibold">{safePage}</span> of <span className="font-semibold">{totalPages}</span>
+                </span>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safePage === totalPages}
+                  className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
+                    safePage === totalPages
+                      ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+          </>
         )}
 
         {/* Create Deck Modal */}

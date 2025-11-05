@@ -1,6 +1,5 @@
 import { AUTH_KEY, ROLES } from '../config/constants';
-
-const API_BASE_URL = '/api';
+import { api } from './api';
 
 function getStoredUser() {
   const raw = localStorage.getItem(AUTH_KEY);
@@ -28,27 +27,7 @@ export const authService = {
     if (!email || !password) throw new Error('Missing credentials');
     
     try {
-      // Call real API
-      const response = await fetch(`${API_BASE_URL}/user/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      let data;
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        console.error('Failed to parse response:', parseError);
-        throw new Error('Invalid response from server');
-      }
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Invalid credentials');
-      }
+      const data = await api.post('/user/login', { email, password });
 
       // Transform API response to match expected format
       const user = {
@@ -94,31 +73,7 @@ export const authService = {
     if (!name || !email || !password) throw new Error('Missing fields');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/user/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': 'application/json',
-        },
-        body: JSON.stringify({ 
-          name, 
-          email, 
-          password, 
-          role: 'Student' 
-        }),
-      });
-
-      let data;
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        console.error('Failed to parse response:', parseError);
-        throw new Error('Invalid response from server');
-      }
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
+      const data = await api.post('/user/register', { name, email, password, role: 'Student' });
 
       // Transform API response
       const user = {
@@ -148,31 +103,7 @@ export const authService = {
     if (!name || !email || !password) throw new Error('Missing fields');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/user/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': 'application/json',
-        },
-        body: JSON.stringify({ 
-          name, 
-          email, 
-          password, 
-          role: 'Teacher'
-        }),
-      });
-
-      let data;
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        console.error('Failed to parse response:', parseError);
-        throw new Error('Invalid response from server');
-      }
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
+      const data = await api.post('/user/register', { name, email, password, role: 'Teacher' });
 
       // Transform API response
       const user = {
@@ -232,32 +163,7 @@ export const authService = {
   // Get user profile from API
   getUserProfile: async () => {
     try {
-      const token = getStoredToken() || localStorage.getItem('accessToken');
-      
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await fetch(`${API_BASE_URL}/user/profile`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      let data;
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        console.error('Failed to parse response:', parseError);
-        throw new Error('Invalid response from server');
-      }
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch profile');
-      }
+      const data = await api.get('/user/profile');
 
       // Transform API response
       const user = {
@@ -285,32 +191,7 @@ export const authService = {
   // Update user profile with multipart/form-data
   updateUserProfile: async (formData) => {
     try {
-      const token = getStoredToken() || localStorage.getItem('accessToken');
-      
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await fetch(`${API_BASE_URL}/user/update`, {
-        method: 'PUT',
-        headers: {
-          // Don't set Content-Type - browser will set it with boundary for multipart/form-data
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData, // FormData object
-      });
-
-      let data;
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        console.error('Failed to parse response:', parseError);
-        throw new Error('Invalid response from server');
-      }
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to update profile');
-      }
+      const data = await api.put('/user/update', formData);
 
       // Transform and update stored user
       if (data.user) {

@@ -14,14 +14,17 @@ export default function TeacherDeckDetail() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddCardModal, setShowAddCardModal] = useState(false);
-  const [cardForm, setCardForm] = useState({ question: '', answer: '', explanation: '' });
+  const allowedTags = ['geometry', 'algebra', 'probability'];
+  const [cardForm, setCardForm] = useState({ question: '', answer: '', explanation: '', tag: 'algebra' });
   const [showEditCardModal, setShowEditCardModal] = useState(false);
   const [showDeleteCardModal, setShowDeleteCardModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
   const [previewCardIndex, setPreviewCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [editCardForm, setEditCardForm] = useState({ question: '', answer: '', explanation: '' });
+  const [editCardForm, setEditCardForm] = useState({ question: '', answer: '', explanation: '', tag: 'algebra' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(6);
   
   // Form state for edit
   const [formData, setFormData] = useState({
@@ -176,7 +179,9 @@ export default function TeacherDeckDetail() {
   };
 
   const openAddCardModal = () => {
-    setCardForm({ question: '', answer: '', explanation: '' });
+    const subjectLower = (deck?.subject || '').toString().toLowerCase();
+    const suggestedTag = allowedTags.includes(subjectLower) ? subjectLower : 'algebra';
+    setCardForm({ question: '', answer: '', explanation: '', tag: suggestedTag });
     setShowAddCardModal(true);
   };
 
@@ -194,7 +199,7 @@ export default function TeacherDeckDetail() {
         question: cardForm.question,
         answer: cardForm.answer,
         note: cardForm.explanation || '',
-        tag: ''
+        tag: (cardForm.tag || '').toString().toLowerCase()
       });
       const refreshed = await flashcardService.getFlashcardsByDeckId(id);
       const list = Array.isArray(refreshed) ? refreshed : (refreshed?.flashcards || []);
@@ -214,7 +219,9 @@ export default function TeacherDeckDetail() {
     setEditCardForm({
       question: isObj ? (card.question || '') : String(card || ''),
       answer: isObj ? (card.answer || '') : '',
-      explanation: isObj ? (card.explanation || card.note || '') : ''
+      explanation: isObj ? (card.explanation || card.note || '') : '',
+      tag: (isObj ? (card.tag || '') : '').toString().toLowerCase() ||
+           (allowedTags.includes((deck?.subject || '').toString().toLowerCase()) ? (deck?.subject || '').toString().toLowerCase() : 'algebra')
     });
     setShowEditCardModal(true);
   };
@@ -234,7 +241,7 @@ export default function TeacherDeckDetail() {
         question: editCardForm.question,
         answer: editCardForm.answer,
         note: editCardForm.explanation || '',
-        tag: selectedCard.tag || ''
+        tag: (editCardForm.tag || '').toString().toLowerCase()
       });
       const refreshed = await flashcardService.getFlashcardsByDeckId(id);
       const list = Array.isArray(refreshed) ? refreshed : (refreshed?.flashcards || []);
@@ -293,6 +300,18 @@ export default function TeacherDeckDetail() {
       setIsSubmitting(false);
     }
   };
+
+  // Reset pagination when flashcards list changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [deck?.flashcards?.length]);
+
+  // Pagination calculations for flashcards grid
+  const totalCards = deck?.flashcards?.length || 0;
+  const totalPages = Math.max(1, Math.ceil(totalCards / pageSize));
+  const safePage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const currentPageCards = (deck?.flashcards || []).slice(startIndex, startIndex + pageSize);
 
   if (isLoading) {
     return (
@@ -435,23 +454,26 @@ export default function TeacherDeckDetail() {
 
           {deck.flashcards && deck.flashcards.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {deck.flashcards.map((card, index) => (
+              {currentPageCards.map((card, index) => (
                 <div
-                  key={card._id || index}
-                  className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
+                  key={card._id || (startIndex + index)}
+                  className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors cursor-pointer"
+                  onClick={() => openPreviewModal(card, startIndex + index)}
+                  title="Click to preview"
+                  role="button"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Card #{index + 1}
+                      Card #{startIndex + index + 1}
                     </span>
                     <div className="flex gap-2">
-                      <button onClick={() => openPreviewModal(card, index)} className="p-1 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900 rounded" title="Preview">
+                      <button onClick={(e) => { e.stopPropagation(); openPreviewModal(card, startIndex + index); }} className="p-1 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900 rounded" title="Preview">
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button onClick={() => openEditCardModal(card)} className="p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded" title="Edit">
+                      <button onClick={(e) => { e.stopPropagation(); openEditCardModal(card); }} className="p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded" title="Edit">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => openDeleteCardModal(card)} className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 rounded" title="Delete">
+                      <button onClick={(e) => { e.stopPropagation(); openDeleteCardModal(card); }} className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 rounded" title="Delete">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -488,6 +510,45 @@ export default function TeacherDeckDetail() {
                 <Plus className="w-5 h-5" />
                 Add Your First Card
               </button>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {deck.flashcards && deck.flashcards.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-6">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Showing <span className="font-medium text-gray-900 dark:text-white">{totalCards === 0 ? 0 : startIndex + 1}</span>
+                -
+                <span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + pageSize, totalCards)}</span>
+                of <span className="font-medium text-gray-900 dark:text-white">{totalCards}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={safePage === 1}
+                  className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
+                    safePage === 1
+                      ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Prev
+                </button>
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  Page <span className="font-semibold">{safePage}</span> of <span className="font-semibold">{totalPages}</span>
+                </span>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safePage === totalPages}
+                  className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
+                    safePage === totalPages
+                      ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -533,6 +594,21 @@ export default function TeacherDeckDetail() {
                       placeholder="Enter answer"
                       required
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Tag <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={cardForm.tag}
+                      onChange={(e) => setCardForm({ ...cardForm, tag: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      {allowedTags.map(t => (
+                        <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -627,6 +703,19 @@ export default function TeacherDeckDetail() {
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Add explanation"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tag <span className="text-red-500">*</span></label>
+                    <select
+                      value={editCardForm.tag}
+                      onChange={(e) => setEditCardForm({ ...editCardForm, tag: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      {allowedTags.map(t => (
+                        <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 flex gap-3">

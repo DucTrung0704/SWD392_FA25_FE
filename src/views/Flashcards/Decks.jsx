@@ -3,22 +3,41 @@ import { flashcardService } from '../../services/flashcardService';
 import Button from '../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 import { Search, BookOpen, Eye, Plus, Play } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import { ROLES } from '../../config/constants';
 
 export default function Decks() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [decks, setDecks] = useState([]);
   const [filteredDecks, setFilteredDecks] = useState([]);
   const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(6);
+  const [difficultyFilter, setDifficultyFilter] = useState('all'); // all | beginner | intermediate | advanced
+  const [premiumFilter, setPremiumFilter] = useState('all'); // all | premium | free
 
   useEffect(() => {
     const load = async () => {
       try {
         const data = await flashcardService.getAllDecks();
+        // Filter decks based on user role
+        let filteredData = Array.isArray(data) ? data : [];
+        
+        // If user is Student, only show public decks
+        if (user?.role === ROLES.Student) {
+          filteredData = filteredData.filter(deck => 
+            deck.isPublic === true || 
+            deck.status === true || 
+            deck.status === 'active'
+          );
+        }
+        
         // Normalize to expected shape used by UI
-        const normalized = (data || []).map((d) => ({
+        const normalized = filteredData.map((d) => ({
           id: d._id || d.id,
           title: d.title,
           description: d.description,
@@ -40,11 +59,16 @@ export default function Decks() {
       }
     };
     load();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     filterAndSortDecks();
-  }, [keyword, selectedCategory, sortBy, decks]);
+  }, [keyword, selectedCategory, sortBy, difficultyFilter, premiumFilter, decks]);
+
+  // Reset to first page whenever filters/search/sort change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [keyword, selectedCategory, sortBy, difficultyFilter, premiumFilter, decks]);
 
   const filterAndSortDecks = () => {
     let result = [...decks];
@@ -61,6 +85,20 @@ export default function Decks() {
     // Filter by category
     if (selectedCategory !== 'all') {
       result = result.filter(deck => deck.category === selectedCategory);
+    }
+
+    // Filter by difficulty
+    if (difficultyFilter !== 'all') {
+      result = result.filter(deck => (deck.difficulty || '').toLowerCase() === difficultyFilter);
+    }
+
+    // Filter by premium/free
+    if (premiumFilter !== 'all') {
+      if (premiumFilter === 'premium') {
+        result = result.filter(deck => deck.premium === true);
+      } else if (premiumFilter === 'free') {
+        result = result.filter(deck => !deck.premium);
+      }
     }
 
     // Sort decks
@@ -106,6 +144,12 @@ export default function Decks() {
     averageCards: Math.round((decks.reduce((sum, deck) => sum + (deck.cards?.length || 0), 0) / (decks.length || 1))) || 0,
     studiedToday: decks.filter(deck => deck.lastStudied).length
   };
+
+  // Pagination calculations
+  const totalPages = Math.max(1, Math.ceil((filteredDecks.length || 0) / pageSize));
+  const safePage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const currentPageDecks = filteredDecks.slice(startIndex, startIndex + pageSize);
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -174,6 +218,27 @@ export default function Decks() {
               </select>
 
               <select
+                value={difficultyFilter}
+                onChange={(e) => setDifficultyFilter(e.target.value)}
+                className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Difficulty</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+
+              <select
+                value={premiumFilter}
+                onChange={(e) => setPremiumFilter(e.target.value)}
+                className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Plans</option>
+                <option value="free">Free</option>
+                <option value="premium">Premium</option>
+              </select>
+
+              <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -200,50 +265,56 @@ export default function Decks() {
 
         {/* Decks Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {filteredDecks.map((deck, index) => (
+          {currentPageDecks.map((deck, index) => (
             <div 
               key={deck.id}
-              className="group relative bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 sm:hover:-translate-y-2 border border-gray-100 dark:border-gray-700"
+              className="group relative bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 sm:hover:-translate-y-2 border border-gray-100 dark:border-gray-700 flex flex-col h-full min-h-[420px]"
             >
               {/* Deck Status Badge */}
               {deck.premium && (
-                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10">
                   PREMIUM
                 </div>
               )}
 
               {/* Deck Icon */}
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-md">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-md flex-shrink-0">
                 <BookOpen className="w-7 h-7 text-white" />
               </div>
               
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 min-h-[3.5rem]">
                 {deck.title}
               </h3>
               
-              <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-3 min-h-[4.5rem]">
                 {deck.description || 'A comprehensive flashcard deck for effective learning'}
               </p>
               
               {/* Tags */}
-              <div className="flex flex-wrap gap-1 mb-4">
-                {deck.tags.slice(0, 3).map(tag => (
-                  <span 
-                    key={tag}
-                    className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {deck.tags.length > 3 && (
-                  <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full">
-                    +{deck.tags.length - 3}
-                  </span>
+              <div className="flex flex-wrap gap-1 mb-4 min-h-[1.75rem]">
+                {deck.tags && deck.tags.length > 0 ? (
+                  <>
+                    {deck.tags.slice(0, 3).map(tag => (
+                      <span 
+                        key={tag}
+                        className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {deck.tags.length > 3 && (
+                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full">
+                        +{deck.tags.length - 3}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-xs text-gray-400 dark:text-gray-500">No tags</span>
                 )}
               </div>
               
               {/* Deck Stats */}
-              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-4 mb-4">
+              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-4 mb-4 flex-shrink-0">
                 <div className="flex items-center space-x-4">
                   <span className="flex items-center">
                     <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
@@ -254,7 +325,7 @@ export default function Decks() {
                     {deck.stats?.views || 0}
                   </span>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
                   deck.difficulty === 'advanced' 
                     ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                     : deck.difficulty === 'intermediate'
@@ -266,7 +337,7 @@ export default function Decks() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-2 items-center">
+              <div className="flex gap-2 items-center mt-auto flex-shrink-0">
                 <Button
                   onClick={() => handleStudyDeck(deck.id)}
                   variant="primary"
@@ -276,7 +347,7 @@ export default function Decks() {
                 </Button>
                 <button
                   onClick={() => handlePreviewDeck(deck.id)}
-                  className="p-2 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900 rounded-lg transition-colors"
+                  className="p-2 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900 rounded-lg transition-colors flex-shrink-0"
                   title="Preview Deck"
                 >
                   <Play className="w-5 h-5" />
@@ -284,10 +355,51 @@ export default function Decks() {
               </div>
 
               {/* Hover Effect Overlay */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             </div>
           ))}
         </div>
+
+        {/* Pagination Controls */}
+        {filteredDecks.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-6">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Showing <span className="font-medium text-gray-900 dark:text-white">{filteredDecks.length === 0 ? 0 : startIndex + 1}</span>
+              
+              -
+              <span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + pageSize, filteredDecks.length)}</span>
+              
+              of <span className="font-medium text-gray-900 dark:text-white">{filteredDecks.length}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+                className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
+                  safePage === 1
+                    ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                Prev
+              </button>
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                Page <span className="font-semibold">{safePage}</span> of <span className="font-semibold">{totalPages}</span>
+              </span>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+                className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
+                  safePage === totalPages
+                    ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Empty State */}
         {!loading && filteredDecks.length === 0 && (
@@ -313,21 +425,23 @@ export default function Decks() {
           </div>
         )}
 
-        {/* Create New Deck CTA */}
-        <div className="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white text-center">
-          <h3 className="text-2xl font-bold mb-3">Ready to Create Your Own Deck?</h3>
-          <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-            Join thousands of learners who create and share their own flashcard decks
-          </p>
-          <Button 
-            onClick={handleCreateDeck}
-            variant="primary"
-            className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-600 rounded-xl font-bold hover:bg-gray-100 transition-colors duration-200 shadow-lg hover:shadow-xl"
-          >
-            <Plus className="w-4 h-4" />
-            Create New Deck
-          </Button>
-        </div>
+        {/* Create New Deck CTA - Only for Teacher/Admin */}
+        {user?.role !== ROLES.Student && (
+          <div className="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white text-center">
+            <h3 className="text-2xl font-bold mb-3">Ready to Create Your Own Deck?</h3>
+            <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
+              Join thousands of learners who create and share their own flashcard decks
+            </p>
+            <Button 
+              onClick={handleCreateDeck}
+              variant="primary"
+              className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-600 rounded-xl font-bold hover:bg-gray-100 transition-colors duration-200 shadow-lg hover:shadow-xl"
+            >
+              <Plus className="w-4 h-4" />
+              Create New Deck
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

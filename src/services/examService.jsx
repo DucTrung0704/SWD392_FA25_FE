@@ -1,43 +1,22 @@
-const mockExams = [
-  {
-    id: 'e1',
-    title: 'Bio Quiz 1',
-    durationMinutes: 30,
-    questions: [
-      { id: 'q1', text: 'What is the powerhouse of the cell?', options: ['Ribosome', 'Mitochondria', 'Nucleus', 'Lysosome'], correctIndex: 1, topic: 'Biology', difficulty: 'Easy' },
-    ],
-    ownerId: 1,
-  },
-];
+import { api } from './api';
 
 export const examService = {
-  listExams: async () => mockExams,
+  listExams: async (params) => {
+    return await api.get('/exam/teacher/all', { params });
+  },
+  getExamById: async (id) => {
+    return await api.get(`/exam/teacher/${id}`);
+  },
   createExam: async (exam) => {
-    const id = `e${Date.now()}`;
-    const newExam = { id, ...exam };
-    mockExams.push(newExam);
-    return newExam;
+    return await api.post('/exam/teacher/create', exam);
   },
   updateExam: async (id, payload) => {
-    const idx = mockExams.findIndex(e => e.id === id);
-    if (idx === -1) throw new Error('Exam not found');
-    mockExams[idx] = { ...mockExams[idx], ...payload };
-    return mockExams[idx];
+    return await api.put(`/exam/teacher/update/${id}`, payload);
   },
   deleteExam: async (id) => {
-    const idx = mockExams.findIndex(e => e.id === id);
-    if (idx === -1) throw new Error('Exam not found');
-    const [removed] = mockExams.splice(idx, 1);
-    return removed;
+    return await api.delete(`/exam/teacher/delete/${id}`);
   },
   submitExam: async (examId, answers) => {
-    const exam = mockExams.find(e => e.id === examId);
-    if (!exam) throw new Error('Exam not found');
-    let correct = 0;
-    exam.questions.forEach((q, idx) => {
-      if (answers[idx] === q.correctIndex) correct += 1;
-    });
-    const score = Math.round((correct / exam.questions.length) * 100);
-    return { score, correct, total: exam.questions.length };
+    return await api.post('/exam/student/submit', { examId, answers });
   },
 };

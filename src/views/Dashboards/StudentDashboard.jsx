@@ -1,21 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import RoleBadge from '../../components/RoleBadge';
 import { Link } from 'react-router-dom';
 import Icon from '../../components/ui/Icon';
+import { flashcardService } from '../../services/flashcardService';
 
 export default function StudentDashboard() {
-  // Mock data for student progress
-  const studentStats = {
-    totalDecks: 12,
-    completedDecks: 4,
-    studyStreak: 7,
-    accuracy: 82,
-    recentActivity: [
-      { deck: 'English Vocabulary', progress: 75, time: '2 hours ago' },
-      { deck: 'Math Formulas', progress: 60, time: '1 day ago' },
-      { deck: 'Science Concepts', progress: 90, time: '3 days ago' }
-    ]
-  };
+  const [decks, setDecks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [studentStats, setStudentStats] = useState({
+    totalDecks: 0,
+    completedDecks: 0,
+    studyStreak: 0,
+    accuracy: 0,
+    recentActivity: []
+  });
+
+  useEffect(() => {
+    const loadDecks = async () => {
+      try {
+        setLoading(true);
+        const data = await flashcardService.getAllDecks();
+        // Filter only public decks for students
+        const publicDecks = Array.isArray(data) 
+          ? data.filter(deck => deck.isPublic === true || deck.status === true || deck.status === 'active')
+          : [];
+        
+        setDecks(publicDecks);
+        
+        // Calculate stats from actual data
+        setStudentStats({
+          totalDecks: publicDecks.length,
+          completedDecks: 0, // TODO: Calculate from progress API
+          studyStreak: 0, // TODO: Calculate from progress API
+          accuracy: 0, // TODO: Calculate from progress API
+          recentActivity: publicDecks.slice(0, 3).map(deck => ({
+            deck: deck.title,
+            progress: 0, // TODO: Get from progress API
+            time: deck.updatedAt || deck.createdAt || 'Recently'
+          }))
+        });
+      } catch (error) {
+        console.error('Error loading decks:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDecks();
+  }, []);
 
   const quickActions = [
     {
