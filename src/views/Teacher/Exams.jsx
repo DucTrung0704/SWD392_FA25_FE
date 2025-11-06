@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Eye, Edit, TrendingUp, Search, FileText, Users, Clock, CheckCircle, Trash2, X, Filter } from 'lucide-react';
+import { Plus, Eye, Edit, TrendingUp, Search, FileText, Users, Clock, CheckCircle, Trash2, X, Filter, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { examService } from '../../services/examService';
 
 export default function TeacherExams() {
@@ -15,20 +15,215 @@ export default function TeacherExams() {
   const [loading, setLoading] = useState(true);
   const [exams, setExams] = useState([]);
   const [form, setForm] = useState({ title: '', description: '', time_limit: 90, isPublic: true });
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [selectedExams, setSelectedExams] = useState([]);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [filterRules, setFilterRules] = useState([]);
+  const [tempFilter, setTempFilter] = useState({ field: 'title', operator: 'contains', value: '' });
 
   useEffect(() => {
     loadExams();
   }, []);
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedStatus, filterRules]);
+
   const statuses = ['all', 'draft', 'scheduled', 'completed', 'graded'];
 
   const filteredExams = exams.filter(exam => {
-    const matchesSearch = exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         exam.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         exam.description.toLowerCase().includes(searchTerm.toLowerCase());
+    // Apply filter rules
+    if (filterRules.length > 0) {
+      const matchesAllRules = filterRules.every(rule => {
+        if (!rule.value) return true; // Skip empty rules
+        
+        const examValue = String(exam[rule.field] || '').toLowerCase();
+        const filterValue = rule.value.toLowerCase();
+        
+        switch (rule.operator) {
+          case 'contains':
+            return examValue.includes(filterValue);
+          case 'equals':
+            return examValue === filterValue;
+          case 'startsWith':
+            return examValue.startsWith(filterValue);
+          case 'endsWith':
+            return examValue.endsWith(filterValue);
+          default:
+            return true;
+        }
+      });
+      if (!matchesAllRules) return false;
+    }
+    
+    // Apply search term (if no filter rules)
+    if (filterRules.length === 0 && searchTerm) {
+      const matchesSearch = exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           exam.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           exam.description.toLowerCase().includes(searchTerm.toLowerCase());
+      if (!matchesSearch) return false;
+    }
+    
+    // Apply status filter
     const matchesStatus = selectedStatus === 'all' || exam.status === selectedStatus;
-    return matchesSearch && matchesStatus;
+    return matchesStatus;
   });
+
+  // Sort exams
+  const sortedExams = [...filteredExams].sort((a, b) => {
+    if (!sortField) return 0;
+    
+    let aValue, bValue;
+    
+    switch (sortField) {
+      case 'title':
+        aValue = a.title.toLowerCase();
+        bValue = b.title.toLowerCase();
+        break;
+      case 'date':
+        aValue = new Date(a.date);
+        bValue = new Date(b.date);
+        break;
+      case 'duration':
+        aValue = a.duration;
+        bValue = b.duration;
+        break;
+      case 'status':
+        aValue = a.status.toLowerCase();
+        bValue = b.status.toLowerCase();
+        break;
+      default:
+        return 0;
+    }
+    
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const pageIds = paginatedExams.map(exam => exam.id);
+      setSelectedExams(prev => {
+        const newSelection = [...prev];
+        pageIds.forEach(id => {
+          if (!newSelection.includes(id)) {
+            newSelection.push(id);
+          }
+        });
+        return newSelection;
+      });
+    } else {
+      const pageIds = paginatedExams.map(exam => exam.id);
+      setSelectedExams(prev => prev.filter(id => !pageIds.includes(id)));
+    }
+  };
+
+  const handleSelectExam = (examId) => {
+    setSelectedExams(prev => 
+      prev.includes(examId)
+        ? prev.filter(id => id !== examId)
+        : [...prev, examId]
+    );
+  };
+
+  const handleDeleteSelected = async () => {
+    try {
+      setIsSubmitting(true);
+      setError('');
+      
+      // Delete all selected exams
+      await Promise.all(selectedExams.map(id => examService.deleteExam(id)));
+      
+      // Reload exams list
+      await loadExams();
+      
+      // Clear selection and reset to first page
+      setSelectedExams([]);
+      setCurrentPage(1);
+      setShowBulkDeleteModal(false);
+    } catch (err) {
+      console.error('Failed to delete exams:', err);
+      setError(err.message || 'Failed to delete exams. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getSortIcon = (field) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-4 h-4 ml-1 text-gray-400" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="w-4 h-4 ml-1 text-blue-600 dark:text-blue-400" />
+      : <ArrowDown className="w-4 h-4 ml-1 text-blue-600 dark:text-blue-400" />;
+  };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(sortedExams.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedExams = sortedExams.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    // Clear selection when changing page
+    setSelectedExams([]);
+  };
+
+  const handleItemsPerPageChange = (value) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
+    setSelectedExams([]);
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -122,6 +317,9 @@ export default function TeacherExams() {
       setError('');
       
       await examService.deleteExam(examToDelete.id);
+      
+      // Remove from selected if it was selected
+      setSelectedExams(prev => prev.filter(id => id !== examToDelete.id));
       
       // Reload exams list
       await loadExams();
@@ -219,38 +417,152 @@ export default function TeacherExams() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 sm:p-6 border border-gray-100 dark:border-gray-700 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Filters</h3>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        {/* Filter Bar */}
+        <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-5">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+            In this view show records
+          </h3>
+          
+          {filterRules.length === 0 ? (
+            <div className="mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">Where</span>
+                <select
+                  value={tempFilter.field}
+                  onChange={(e) => {
+                    setTempFilter({ ...tempFilter, field: e.target.value });
+                    if (tempFilter.value) {
+                      setFilterRules([{ ...tempFilter, field: e.target.value }]);
+                    }
+                  }}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="title">Title</option>
+                  <option value="subject">Subject</option>
+                  <option value="status">Status</option>
+                  <option value="type">Type</option>
+                </select>
+                <select
+                  value={tempFilter.operator}
+                  onChange={(e) => {
+                    setTempFilter({ ...tempFilter, operator: e.target.value });
+                    if (tempFilter.value) {
+                      setFilterRules([{ ...tempFilter, operator: e.target.value }]);
+                    }
+                  }}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="contains">contains</option>
+                  <option value="equals">equals</option>
+                  <option value="startsWith">starts with</option>
+                  <option value="endsWith">ends with</option>
+                </select>
                 <input
                   type="text"
-                  placeholder="Search exams by title, subject, or description..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  placeholder="Enter value..."
+                  value={tempFilter.value}
+                  onChange={(e) => {
+                    const newTemp = { ...tempFilter, value: e.target.value };
+                    setTempFilter(newTemp);
+                    if (e.target.value.trim()) {
+                      setFilterRules([newTemp]);
+                    } else {
+                      setFilterRules([]);
+                    }
+                  }}
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
+                <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <MoreVertical className="w-4 h-4" />
+                </button>
               </div>
             </div>
-            <div className="sm:w-56">
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer"
-              >
-                {statuses.map(status => (
-                  <option key={status} value={status}>
-                    {status === 'all' ? 'All Status' : status.charAt(0).toUpperCase() + status.slice(1)}
-                  </option>
-                ))}
-              </select>
+          ) : (
+            <div className="space-y-3 mb-4">
+              {filterRules.map((rule, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                    {index === 0 ? 'Where' : 'And'}
+                  </span>
+                  <select
+                    value={rule.field}
+                    onChange={(e) => {
+                      const newRules = [...filterRules];
+                      newRules[index].field = e.target.value;
+                      setFilterRules(newRules);
+                    }}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="title">Title</option>
+                    <option value="subject">Subject</option>
+                    <option value="status">Status</option>
+                    <option value="type">Type</option>
+                  </select>
+                  <select
+                    value={rule.operator}
+                    onChange={(e) => {
+                      const newRules = [...filterRules];
+                      newRules[index].operator = e.target.value;
+                      setFilterRules(newRules);
+                    }}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="contains">contains</option>
+                    <option value="equals">equals</option>
+                    <option value="startsWith">starts with</option>
+                    <option value="endsWith">ends with</option>
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="Enter value..."
+                    value={rule.value}
+                    onChange={(e) => {
+                      const newRules = [...filterRules];
+                      newRules[index].value = e.target.value;
+                      setFilterRules(newRules);
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <button
+                    onClick={() => {
+                      const newRules = filterRules.filter((_, i) => i !== index);
+                      setFilterRules(newRules);
+                      if (newRules.length === 0) {
+                        setTempFilter({ field: 'title', operator: 'contains', value: '' });
+                      }
+                    }}
+                    className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
             </div>
+          )}
+
+          <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => {
+                setFilterRules([...filterRules, { field: 'title', operator: 'contains', value: '' }]);
+              }}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Add filter
+            </button>
+            {filterRules.length > 0 && (
+              <button
+                onClick={() => {
+                  setFilterRules([]);
+                  setTempFilter({ field: 'title', operator: 'contains', value: '' });
+                  setSearchTerm('');
+                  setSelectedStatus('all');
+                }}
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              >
+                Clear all filters
+              </button>
+            )}
           </div>
         </div>
 
@@ -275,9 +587,20 @@ export default function TeacherExams() {
         {!loading && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-700/50">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Exams <span className="text-blue-600 dark:text-blue-400">({filteredExams.length})</span>
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Exams <span className="text-blue-600 dark:text-blue-400">({filteredExams.length})</span>
+                </h2>
+                {selectedExams.length > 0 && (
+                  <button
+                    onClick={() => setShowBulkDeleteModal(true)}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete ({selectedExams.length})
+                  </button>
+                )}
+              </div>
             </div>
             
             {filteredExams.length === 0 ? (
@@ -307,10 +630,34 @@ export default function TeacherExams() {
                   <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
                     <tr>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                        Exam Details
+                        <input
+                          type="checkbox"
+                          checked={selectedExams.length === paginatedExams.length && paginatedExams.length > 0 && paginatedExams.every(exam => selectedExams.includes(exam.id))}
+                          onChange={handleSelectAll}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                        />
+                      </th>
+                      <th 
+                        className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        onClick={() => handleSort('title')}
+                      >
+                        <div className="flex items-center">
+                          Exam Details
+                          {getSortIcon('title')}
+                        </div>
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                        Class & Date
+                        Class
+                      </th>
+                      <th 
+                        className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        onClick={() => handleSort('date')}
+                      >
+                        <div className="flex items-center">
+                          Date
+                          {getSortIcon('date')}
+                        </div>
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                         Duration
@@ -321,8 +668,14 @@ export default function TeacherExams() {
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                         Avg Score
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                        Status
+                      <th 
+                        className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        onClick={() => handleSort('status')}
+                      >
+                        <div className="flex items-center">
+                          Status
+                          {getSortIcon('status')}
+                        </div>
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                         Actions
@@ -330,9 +683,22 @@ export default function TeacherExams() {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {filteredExams.map((exam) => (
-                      <tr key={exam.id} className="hover:bg-blue-50/50 dark:hover:bg-gray-700/50 transition-colors duration-200 cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
-                    <td className="px-6 py-4">
+                    {paginatedExams.map((exam) => (
+                      <tr 
+                        key={exam.id} 
+                        className={`hover:bg-blue-50/50 dark:hover:bg-gray-700/50 transition-colors duration-200 ${
+                          selectedExams.includes(exam.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                        }`}
+                      >
+                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedExams.includes(exam.id)}
+                        onChange={() => handleSelectExam(exam.id)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      />
+                    </td>
+                    <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
                       <div className="flex items-start">
                         <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                           <FileText className="w-5 h-5 text-white" />
@@ -352,20 +718,25 @@ export default function TeacherExams() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
                       <div className="text-sm text-gray-900 dark:text-white font-medium">
-                        Class {exam.class}
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {formatDate(exam.date)} at {exam.time}
+                        {exam.class || 'N/A'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
+                      <div className="text-sm text-gray-900 dark:text-white font-medium">
+                        {formatDate(exam.date)}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {exam.time}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
                       <div className="text-sm text-gray-900 dark:text-white">
                         {exam.duration} minutes
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
                       <div className="text-sm text-gray-900 dark:text-white">
                         {exam.completedStudents}/{exam.enrolledStudents}
                       </div>
@@ -373,7 +744,7 @@ export default function TeacherExams() {
                         completed
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
                       {exam.avgScore > 0 ? (
                         <span className={`text-sm font-medium ${getScoreColor(exam.avgScore)}`}>
                           {exam.avgScore}%
@@ -382,7 +753,7 @@ export default function TeacherExams() {
                         <span className="text-sm text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(exam.status)}`}>
                         {exam.status}
                       </span>
@@ -422,6 +793,48 @@ export default function TeacherExams() {
               </tbody>
             </table>
           </div>
+            )}
+
+            {/* Pagination */}
+            {sortedExams.length > 0 && (
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>
+                    {' - '}
+                    <span className="font-medium text-gray-900 dark:text-white">{Math.min(endIndex, sortedExams.length)}</span>
+                    {' of '}
+                    <span className="font-medium text-gray-900 dark:text-white">{sortedExams.length}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
+                        currentPage === 1
+                          ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
+                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      Prev
+                    </button>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
+                    </span>
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
+                        currentPage === totalPages
+                          ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
+                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -586,6 +999,72 @@ export default function TeacherExams() {
                   >
                     <Plus className="w-4 h-4" />
                     Create Exam
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bulk Delete Confirmation Modal */}
+        {showBulkDeleteModal && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div className="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" onClick={() => setShowBulkDeleteModal(false)}></div>
+              
+              <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-200 dark:border-gray-700">
+                <div className="px-6 py-4">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full">
+                    <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  </div>
+                  
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
+                    Delete {selectedExams.length} Exam{selectedExams.length > 1 ? 's' : ''}
+                  </h3>
+                  
+                  <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">
+                    Are you sure you want to delete {selectedExams.length} selected exam{selectedExams.length > 1 ? 's' : ''}?
+                  </p>
+                  
+                  <p className="text-sm text-red-600 dark:text-red-400 text-center">
+                    This action cannot be undone.
+                  </p>
+                  
+                  {error && (
+                    <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
+                      <p className="text-red-700 dark:text-red-400 text-sm text-center">{error}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBulkDeleteModal(false);
+                      setError('');
+                    }}
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleDeleteSelected}
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="w-4 h-4" />
+                        Delete {selectedExams.length} Exam{selectedExams.length > 1 ? 's' : ''}
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

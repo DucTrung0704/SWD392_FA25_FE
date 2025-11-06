@@ -309,9 +309,9 @@ export default function TeacherDeckDetail() {
   // Pagination calculations for flashcards grid
   const totalCards = deck?.flashcards?.length || 0;
   const totalPages = Math.max(1, Math.ceil(totalCards / pageSize));
-  const safePage = Math.min(Math.max(1, currentPage), totalPages);
-  const startIndex = (safePage - 1) * pageSize;
-  const currentPageCards = (deck?.flashcards || []).slice(startIndex, startIndex + pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentPageCards = (deck?.flashcards || []).slice(startIndex, endIndex);
 
   if (isLoading) {
     return (
@@ -517,17 +517,18 @@ export default function TeacherDeckDetail() {
           {deck.flashcards && deck.flashcards.length > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-6">
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Showing <span className="font-medium text-gray-900 dark:text-white">{totalCards === 0 ? 0 : startIndex + 1}</span>
-                -
-                <span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + pageSize, totalCards)}</span>
-                of <span className="font-medium text-gray-900 dark:text-white">{totalCards}</span>
+                Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>
+                {' - '}
+                <span className="font-medium text-gray-900 dark:text-white">{Math.min(endIndex, totalCards)}</span>
+                {' of '}
+                <span className="font-medium text-gray-900 dark:text-white">{totalCards}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={safePage === 1}
+                  disabled={currentPage === 1}
                   className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
-                    safePage === 1
+                    currentPage === 1
                       ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
                       : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
@@ -535,13 +536,13 @@ export default function TeacherDeckDetail() {
                   Prev
                 </button>
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Page <span className="font-semibold">{safePage}</span> of <span className="font-semibold">{totalPages}</span>
+                  Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
                 </span>
                 <button
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={safePage === totalPages}
+                  disabled={currentPage === totalPages}
                   className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
-                    safePage === totalPages
+                    currentPage === totalPages
                       ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
                       : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}

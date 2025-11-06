@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { flashcardService } from '../../services/flashcardService';
 import Button from '../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
-import { Search, BookOpen, Eye, Plus, Play } from 'lucide-react';
+import { Search, BookOpen, Eye, Plus, Play, X, MoreVertical } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { ROLES } from '../../config/constants';
 

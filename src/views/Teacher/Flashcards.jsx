@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Eye, Edit, Trash2, Search, FileText, Users, TrendingUp, BookOpen, Globe, Lock, Play } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, FileText, Users, TrendingUp, BookOpen, Globe, Lock, Play, X, MoreVertical } from 'lucide-react';
 import { flashcardService } from '../../services/flashcardService';
 
 export default function TeacherFlashcards() {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -17,8 +15,8 @@ export default function TeacherFlashcards() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(6);
-  const [difficultyFilter, setDifficultyFilter] = useState('all'); // all | easy | medium | hard
-  const [visibilityFilter, setVisibilityFilter] = useState('all'); // all | public | private
+  const [filterRules, setFilterRules] = useState([]);
+  const [tempFilter, setTempFilter] = useState({ field: 'title', operator: 'contains', value: '' });
   
   // Form state for create/edit
   const [formData, setFormData] = useState({
@@ -292,31 +290,51 @@ export default function TeacherFlashcards() {
 
   // Removed legacy mock deck list
 
-  // Extract unique subjects from decks
-  const subjects = ['all', ...new Set(flashcardDecks.map(deck => deck.subject).filter(Boolean))];
-
   const filteredDecks = flashcardDecks.filter(deck => {
-    const matchesSearch = deck.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         deck.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSubject = selectedSubject === 'all' || deck.subject === selectedSubject;
-    const matchesDifficulty = difficultyFilter === 'all' || deck.difficulty.toLowerCase() === difficultyFilter;
-    const matchesVisibility =
-      visibilityFilter === 'all' ||
-      (visibilityFilter === 'public' && deck.status === 'active') ||
-      (visibilityFilter === 'private' && deck.status !== 'active');
-    return matchesSearch && matchesSubject && matchesDifficulty && matchesVisibility;
+    // Apply filter rules
+    if (filterRules.length > 0) {
+      const matchesAllRules = filterRules.every(rule => {
+        if (!rule.value) return true; // Skip empty rules
+        
+        let deckValue;
+        if (rule.field === 'status') {
+          deckValue = deck.status || 'draft';
+        } else if (rule.field === 'difficulty') {
+          deckValue = (deck.difficulty || 'Medium').toLowerCase();
+        } else {
+          deckValue = String(deck[rule.field] || '').toLowerCase();
+        }
+        const filterValue = rule.value.toLowerCase();
+        
+        switch (rule.operator) {
+          case 'contains':
+            return deckValue.includes(filterValue);
+          case 'equals':
+            return deckValue === filterValue;
+          case 'startsWith':
+            return deckValue.startsWith(filterValue);
+          case 'endsWith':
+            return deckValue.endsWith(filterValue);
+          default:
+            return true;
+        }
+      });
+      if (!matchesAllRules) return false;
+    }
+    
+    return true;
   });
 
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedSubject, difficultyFilter, visibilityFilter, flashcardDecks]);
+  }, [filterRules, flashcardDecks]);
 
   // Pagination calculations
   const totalPages = Math.max(1, Math.ceil((filteredDecks.length || 0) / pageSize));
-  const safePage = Math.min(Math.max(1, currentPage), totalPages);
-  const startIndex = (safePage - 1) * pageSize;
-  const currentPageDecks = filteredDecks.slice(startIndex, startIndex + pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentPageDecks = filteredDecks.slice(startIndex, endIndex);
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
@@ -438,57 +456,150 @@ export default function TeacherFlashcards() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+        {/* Filter Bar */}
+        <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-5">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+            In this view show records
+          </h3>
+          
+          {filterRules.length === 0 ? (
+            <div className="mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">Where</span>
+                <select
+                  value={tempFilter.field}
+                  onChange={(e) => {
+                    setTempFilter({ ...tempFilter, field: e.target.value });
+                    if (tempFilter.value.trim()) {
+                      setFilterRules([{ ...tempFilter, field: e.target.value }]);
+                    }
+                  }}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="title">Title</option>
+                  <option value="subject">Subject</option>
+                  <option value="difficulty">Difficulty</option>
+                  <option value="status">Status</option>
+                </select>
+                <select
+                  value={tempFilter.operator}
+                  onChange={(e) => {
+                    setTempFilter({ ...tempFilter, operator: e.target.value });
+                    if (tempFilter.value.trim()) {
+                      setFilterRules([{ ...tempFilter, operator: e.target.value }]);
+                    }
+                  }}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="contains">contains</option>
+                  <option value="equals">equals</option>
+                  <option value="startsWith">starts with</option>
+                  <option value="endsWith">ends with</option>
+                </select>
                 <input
                   type="text"
-                  placeholder="Search flashcard decks..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter value..."
+                  value={tempFilter.value}
+                  onChange={(e) => {
+                    const newTemp = { ...tempFilter, value: e.target.value };
+                    setTempFilter(newTemp);
+                    if (e.target.value.trim()) {
+                      setFilterRules([newTemp]);
+                    } else {
+                      setFilterRules([]);
+                    }
+                  }}
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
+                <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <MoreVertical className="w-4 h-4" />
+                </button>
               </div>
             </div>
-            <div className="sm:w-48">
-              <select
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {subjects.map(subject => (
-                  <option key={subject} value={subject}>
-                    {subject === 'all' ? 'All Subjects' : subject}
-                  </option>
-                ))}
-              </select>
+          ) : (
+            <div className="space-y-3 mb-4">
+              {filterRules.map((rule, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                    {index === 0 ? 'Where' : 'And'}
+                  </span>
+                  <select
+                    value={rule.field}
+                    onChange={(e) => {
+                      const newRules = [...filterRules];
+                      newRules[index].field = e.target.value;
+                      setFilterRules(newRules);
+                    }}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="title">Title</option>
+                    <option value="subject">Subject</option>
+                    <option value="difficulty">Difficulty</option>
+                    <option value="status">Status</option>
+                  </select>
+                  <select
+                    value={rule.operator}
+                    onChange={(e) => {
+                      const newRules = [...filterRules];
+                      newRules[index].operator = e.target.value;
+                      setFilterRules(newRules);
+                    }}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="contains">contains</option>
+                    <option value="equals">equals</option>
+                    <option value="startsWith">starts with</option>
+                    <option value="endsWith">ends with</option>
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="Enter value..."
+                    value={rule.value}
+                    onChange={(e) => {
+                      const newRules = [...filterRules];
+                      newRules[index].value = e.target.value;
+                      setFilterRules(newRules);
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <button
+                    onClick={() => {
+                      const newRules = filterRules.filter((_, i) => i !== index);
+                      setFilterRules(newRules);
+                      if (newRules.length === 0) {
+                        setTempFilter({ field: 'title', operator: 'contains', value: '' });
+                      }
+                    }}
+                    className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
             </div>
-            <div className="sm:w-48">
-              <select
-                value={difficultyFilter}
-                onChange={(e) => setDifficultyFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          )}
+
+          <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => {
+                setFilterRules([...filterRules, { field: 'title', operator: 'contains', value: '' }]);
+              }}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Add filter
+            </button>
+            {filterRules.length > 0 && (
+              <button
+                onClick={() => {
+                  setFilterRules([]);
+                  setTempFilter({ field: 'title', operator: 'contains', value: '' });
+                }}
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
               >
-                <option value="all">All Difficulty</option>
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
-            <div className="sm:w-48">
-              <select
-                value={visibilityFilter}
-                onChange={(e) => setVisibilityFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Visibility</option>
-                <option value="public">Public</option>
-                <option value="private">Private</option>
-              </select>
-            </div>
+                Clear all filters
+              </button>
+            )}
           </div>
         </div>
 
@@ -512,8 +623,8 @@ export default function TeacherFlashcards() {
               No flashcard decks found
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {searchTerm || selectedSubject !== 'all' 
-                ? 'Try adjusting your search filters' 
+              {filterRules.length > 0
+                ? 'Try adjusting your filters to see more results.'
                 : 'Get started by creating your first flashcard deck'}
             </p>
             <button
@@ -635,17 +746,18 @@ export default function TeacherFlashcards() {
           {filteredDecks.length > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-6">
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Showing <span className="font-medium text-gray-900 dark:text-white">{filteredDecks.length === 0 ? 0 : startIndex + 1}</span>
-                -
-                <span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + pageSize, filteredDecks.length)}</span>
-                of <span className="font-medium text-gray-900 dark:text-white">{filteredDecks.length}</span>
+                Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>
+                {' - '}
+                <span className="font-medium text-gray-900 dark:text-white">{Math.min(endIndex, filteredDecks.length)}</span>
+                {' of '}
+                <span className="font-medium text-gray-900 dark:text-white">{filteredDecks.length}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={safePage === 1}
+                  disabled={currentPage === 1}
                   className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
-                    safePage === 1
+                    currentPage === 1
                       ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
                       : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
@@ -653,13 +765,13 @@ export default function TeacherFlashcards() {
                   Prev
                 </button>
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Page <span className="font-semibold">{safePage}</span> of <span className="font-semibold">{totalPages}</span>
+                  Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
                 </span>
                 <button
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={safePage === totalPages}
+                  disabled={currentPage === totalPages}
                   className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
-                    safePage === totalPages
+                    currentPage === totalPages
                       ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
                       : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}

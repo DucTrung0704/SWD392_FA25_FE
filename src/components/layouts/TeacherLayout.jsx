@@ -6,9 +6,19 @@ import Icon from '../ui/Icon';
 
 const TeacherLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('teacherSidebarCollapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const toggleSidebar = () => {
+    const newState = !sidebarCollapsed;
+    setSidebarCollapsed(newState);
+    localStorage.setItem('teacherSidebarCollapsed', JSON.stringify(newState));
+  };
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard/teacher', icon: 'stats', current: location.pathname === '/dashboard/teacher' },
@@ -38,27 +48,40 @@ const TeacherLayout = () => {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 ${
+      <div className={`fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-800 shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      } ${sidebarCollapsed ? 'lg:w-20' : 'w-64'}`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+            <div className={`flex items-center transition-all duration-300 ${sidebarCollapsed ? 'justify-center w-full' : ''}`}>
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-sm">T</span>
               </div>
-              <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white">Teacher</span>
+              {!sidebarCollapsed && (
+                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap">Teacher</span>
+              )}
             </div>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            >
-              <span className="sr-only">Close sidebar</span>
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleSidebar}
+                className="hidden lg:flex items-center justify-center p-2 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-600 text-white hover:from-blue-600 hover:to-cyan-700 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-200"
+                title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                <svg className={`h-4 w-4 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <span className="sr-only">Close sidebar</span>
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Navigation */}
@@ -71,18 +94,19 @@ const TeacherLayout = () => {
                   item.current
                     ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
                     : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                }`}
+                } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                title={sidebarCollapsed ? item.name : ''}
               >
-                <Icon name={item.icon} className="w-4 h-4 mr-3" />
-                {item.name}
+                <Icon name={item.icon} className={`w-4 h-4 ${sidebarCollapsed ? '' : 'mr-3'}`} />
+                {!sidebarCollapsed && <span>{item.name}</span>}
               </Link>
             ))}
           </nav>
 
           {/* User info */}
           <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center overflow-hidden">
+            <div className={`flex items-center mb-4 ${sidebarCollapsed ? 'justify-center' : ''}`}>
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                 {user?.avatar ? (
                   <img 
                     src={user.avatar.startsWith('http') ? user.avatar : user.avatar}
@@ -97,27 +121,42 @@ const TeacherLayout = () => {
                   <span className="text-white font-bold text-sm">{user?.name?.charAt(0) || 'T'}</span>
                 )}
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Teacher'}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Educator</p>
-              </div>
+              {!sidebarCollapsed && (
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Teacher'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Educator</p>
+                </div>
+              )}
             </div>
             
-            <div className="flex items-center justify-between">
+            <div className={`flex items-center ${sidebarCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
               <ThemeToggle />
-              <button
-                onClick={handleLogout}
-                className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-              >
-                Logout
-              </button>
+              {!sidebarCollapsed && (
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                >
+                  Logout
+                </button>
+              )}
+              {sidebarCollapsed && (
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                  title="Logout"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col lg:ml-64">
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         {/* Top bar */}
         <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <div className="flex items-center justify-between h-16 px-6">
