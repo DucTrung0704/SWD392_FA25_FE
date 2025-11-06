@@ -7,6 +7,7 @@ import ProtectedRoute from '../components/ProtectedRoute';
 // Layouts
 import TeacherLayout from '../components/layouts/TeacherLayout';
 import AdminLayout from '../components/layouts/AdminLayout';
+import StudentLayout from '../components/layouts/StudentLayout';
 
 // Views
 import Home from '../views/Home';
@@ -35,12 +36,17 @@ import StudentDashboard from '../views/Dashboards/StudentDashboard';
 // Student Views
 import StudentStudy from '../views/Student/Study';
 import StudentProgress from '../views/Student/Progress';
+import StudentLibrary from '../views/Student/Library';
+import StudentExams from '../views/Student/Exams';
+import MySubmissions from '../views/Student/MySubmissions';
+import SubmissionDetail from '../views/Student/SubmissionDetail';
 
 // Teacher Views
 import TeacherStudents from '../views/Teacher/Students';
 import TeacherFlashcards from '../views/Teacher/Flashcards';
 import TeacherDeckDetail from '../views/Teacher/DeckDetail';
 import TeacherExams from '../views/Teacher/Exams';
+import TeacherExamDetail from '../views/Teacher/ExamDetail';
 import TeacherClasses from '../views/Teacher/Classes';
 import TeacherAnalytics from '../views/Teacher/Analytics';
 import TeacherSettings from '../views/Teacher/Settings';
@@ -98,36 +104,29 @@ export function AppRouter() {
         <Route path="flashcards" element={<TeacherFlashcards />} />
         <Route path="flashcards/:id" element={<TeacherDeckDetail />} />
         <Route path="exams" element={<TeacherExams />} />
+        <Route path="exams/:id" element={<TeacherExamDetail />} />
         <Route path="classes" element={<TeacherClasses />} />
         <Route path="analytics" element={<TeacherAnalytics />} />
         <Route path="settings" element={<TeacherSettings />} />
       </Route>
       
-      {/* Student Dashboard Routes - Using common Navbar */}
+      {/* Student Dashboard Routes - Using StudentLayout */}
       <Route
         path="/dashboard/student"
         element={
           <RoleRoute roles={["Student"]}>
-            <StudentDashboard />
+            <StudentLayout />
           </RoleRoute>
         }
-      />
-      <Route
-        path="/dashboard/student/study"
-        element={
-          <RoleRoute roles={["Student"]}>
-            <StudentStudy />
-          </RoleRoute>
-        }
-      />
-      <Route
-        path="/dashboard/student/progress"
-        element={
-          <RoleRoute roles={["Student"]}>
-            <StudentProgress />
-          </RoleRoute>
-        }
-      />
+      >
+        <Route index element={<StudentDashboard />} />
+        <Route path="library" element={<StudentLibrary />} />
+        <Route path="study" element={<StudentStudy />} />
+        <Route path="exams" element={<StudentExams />} />
+        <Route path="progress" element={<StudentProgress />} />
+        <Route path="submissions" element={<MySubmissions />} />
+        <Route path="exams/:submissionId" element={<SubmissionDetail />} />
+      </Route>
       
       {/* Protected Profile Route for logged-in users */}
       <Route

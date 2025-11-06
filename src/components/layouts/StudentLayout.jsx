@@ -17,11 +17,11 @@ export default function StudentLayout() {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard/student', icon: 'home' },
+    { name: 'Library', href: '/dashboard/student/library', icon: 'flashcards' },
     { name: 'Study', href: '/dashboard/student/study', icon: 'study' },
-    { name: 'Flashcards', href: '/flashcards', icon: 'flashcards' },
-    { name: 'Exams', href: '/exams', icon: 'exams' },
+    { name: 'Exams', href: '/dashboard/student/exams', icon: 'exams' },
+    { name: 'History', href: '/dashboard/student/submissions', icon: 'progress' },
     { name: 'Progress', href: '/dashboard/student/progress', icon: 'progress' },
-    { name: 'Profile', href: '/profile', icon: 'profile' },
   ];
 
   const isActiveLink = (href) => {
@@ -30,7 +30,7 @@ export default function StudentLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -40,7 +40,7 @@ export default function StudentLayout() {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
@@ -84,13 +84,13 @@ export default function StudentLayout() {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
                   isActiveLink(item.href)
-                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                 }`}
               >
-                <Icon name={item.icon} className="w-5 h-5" />
+                <Icon name={item.icon} className="w-4 h-4 mr-3" />
                 {item.name}
               </Link>
             ))}
@@ -110,26 +110,29 @@ export default function StudentLayout() {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="flex-1 flex flex-col lg:ml-64">
         {/* Top bar */}
-        <div className="sticky top-0 z-30 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 lg:hidden">
-          <div className="flex items-center justify-between h-16 px-4">
+        <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <div className="flex items-center justify-between h-16 px-6">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              <Icon name="menu" className="w-6 h-6" />
+              <span className="sr-only">Open sidebar</span>
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
             </button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
-              </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-500 dark:text-gray-400">Student</div>
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Online</span>
             </div>
           </div>
         </div>
 
         {/* Page content */}
-        <main className="min-h-screen">
+        <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
       </div>

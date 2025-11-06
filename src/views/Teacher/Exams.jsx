@@ -1,94 +1,24 @@
-import React, { useState } from 'react';
-import { Plus, Eye, Edit, TrendingUp, Search, FileText, Users, Clock, CheckCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Eye, Edit, TrendingUp, Search, FileText, Users, Clock, CheckCircle, Trash2 } from 'lucide-react';
+import { examService } from '../../services/examService';
 
 export default function TeacherExams() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [examToDelete, setExamToDelete] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [exams, setExams] = useState([]);
+  const [form, setForm] = useState({ title: '', description: '', time_limit: 90, isPublic: true });
 
-  // Mock data for exams
-  const exams = [
-    {
-      id: 1,
-      title: 'Mathematics Midterm Exam',
-      subject: 'Mathematics',
-      class: '10A',
-      date: '2024-01-20',
-      time: '09:00',
-      duration: 90,
-      totalQuestions: 25,
-      enrolledStudents: 28,
-      completedStudents: 25,
-      avgScore: 78.5,
-      status: 'completed',
-      type: 'Midterm',
-      description: 'Comprehensive exam covering algebra and geometry topics.'
-    },
-    {
-      id: 2,
-      title: 'Biology Chapter 5 Quiz',
-      subject: 'Biology',
-      class: '11B',
-      date: '2024-01-22',
-      time: '10:30',
-      duration: 45,
-      totalQuestions: 15,
-      enrolledStudents: 32,
-      completedStudents: 0,
-      avgScore: 0,
-      status: 'scheduled',
-      type: 'Quiz',
-      description: 'Quiz on cell division and genetics concepts.'
-    },
-    {
-      id: 3,
-      title: 'Physics Final Exam',
-      subject: 'Physics',
-      class: '12A',
-      date: '2024-01-25',
-      time: '14:00',
-      duration: 120,
-      totalQuestions: 40,
-      enrolledStudents: 35,
-      completedStudents: 0,
-      avgScore: 0,
-      status: 'scheduled',
-      type: 'Final',
-      description: 'Comprehensive final exam covering all physics topics.'
-    },
-    {
-      id: 4,
-      title: 'Chemistry Lab Test',
-      subject: 'Chemistry',
-      class: '10B',
-      date: '2024-01-18',
-      time: '11:00',
-      duration: 60,
-      totalQuestions: 20,
-      enrolledStudents: 30,
-      completedStudents: 28,
-      avgScore: 85.2,
-      status: 'completed',
-      type: 'Lab Test',
-      description: 'Practical test on chemical reactions and lab procedures.'
-    },
-    {
-      id: 5,
-      title: 'English Literature Essay',
-      subject: 'English',
-      class: '11A',
-      date: '2024-01-30',
-      time: '13:00',
-      duration: 90,
-      totalQuestions: 3,
-      enrolledStudents: 25,
-      completedStudents: 0,
-      avgScore: 0,
-      status: 'draft',
-      type: 'Essay',
-      description: 'Essay exam on modern literature analysis.'
-    }
-  ];
+  useEffect(() => {
+    loadExams();
+  }, []);
 
   const statuses = ['all', 'draft', 'scheduled', 'completed', 'graded'];
 
@@ -146,6 +76,64 @@ export default function TeacherExams() {
       day: 'numeric', 
       year: 'numeric' 
     });
+  };
+
+  const loadExams = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const res = await examService.listMyExams();
+      const list = Array.isArray(res?.exams) ? res.exams : (Array.isArray(res) ? res : []);
+      const normalized = list.map(e => ({
+        id: e._id || e.id,
+        title: e.title,
+        subject: e.subject || 'General',
+        date: e.date || e.scheduled_at || e.createdAt,
+        time: e.time || '09:00',
+        duration: e.time_limit || e.duration || 60,
+        totalQuestions: Array.isArray(e.flashcards) ? e.flashcards.length : (e.totalQuestions || 0),
+        enrolledStudents: 0,
+        completedStudents: 0,
+        avgScore: 0,
+        status: e.status || (e.isPublic ? 'scheduled' : 'draft'),
+        type: e.type || 'Exam',
+        description: e.description || ''
+      }));
+      setExams(normalized);
+    } catch (e) {
+      console.error(e);
+      setError(e.message || 'Failed to load exams');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (exam) => {
+    setExamToDelete(exam);
+    setShowDeleteModal(true);
+    setError('');
+  };
+
+  const handleDeleteExam = async () => {
+    if (!examToDelete) return;
+    
+    try {
+      setIsSubmitting(true);
+      setError('');
+      
+      await examService.deleteExam(examToDelete.id);
+      
+      // Reload exams list
+      await loadExams();
+      
+      setShowDeleteModal(false);
+      setExamToDelete(null);
+    } catch (err) {
+      console.error('Failed to delete exam:', err);
+      setError(err.message || 'Failed to delete exam. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -355,11 +343,26 @@ export default function TeacherExams() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="View Details">
+                        <button 
+                          onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" 
+                          title="View Details"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" title="Edit Exam">
+                        <button 
+                          onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}
+                          className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" 
+                          title="Edit Exam"
+                        >
                           <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteClick(exam)}
+                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
+                          title="Delete Exam"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </button>
                         {exam.status === 'completed' && (
                           <button className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors" title="Grade Exam">
@@ -393,6 +396,8 @@ export default function TeacherExams() {
                     </label>
                     <input
                       type="text"
+                      value={form.title}
+                      onChange={(e)=>setForm({...form, title: e.target.value})}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter exam title"
                     />
@@ -481,6 +486,8 @@ export default function TeacherExams() {
                     </label>
                     <textarea
                       rows={3}
+                      value={form.description}
+                      onChange={(e)=>setForm({...form, description: e.target.value})}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                       placeholder="Describe the exam content and requirements"
                     />
@@ -494,9 +501,99 @@ export default function TeacherExams() {
                   >
                     Cancel
                   </button>
-                  <button className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2">
+                  <button
+                    disabled={isSubmitting || !form.title.trim()}
+                    onClick={async ()=>{
+                      try{
+                        setIsSubmitting(true);
+                        setError('');
+                        await examService.createExam({
+                          title: form.title,
+                          description: form.description,
+                          time_limit: Number(form.time_limit) || 90,
+                          isPublic: form.isPublic,
+                        });
+                        await loadExams();
+                        setShowCreateModal(false);
+                        setForm({ title: '', description: '', time_limit: 90, isPublic: true });
+                      }catch(e){
+                        console.error(e);
+                        setError(e.message || 'Failed to create exam');
+                      }finally{
+                        setIsSubmitting(false);
+                      }
+                    }}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <Plus className="w-4 h-4" />
                     Create Exam
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && examToDelete && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowDeleteModal(false)}></div>
+              
+              <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <div className="px-6 py-4">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full">
+                    <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  </div>
+                  
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
+                    Delete Exam
+                  </h3>
+                  
+                  <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">
+                    Are you sure you want to delete "{examToDelete.title}"?
+                  </p>
+                  
+                  <p className="text-sm text-red-600 dark:text-red-400 text-center">
+                    This action cannot be undone.
+                  </p>
+                  
+                  {error && (
+                    <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
+                      <p className="text-red-700 dark:text-red-400 text-sm text-center">{error}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDeleteModal(false);
+                      setExamToDelete(null);
+                      setError('');
+                    }}
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleDeleteExam}
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="w-4 h-4" />
+                        Delete Exam
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

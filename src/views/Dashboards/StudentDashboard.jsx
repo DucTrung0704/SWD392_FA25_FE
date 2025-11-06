@@ -7,6 +7,12 @@ import { flashcardService } from '../../services/flashcardService';
 export default function StudentDashboard() {
   const [decks, setDecks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('all');
+  const [difficultyFilter, setDifficultyFilter] = useState('all'); // easy | medium | hard | all
+  const [sortBy, setSortBy] = useState('newest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(6);
   const [studentStats, setStudentStats] = useState({
     totalDecks: 0,
     completedDecks: 0,
@@ -25,7 +31,18 @@ export default function StudentDashboard() {
           ? data.filter(deck => deck.isPublic === true || deck.status === true || deck.status === 'active')
           : [];
         
-        setDecks(publicDecks);
+        // Normalize for UI
+        const normalized = publicDecks.map((d) => ({
+          id: d._id || d.id,
+          title: d.title,
+          description: d.description,
+          subject: d.subject || d.category || 'General',
+          difficulty: (d.difficulty || 'medium').toLowerCase(),
+          tags: Array.isArray(d.tags) ? d.tags : [],
+          createdAt: d.createdAt || d.created_at || new Date().toISOString(),
+          stats: { views: d.views || d.stats?.views || 0 },
+        }));
+        setDecks(normalized);
         
         // Calculate stats from actual data
         setStudentStats({
@@ -48,6 +65,37 @@ export default function StudentDashboard() {
 
     loadDecks();
   }, []);
+
+  // Subjects from decks
+  const subjects = ['all', ...new Set(decks.map(d => d.subject).filter(Boolean))];
+
+  // Filter + sort
+  const filteredDecks = decks
+    .filter(d => {
+      const matchesSearch = d.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        d.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (d.tags || []).some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesSubject = selectedSubject === 'all' || d.subject === selectedSubject;
+      const matchesDifficulty = difficultyFilter === 'all' || d.difficulty === difficultyFilter;
+      return matchesSearch && matchesSubject && matchesDifficulty;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
+      if (sortBy === 'oldest') return new Date(a.createdAt) - new Date(b.createdAt);
+      if (sortBy === 'popular') return (b.stats?.views || 0) - (a.stats?.views || 0);
+      return 0;
+    });
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedSubject, difficultyFilter, sortBy, decks]);
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil((filteredDecks.length || 0) / pageSize));
+  const safePage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const currentPageDecks = filteredDecks.slice(startIndex, startIndex + pageSize);
 
   const quickActions = [
     {
@@ -72,7 +120,7 @@ export default function StudentDashboard() {
       icon: 'exams',
       color: 'from-purple-500 to-purple-600',
       bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-      link: '/exams'
+      link: '/dashboard/student/exams'
     },
     {
       title: 'Progress',
@@ -107,8 +155,9 @@ export default function StudentDashboard() {
   ];
 
   return (
-    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen pt-2 pb-6 sm:pt-3 lg:pt-4 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main content (sidebar provided by StudentLayout) */}
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
@@ -260,6 +309,96 @@ export default function StudentDashboard() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Public Library */}
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Public Flashcard Library</h2>
+          </div>
+          {/* Filters */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100 dark:border-gray-700 mb-6">
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+              <div className="flex-1 w-full">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search public decks..."
+                    className="w-full px-4 py-3 pl-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                <select value={selectedSubject} onChange={(e)=>setSelectedSubject(e.target.value)} className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  {subjects.map(s => (
+                    <option key={s} value={s}>{s === 'all' ? 'All Subjects' : s}</option>
+                  ))}
+                </select>
+                <select value={difficultyFilter} onChange={(e)=>setDifficultyFilter(e.target.value)} className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="all">All Difficulty</option>
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+                <select value={sortBy} onChange={(e)=>setSortBy(e.target.value)} className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="popular">Most Popular</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Decks Grid */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <span className="ml-3 text-gray-600 dark:text-gray-400">Loading decks...</span>
+            </div>
+          ) : filteredDecks.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center border border-gray-100 dark:border-gray-700">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No decks found</h3>
+              <p className="text-gray-600 dark:text-gray-400">Try adjusting your search or filters</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {currentPageDecks.map((deck) => (
+                  <div key={deck.id} className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
+                    {/* Public badge */}
+                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow z-10">
+                      PUBLIC
+                    </div>
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">{deck.title?.[0] || 'F'}</div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">{deck.title}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{deck.description || 'No description'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-3">
+                      <span className="px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">{deck.subject}</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${deck.difficulty==='hard' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : deck.difficulty==='medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'}`}>{deck.difficulty}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-6">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Showing <span className="font-medium text-gray-900 dark:text-white">{filteredDecks.length === 0 ? 0 : startIndex + 1}</span>-<span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + pageSize, filteredDecks.length)}</span> of <span className="font-medium text-gray-900 dark:text-white">{filteredDecks.length}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} disabled={safePage===1} className={`px-3 py-2 rounded-lg border text-sm transition-colors ${safePage===1 ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>Prev</button>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Page <span className="font-semibold">{safePage}</span> of <span className="font-semibold">{totalPages}</span></span>
+                  <button onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} disabled={safePage===totalPages} className={`px-3 py-2 rounded-lg border text-sm transition-colors ${safePage===totalPages ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>Next</button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Study Recommendations */}

@@ -28,9 +28,10 @@ function Layout({ children }) {
   }, []);
   
   // Check if current route is a dashboard route that should use their own layout
-  // Student dashboard will use the common Navbar, only Teacher and Admin use their own layout
+  // Teacher/Admin/Student dashboards use their own sidebar layouts
   const usesOwnLayout = location.pathname.startsWith('/dashboard/teacher') || 
-                        location.pathname.startsWith('/dashboard/admin');
+                        location.pathname.startsWith('/dashboard/admin') ||
+                        location.pathname.startsWith('/dashboard/student');
   
   // If it uses own layout, don't wrap with navbar and footer
   if (usesOwnLayout) {
