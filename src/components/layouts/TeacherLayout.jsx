@@ -13,7 +13,7 @@ const TeacherLayout = () => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard/teacher', icon: 'stats', current: location.pathname === '/dashboard/teacher' },
     { name: 'Students', href: '/dashboard/teacher/students', icon: 'users', current: location.pathname.startsWith('/dashboard/teacher/students') },
-    { name: 'Flashcards', href: '/dashboard/teacher/flashcards', icon: 'flashcards', current: location.pathname.startsWith('/dashboard/teacher/flashcards') },
+    { name: 'Deck', href: '/dashboard/teacher/flashcards', icon: 'flashcards', current: location.pathname.startsWith('/dashboard/teacher/flashcards') },
     { name: 'Exams', href: '/dashboard/teacher/exams', icon: 'exams', current: location.pathname.startsWith('/dashboard/teacher/exams') },
     { name: 'Classes', href: '/dashboard/teacher/classes', icon: 'home', current: location.pathname.startsWith('/dashboard/teacher/classes') },
     { name: 'Analytics', href: '/dashboard/teacher/analytics', icon: 'stats', current: location.pathname.startsWith('/dashboard/teacher/analytics') },
