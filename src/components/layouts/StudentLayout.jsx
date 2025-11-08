@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import RoleBadge from '../RoleBadge';
 import Icon from '../ui/Icon';
+import ThemeToggle from '../ThemeToggle';
 
 export default function StudentLayout() {
   const { user, logout } = useAuth();
@@ -103,40 +104,26 @@ export default function StudentLayout() {
             ))}
           </nav>
 
-          {/* User Info */}
+          {/* Logout button at bottom */}
           <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-            <div className={`flex items-center mb-4 ${sidebarCollapsed ? 'justify-center' : ''}`}>
-              <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-sm">{user?.name?.charAt(0).toUpperCase() || 'U'}</span>
-              </div>
-              {!sidebarCollapsed && (
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Student'}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
-                  <RoleBadge role={user?.role} />
-                </div>
-              )}
-            </div>
-            
-            <div className={`flex items-center ${sidebarCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
-              {!sidebarCollapsed && (
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-200"
-                >
-                  Logout
-                </button>
-              )}
-              {sidebarCollapsed && (
-                <button
-                  onClick={handleLogout}
-                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-200"
-                  title="Logout"
-                >
-                  <Icon name="logout" className="w-5 h-5" />
-                </button>
-              )}
-            </div>
+            {!sidebarCollapsed && (
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+              >
+                <Icon name="logout" className="w-4 h-4 mr-2" />
+                Logout
+              </button>
+            )}
+            {sidebarCollapsed && (
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center p-2 text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+                title="Logout"
+              >
+                <Icon name="logout" className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -159,6 +146,20 @@ export default function StudentLayout() {
               <div className="text-sm text-gray-500 dark:text-gray-400">Student</div>
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span className="text-xs text-gray-500 dark:text-gray-400">Online</span>
+            </div>
+
+            {/* Profile and Theme Toggle */}
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Student'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
+                </div>
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-orange-500 transition-all">
+                  <span className="text-white font-bold text-sm">{user?.name?.charAt(0).toUpperCase() || 'U'}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

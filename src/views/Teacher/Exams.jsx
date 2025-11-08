@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Eye, Edit, TrendingUp, Search, FileText, Users, Clock, CheckCircle, Trash2, X, Filter, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
+import { Plus, Eye, Edit, TrendingUp, Search, FileText, Users, Clock, CheckCircle, Trash2, X, Filter, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, MoreVertical, Sparkles, Loader2, Check } from 'lucide-react';
 import { examService } from '../../services/examService';
 import { questionService } from '../../services/questionService';
+import { aiService } from '../../services/aiService';
 
 export default function TeacherExams() {
   const navigate = useNavigate();
@@ -53,18 +54,28 @@ export default function TeacherExams() {
     difficulty: 'medium',
     options: { ...emptyOptions },
     correctOption: 'A',
-    useCustomOptions: false
+    useCustomOptions: true
   });
   const [questionList, setQuestionList] = useState([]);
   const [questionError, setQuestionError] = useState('');
+  const [questionSuccess, setQuestionSuccess] = useState('');
   const [isQuestionSubmitting, setIsQuestionSubmitting] = useState(false);
-  const [questionMode, setQuestionMode] = useState('create'); // 'create' or 'select'
+  const [questionMode, setQuestionMode] = useState('create'); // 'create', 'select', or 'ai-generate'
   const [bankQuestions, setBankQuestions] = useState([]);
   const [loadingBankQuestions, setLoadingBankQuestions] = useState(false);
   const [selectedBankQuestions, setSelectedBankQuestions] = useState([]);
   const [bankSearchTerm, setBankSearchTerm] = useState('');
   const [bankTagFilter, setBankTagFilter] = useState('all');
   const [bankDifficultyFilter, setBankDifficultyFilter] = useState('all');
+  const [isAIGenerating, setIsAIGenerating] = useState(false);
+  const [aiGeneratedQuestions, setAiGeneratedQuestions] = useState([]);
+  const [aiGenerateForm, setAiGenerateForm] = useState({
+    topic: '',
+    subject: form.subject || 'Mathematics',
+    difficulty: 'medium',
+    count: 5,
+    tag: 'other'
+  });
 
   useEffect(() => {
     loadExams();
@@ -315,9 +326,10 @@ export default function TeacherExams() {
       difficulty: 'medium',
       options: { ...emptyOptions },
       correctOption: 'A',
-      useCustomOptions: false
+      useCustomOptions: true
     });
     setQuestionError('');
+    setQuestionSuccess('');
   };
 
   // Load questions from bank
@@ -405,6 +417,15 @@ export default function TeacherExams() {
           setStepError('Vui lòng chọn ngày thi.');
           return false;
         }
+        // Kiểm tra ngày không được trong quá khứ
+        const selectedDate = new Date(form.date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset giờ về 00:00:00 để so sánh chỉ ngày
+        selectedDate.setHours(0, 0, 0, 0);
+        if (selectedDate < today) {
+          setStepError('Ngày thi không được trong quá khứ. Vui lòng chọn ngày hôm nay hoặc ngày trong tương lai.');
+          return false;
+        }
         if (!form.time) {
           setStepError('Vui lòng chọn giờ thi.');
           return false;
@@ -472,8 +493,9 @@ export default function TeacherExams() {
         ...prev,
         options: updatedOptions
       };
-      if (prev.useCustomOptions && prev.correctOption === key) {
-        nextState.answer = value;
+      // Nếu đang chỉnh sửa option đã được chọn làm đáp án đúng, cập nhật answer
+      if (prev.correctOption === key) {
+        nextState.answer = value.trim();
       }
       return nextState;
     });
@@ -485,7 +507,7 @@ export default function TeacherExams() {
       return {
         ...prev,
         correctOption: key,
-        answer: prev.useCustomOptions && optionValue ? optionValue : prev.answer
+        answer: optionValue // Luôn lấy answer từ giá trị option đã chọn
       };
     });
   };
@@ -493,45 +515,49 @@ export default function TeacherExams() {
   const handleAddQuestion = async (e) => {
     e.preventDefault();
     const trimmedQuestion = questionForm.question.trim();
-    let trimmedAnswer = questionForm.answer.trim();
 
-    if (!trimmedQuestion || !trimmedAnswer) {
-      setQuestionError('Please provide both a question and the correct answer.');
+    if (!trimmedQuestion) {
+      setQuestionError('Vui lòng nhập câu hỏi.');
       return;
     }
 
     if (!questionTagOptions.includes(questionForm.tag)) {
-      setQuestionError('Please choose a valid tag.');
+      setQuestionError('Vui lòng chọn thể loại hợp lệ.');
       return;
     }
 
     if (!questionDifficultyOptions.some((option) => option.value === questionForm.difficulty)) {
-      setQuestionError('Please select a difficulty level.');
+      setQuestionError('Vui lòng chọn độ khó.');
       return;
     }
 
-    let optionsPayload;
-    if (questionForm.useCustomOptions) {
-      const trimmedOptions = Object.entries(questionForm.options || {}).reduce((acc, [key, value]) => {
-        acc[key] = (value || '').trim();
-        return acc;
-      }, { ...emptyOptions });
+    // Luôn dùng multiple choice
+    const trimmedOptions = Object.entries(questionForm.options || {}).reduce((acc, [key, value]) => {
+      acc[key] = (value || '').trim();
+      return acc;
+    }, { ...emptyOptions });
 
-      const missingOption = Object.entries(trimmedOptions).find(([, value]) => !value);
-      if (missingOption) {
-        setQuestionError('Please complete all multiple choice options (A, B, C, D).');
-        return;
-      }
-
-      const selectedOptionValue = trimmedOptions[questionForm.correctOption];
-      if (!selectedOptionValue) {
-        setQuestionError('Correct option must match one of the custom choices.');
-        return;
-      }
-
-      trimmedAnswer = selectedOptionValue.trim();
-      optionsPayload = trimmedOptions;
+    const missingOption = Object.entries(trimmedOptions).find(([, value]) => !value);
+    if (missingOption) {
+      setQuestionError('Vui lòng điền đầy đủ tất cả các lựa chọn (A, B, C, D).');
+      return;
     }
+
+    // Đảm bảo đã chọn đáp án đúng
+    if (!questionForm.correctOption) {
+      setQuestionError('Vui lòng chọn đáp án đúng.');
+      return;
+    }
+
+    const selectedOptionValue = trimmedOptions[questionForm.correctOption];
+    if (!selectedOptionValue || !selectedOptionValue.trim()) {
+      setQuestionError('Vui lòng chọn đáp án đúng.');
+      return;
+    }
+
+    // Lấy answer từ giá trị option đã chọn
+    const trimmedAnswer = selectedOptionValue.trim();
+    const optionsPayload = trimmedOptions;
 
     try {
       setIsQuestionSubmitting(true);
@@ -544,7 +570,7 @@ export default function TeacherExams() {
         difficulty: questionForm.difficulty,
         explanation: questionForm.explanation?.trim() || undefined,
         options: optionsPayload,
-        correctOption: optionsPayload ? questionForm.correctOption : undefined
+        correctOption: questionForm.correctOption
       };
 
       const response = await questionService.createQuestion(payload);
@@ -564,10 +590,17 @@ export default function TeacherExams() {
 
       setQuestionList((prev) => [...prev, normalizedQuestion]);
       setStepError('');
+      setQuestionSuccess('Câu hỏi đã được tạo và lưu vào Question Bank thành công!');
       resetQuestionForm();
+      
+      // Tự động ẩn thông báo sau 3 giây
+      setTimeout(() => {
+        setQuestionSuccess('');
+      }, 3000);
     } catch (err) {
       console.error('Failed to create question:', err);
-      setQuestionError(err?.message || 'Failed to create question. Please try again.');
+      setQuestionError(err?.message || 'Không thể tạo câu hỏi. Vui lòng thử lại.');
+      setQuestionSuccess('');
     } finally {
       setIsQuestionSubmitting(false);
     }
@@ -615,6 +648,57 @@ export default function TeacherExams() {
       q.answer?.toLowerCase().includes(bankSearchTerm.toLowerCase());
     return matchesSearch;
   });
+
+  // Handle AI generation
+  const handleAIGenerate = async () => {
+    try {
+      setIsAIGenerating(true);
+      setQuestionError('');
+
+      if (!aiGenerateForm.topic.trim()) {
+        setQuestionError('Vui lòng nhập chủ đề');
+        return;
+      }
+
+      const response = await aiService.generateQuestions(aiGenerateForm);
+      const generated = response?.questions || response?.data?.questions || [];
+      setAiGeneratedQuestions(generated);
+    } catch (err) {
+      console.error('Error generating questions:', err);
+      setQuestionError(err.message || 'Không thể tạo câu hỏi bằng AI. Vui lòng thử lại.');
+    } finally {
+      setIsAIGenerating(false);
+    }
+  };
+
+  // Add AI generated questions to exam
+  const handleAddAIGeneratedQuestions = (selectedIndices) => {
+    const questionsToAdd = aiGeneratedQuestions
+      .filter((_, index) => selectedIndices.includes(index))
+      .map(q => {
+        // Create question first, then add to list
+        const questionId = `ai-${Date.now()}-${Math.random()}`;
+        return {
+          id: questionId,
+          question: q.question,
+          tag: q.tag,
+          difficulty: q.difficulty,
+          options: q.options,
+          correctOption: q.correctOption,
+          _temp: true, // Mark as temporary until saved
+          _aiData: q // Store full data for saving
+        };
+      });
+
+    setQuestionList(prev => {
+      const existingIds = prev.map(q => q.id);
+      const newQuestions = questionsToAdd.filter(q => !existingIds.includes(q.id));
+      return [...prev, ...newQuestions];
+    });
+    
+    setAiGeneratedQuestions([]);
+    setQuestionMode('create');
+  };
 
   const getScoreColor = (score) => {
     if (score >= 90) return 'text-green-600 dark:text-green-400';
@@ -715,17 +799,50 @@ export default function TeacherExams() {
       return;
     }
 
-    const questionIds = questionList.map((question) => question.id).filter(Boolean);
-    if (questionIds.length !== questionList.length) {
-      setStepError('Không xác định được ID của một số câu hỏi. Vui lòng thử lại.');
-      setCurrentStep(2);
-      return;
-    }
-
     try {
       setIsSubmitting(true);
       setStepError('');
       setError('');
+
+      // Save AI-generated questions to question bank first
+      const aiQuestions = questionList.filter(q => q._temp && q._aiData);
+      if (aiQuestions.length > 0) {
+        try {
+          await Promise.all(aiQuestions.map(q => questionService.createQuestion(q._aiData)));
+        } catch (aiError) {
+          console.error('Error saving AI questions:', aiError);
+          // Continue anyway, questions might already exist
+        }
+      }
+
+      // Reload questions to get IDs for AI-generated ones
+      const questionIds = [];
+      for (const question of questionList) {
+        if (question._temp && question._aiData) {
+          // Try to find the question we just created
+          try {
+            const response = await questionService.listMyQuestions({ 
+              search: question.question.substring(0, 50) 
+            });
+            const found = (response?.questions || []).find(
+              q => q.question === question.question
+            );
+            if (found) {
+              questionIds.push(found._id || found.id);
+            }
+          } catch (err) {
+            console.error('Error finding AI question:', err);
+          }
+        } else if (question.id && !question.id.startsWith('ai-')) {
+          questionIds.push(question.id);
+        }
+      }
+
+      if (questionIds.length !== questionList.length) {
+        setStepError('Không thể lưu tất cả câu hỏi. Vui lòng thử lại.');
+        setCurrentStep(2);
+        return;
+      }
 
       await examService.createExam({
         title: form.title.trim(),
@@ -1265,49 +1382,55 @@ export default function TeacherExams() {
             <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
               <div className="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" onClick={closeCreateModal}></div>
               
-              <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-gray-700">
-                <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-800">
+              <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-200 dark:border-gray-700">
+                <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-orange-50 via-orange-50 to-amber-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">Create New Exam</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Fill in the details below</p>
+                      <h3 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">Create New Exam</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Fill in the details below to create your exam</p>
                     </div>
                     <button
                       onClick={closeCreateModal}
-                      className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      className="p-2 hover:bg-orange-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
                     >
-                      <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <X className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors" />
                     </button>
                   </div>
-                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {creationSteps.map((step) => {
                       const isActive = currentStep === step.id;
                       const isCompleted = currentStep > step.id;
                       return (
                         <div
                           key={step.id}
-                          className={`flex items-center gap-3 rounded-xl border px-3 py-3 transition-colors ${
+                          className={`flex items-center gap-3 rounded-xl border-2 px-4 py-3 transition-all duration-200 ${
                             isActive
-                              ? 'border-orange-500 bg-orange-50 dark:border-orange-400 dark:bg-orange-900/30'
+                              ? 'border-orange-500 bg-gradient-to-br from-orange-50 to-amber-50 dark:border-orange-400 dark:from-orange-900/30 dark:to-orange-800/20 shadow-md shadow-orange-200/50 dark:shadow-orange-900/30'
                               : isCompleted
-                                ? 'border-green-500 bg-green-50 dark:border-green-500 dark:bg-green-900/30'
-                                : 'border-gray-200 dark:border-gray-600 bg-white/40 dark:bg-gray-800/40'
+                                ? 'border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 dark:border-green-500 dark:from-green-900/30 dark:to-green-800/20'
+                                : 'border-gray-200 dark:border-gray-600 bg-white/60 dark:bg-gray-800/60'
                           }`}
                         >
                           <span
-                            className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
+                            className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold shadow-sm transition-all ${
                               isActive
-                                ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white'
+                                ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/50 scale-110'
                                 : isCompleted
-                                  ? 'bg-green-500 text-white'
+                                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
                                   : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                             }`}
                           >
                             {step.id}
                           </span>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">{step.title}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{step.description}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-semibold truncate ${
+                              isActive 
+                                ? 'text-orange-700 dark:text-orange-300' 
+                                : isCompleted
+                                  ? 'text-green-700 dark:text-green-300'
+                                  : 'text-gray-700 dark:text-gray-300'
+                            }`}>{step.title}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{step.description}</p>
                           </div>
                         </div>
                       );
@@ -1315,7 +1438,7 @@ export default function TeacherExams() {
                   </div>
                 </div>
                 
-                <div className="px-6 py-4 space-y-5">
+                <div className="px-6 py-6 space-y-6 bg-gradient-to-b from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-800/50">
                   {stepError && (
                     <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
                       {stepError}
@@ -1323,29 +1446,34 @@ export default function TeacherExams() {
                   )}
 
                   {currentStep === 1 && (
-                    <div className="space-y-4">
+                    <div className="space-y-5">
+                      <div className="bg-gradient-to-br from-orange-50/50 to-amber-50/50 dark:from-orange-900/10 dark:to-orange-800/5 rounded-xl p-4 border border-orange-100 dark:border-orange-900/30">
+                        <h4 className="text-sm font-semibold text-orange-800 dark:text-orange-300 mb-1">Exam Information</h4>
+                        <p className="text-xs text-orange-600 dark:text-orange-400">Provide basic details about your exam</p>
+                      </div>
+
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Exam Title
+                        <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                          Exam Title <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={form.title}
                           onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                           placeholder="Enter exam title"
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Subject
+                          <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                            Subject <span className="text-red-500">*</span>
                           </label>
                           <select
                             value={form.subject}
                             onChange={(e) => setForm((prev) => ({ ...prev, subject: e.target.value }))}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                           >
                             <option value="">Select subject</option>
                             <option value="Mathematics">Mathematics</option>
@@ -1357,13 +1485,13 @@ export default function TeacherExams() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Class
+                          <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                            Class <span className="text-red-500">*</span>
                           </label>
                           <select
                             value={form.className}
                             onChange={(e) => setForm((prev) => ({ ...prev, className: e.target.value }))}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                           >
                             <option value="">Select class</option>
                             <option value="10A">Class 10A</option>
@@ -1378,72 +1506,82 @@ export default function TeacherExams() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Date
+                          <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                            Date <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="date"
                             value={form.date}
-                            onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            min={new Date().toISOString().split('T')[0]}
+                            onChange={(e) => {
+                              const selectedDate = e.target.value;
+                              const today = new Date().toISOString().split('T')[0];
+                              if (selectedDate < today) {
+                                setStepError('Ngày thi không được trong quá khứ. Vui lòng chọn ngày hôm nay hoặc ngày trong tương lai.');
+                              } else {
+                                setStepError('');
+                              }
+                              setForm((prev) => ({ ...prev, date: selectedDate }));
+                            }}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Time
+                          <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                            Time <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="time"
                             value={form.time}
                             onChange={(e) => setForm((prev) => ({ ...prev, time: e.target.value }))}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Duration (minutes)
+                          <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                            Duration (minutes) <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="number"
                             min="1"
                             value={form.time_limit}
                             onChange={(e) => setForm((prev) => ({ ...prev, time_limit: e.target.value }))}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                             placeholder="90"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Total Questions
+                          <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                            Total Questions <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="number"
                             min="1"
                             value={form.totalQuestions}
                             onChange={(e) => setForm((prev) => ({ ...prev, totalQuestions: e.target.value }))}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                             placeholder="25"
                           />
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-2 py-1.5">
                             We will verify against the actual questions in the final step.
                           </p>
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
                           Description
                         </label>
                         <textarea
                           rows={3}
                           value={form.description}
                           onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500 resize-none"
                           placeholder="Describe the exam content and requirements"
                         />
                       </div>
@@ -1451,74 +1589,116 @@ export default function TeacherExams() {
                   )}
 
                   {currentStep === 2 && (
-                    <div className="border border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-5 bg-gray-50/60 dark:bg-gray-700/30">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                    <div className="border-2 border-dashed border-orange-200 dark:border-orange-800 rounded-2xl p-6 bg-gradient-to-br from-orange-50/30 via-amber-50/20 to-orange-50/30 dark:from-orange-900/10 dark:via-orange-800/5 dark:to-orange-900/10">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
                         <div>
-                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Question Builder</h4>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <h4 className="text-base font-bold text-gray-900 dark:text-white mb-1">Question Builder</h4>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
                             Add multiple-choice questions for this exam. Saved questions are stored in your bank for future use.
                           </p>
                         </div>
-                        <span className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
+                        <span className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-200/50 dark:shadow-orange-900/30">
                           {questionList.length} added
                         </span>
                       </div>
 
                       {/* Mode Tabs */}
-                      <div className="mb-5 flex gap-2 border-b border-gray-200 dark:border-gray-700">
+                      <div className="mb-6 flex gap-2 border-b-2 border-gray-200 dark:border-gray-700">
                         <button
                           type="button"
                           onClick={() => setQuestionMode('create')}
-                          className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+                          className={`px-5 py-3 text-sm font-semibold transition-all duration-200 border-b-3 relative ${
                             questionMode === 'create'
-                              ? 'border-orange-500 text-orange-600 dark:text-orange-400'
-                              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                              ? 'border-orange-500 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-900/20'
+                              : 'border-transparent text-gray-500 hover:text-orange-600 dark:text-gray-400 dark:hover:text-orange-400 hover:bg-orange-50/30 dark:hover:bg-orange-900/10'
                           }`}
                         >
                           Create New
+                          {questionMode === 'create' && (
+                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600"></span>
+                          )}
                         </button>
                         <button
                           type="button"
                           onClick={() => setQuestionMode('select')}
-                          className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+                          className={`px-5 py-3 text-sm font-semibold transition-all duration-200 border-b-3 relative ${
                             questionMode === 'select'
-                              ? 'border-orange-500 text-orange-600 dark:text-orange-400'
-                              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                              ? 'border-orange-500 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-900/20'
+                              : 'border-transparent text-gray-500 hover:text-orange-600 dark:text-gray-400 dark:hover:text-orange-400 hover:bg-orange-50/30 dark:hover:bg-orange-900/10'
                           }`}
                         >
                           Select from Bank
+                          {questionMode === 'select' && (
+                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600"></span>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setQuestionMode('ai-generate');
+                            setAiGenerateForm({
+                              topic: '',
+                              subject: form.subject || 'Mathematics',
+                              difficulty: 'medium',
+                              count: 5,
+                              tag: 'other'
+                            });
+                            setAiGeneratedQuestions([]);
+                          }}
+                          className={`px-5 py-3 text-sm font-semibold transition-all duration-200 border-b-3 relative flex items-center gap-1.5 ${
+                            questionMode === 'ai-generate'
+                              ? 'border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-900/20'
+                              : 'border-transparent text-gray-500 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400 hover:bg-purple-50/30 dark:hover:bg-purple-900/10'
+                          }`}
+                        >
+                          <Sparkles className="h-4 w-4" />
+                          Generate with AI
+                          {questionMode === 'ai-generate' && (
+                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-purple-600"></span>
+                          )}
                         </button>
                       </div>
 
                       {/* Create New Mode */}
                       {questionMode === 'create' && (
-                      <form onSubmit={handleAddQuestion} className="space-y-5">
+                      <form onSubmit={handleAddQuestion} className="space-y-6">
                         {questionError && (
-                          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
-                            <p className="text-sm text-red-700 dark:text-red-300">{questionError}</p>
+                          <div className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/20 border-2 border-red-300 dark:border-red-700 rounded-xl p-4 shadow-md">
+                            <p className="text-sm font-medium text-red-700 dark:text-red-300">{questionError}</p>
                           </div>
                         )}
 
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                        {questionSuccess && (
+                          <div className="bg-gradient-to-r from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-800/20 border-2 border-green-300 dark:border-green-700 rounded-xl p-4 shadow-md">
+                            <p className="text-sm font-medium text-green-700 dark:text-green-300 flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4" />
+                              {questionSuccess}
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
+                          <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-orange-500" />
                             Question Stem <span className="text-red-500">*</span>
                           </label>
                           <textarea
-                            rows={3}
+                            rows={4}
                             value={questionForm.question}
                             onChange={(e) => setQuestionForm({ ...questionForm, question: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-inner"
-                            placeholder="Type the full question prompt"
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-inner hover:border-gray-300 dark:hover:border-gray-500 resize-none"
+                            placeholder="Type the full question prompt..."
                             required
                           />
                         </div>
 
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                        <div className="grid gap-5 md:grid-cols-2">
+                          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
+                            <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-orange-500"></span>
                               Topic Tag <span className="text-red-500">*</span>
                             </label>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2.5">
                               {questionTagOptions.map((tag) => {
                                 const isActive = questionForm.tag === tag;
                                 return (
@@ -1526,10 +1706,10 @@ export default function TeacherExams() {
                                     key={tag}
                                     type="button"
                                     onClick={() => setQuestionForm({ ...questionForm, tag })}
-                                    className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
+                                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 transform ${
                                       isActive
-                                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-200/60 dark:shadow-blue-900/40'
-                                        : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-200 hover:border-blue-400 dark:hover:border-blue-500'
+                                        ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/50 dark:shadow-orange-900/50 scale-105 ring-2 ring-orange-300 dark:ring-orange-700'
+                                        : 'bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-orange-400 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:scale-105'
                                     }`}
                                   >
                                     {tag.charAt(0).toUpperCase() + tag.slice(1)}
@@ -1539,26 +1719,36 @@ export default function TeacherExams() {
                             </div>
                           </div>
 
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
+                            <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                               Difficulty <span className="text-red-500">*</span>
                             </label>
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-3 gap-2.5">
                               {questionDifficultyOptions.map((option) => {
                                 const isSelected = questionForm.difficulty === option.value;
+                                const difficultyColors = {
+                                  easy: 'from-green-500 to-emerald-500',
+                                  medium: 'from-yellow-500 to-orange-500',
+                                  hard: 'from-red-500 to-rose-600'
+                                };
                                 return (
                                   <button
                                     key={option.value}
                                     type="button"
                                     onClick={() => setQuestionForm({ ...questionForm, difficulty: option.value })}
-                                    className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
+                                    className={`px-3 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 transform ${
                                       isSelected
-                                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-emerald-200/60 dark:shadow-emerald-900/40'
-                                        : 'border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-200 hover:border-emerald-400 dark:hover:border-emerald-500'
+                                        ? `bg-gradient-to-r ${difficultyColors[option.value]} text-white shadow-lg scale-105 ring-2 ring-opacity-50 ${
+                                            option.value === 'easy' ? 'ring-green-300 dark:ring-green-700' :
+                                            option.value === 'medium' ? 'ring-yellow-300 dark:ring-yellow-700' :
+                                            'ring-red-300 dark:ring-red-700'
+                                          }`
+                                        : 'border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:border-emerald-400 dark:hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:scale-105'
                                     }`}
                                   >
-                                    <span>{option.label}</span>
-                                    <span className="block text-[10px] sm:text-[11px] font-normal text-gray-500 dark:text-gray-400">
+                                    <span className="block">{option.label}</span>
+                                    <span className="block text-[10px] sm:text-[11px] font-normal mt-0.5 opacity-90">
                                       {option.helper}
                                     </span>
                                   </button>
@@ -1568,113 +1758,97 @@ export default function TeacherExams() {
                           </div>
                         </div>
 
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                            Explanation (optional)
+                        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
+                          <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                            <span className="text-gray-400">💡</span>
+                            Explanation <span className="text-xs font-normal text-gray-500 dark:text-gray-400">(optional)</span>
                           </label>
                           <textarea
-                            rows={2}
+                            rows={3}
                             value={questionForm.explanation}
                             onChange={(e) => setQuestionForm({ ...questionForm, explanation: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-inner"
-                            placeholder="Add solution notes or teaching tips"
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-inner hover:border-gray-300 dark:hover:border-gray-500 resize-none"
+                            placeholder="Add solution notes or teaching tips..."
                           />
                         </div>
 
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                            Correct Answer <span className="text-red-500">*</span>
-                          </label>
-                          <textarea
-                            rows={2}
-                            value={questionForm.answer}
-                            onChange={(e) => setQuestionForm({ ...questionForm, answer: e.target.value })}
-                            disabled={questionForm.useCustomOptions}
-                            className={`w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-inner ${questionForm.useCustomOptions ? 'opacity-70 cursor-not-allowed' : ''}`}
-                            placeholder={questionForm.useCustomOptions ? 'Select a correct option below' : 'Enter the correct answer'}
-                            required
-                          />
-                        </div>
-
-                        <div className="border border-gray-200 dark:border-gray-600 rounded-2xl p-4 bg-white dark:bg-gray-800">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div>
-                              <h5 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Custom Multiple Choice Options</h5>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Toggle on to specify answer choices A–D.</p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={toggleCustomOptions}
-                              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                                questionForm.useCustomOptions
-                                  ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-md shadow-rose-200/60 dark:shadow-rose-900/40'
-                                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
-                              }`}
-                            >
-                              {questionForm.useCustomOptions ? 'Disable choices' : 'Enable choices'}
-                            </button>
+                        <div className="bg-gradient-to-br from-orange-50/50 via-amber-50/30 to-orange-50/50 dark:from-orange-900/10 dark:via-orange-800/5 dark:to-orange-900/10 border-2 border-orange-200 dark:border-orange-800 rounded-2xl p-5 shadow-md">
+                          <div className="mb-4">
+                            <h5 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-1 flex items-center gap-2">
+                              <span className="text-orange-500">📋</span>
+                              Multiple Choice Options <span className="text-red-500">*</span>
+                            </h5>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Nhập các lựa chọn A–D và chọn đáp án đúng.</p>
                           </div>
 
-                          {questionForm.useCustomOptions && (
-                            <div className="mt-4 space-y-4">
-                              <div className="grid gap-3 sm:grid-cols-2">
-                                {optionKeys.map((key) => (
-                                  <div key={key}>
-                                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">
-                                      Option {key}
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={questionForm.options?.[key] || ''}
-                                      onChange={(e) => updateQuestionOption(key, e.target.value)}
-                                      className="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-transparent shadow-inner"
-                                      placeholder={`Enter option ${key}`}
-                                      required
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-
-                              <div>
-                                <p className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">Select correct option</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {optionKeys.map((key) => {
-                                    const optionValue = (questionForm.options?.[key] || '').trim();
-                                    const isSelected = questionForm.correctOption === key;
-                                    return (
-                                      <button
-                                        key={key}
-                                        type="button"
-                                        disabled={!optionValue}
-                                        onClick={() => selectCorrectOption(key)}
-                                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                                          isSelected
-                                            ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-emerald-200/60 dark:shadow-emerald-900/40'
-                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                      >
-                                        {key}
-                                      </button>
-                                    );
-                                  })}
+                          <div className="mt-5 space-y-5 bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-orange-200 dark:border-orange-800">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              {optionKeys.map((key) => (
+                                <div key={key} className="space-y-2">
+                                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                      questionForm.correctOption === key
+                                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                                        : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'
+                                    }`}>
+                                      {key}
+                                    </span>
+                                    Option {key} <span className="text-red-500">*</span>
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={questionForm.options?.[key] || ''}
+                                    onChange={(e) => updateQuestionOption(key, e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-inner hover:border-gray-300 dark:hover:border-gray-500"
+                                    placeholder={`Nhập lựa chọn ${key}...`}
+                                    required
+                                  />
                                 </div>
+                              ))}
+                            </div>
+
+                            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                              <p className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                                <CheckCircle className="w-4 h-4 text-green-500" />
+                                Chọn đáp án đúng <span className="text-red-500">*</span>
+                              </p>
+                              <div className="flex flex-wrap gap-3">
+                                {optionKeys.map((key) => {
+                                  const optionValue = (questionForm.options?.[key] || '').trim();
+                                  const isSelected = questionForm.correctOption === key;
+                                  return (
+                                    <button
+                                      key={key}
+                                      type="button"
+                                      disabled={!optionValue}
+                                      onClick={() => selectCorrectOption(key)}
+                                      className={`px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 transform ${
+                                        isSelected
+                                          ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-emerald-500/50 dark:shadow-emerald-900/50 scale-110 ring-2 ring-green-300 dark:ring-green-700'
+                                          : 'bg-gray-100 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:border-green-400 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 hover:scale-105'
+                                      } disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100`}
+                                    >
+                                      {key}
+                                    </button>
+                                  );
+                                })}
                               </div>
                             </div>
-                          )}
+                          </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl p-4 -mx-1">
                           <button
                             type="button"
                             onClick={resetQuestionForm}
-                            className="w-full sm:w-auto px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="w-full sm:w-auto px-5 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md"
                           >
-                            Reset fields
+                            ↻ Reset Fields
                           </button>
                           <button
                             type="submit"
                             disabled={isQuestionSubmitting}
-                            className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-500/50 dark:hover:shadow-orange-900/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] disabled:transform-none"
                           >
                             {isQuestionSubmitting ? (
                               <>
@@ -1821,6 +1995,191 @@ export default function TeacherExams() {
                         </div>
                       )}
 
+                      {/* AI Generate Mode */}
+                      {questionMode === 'ai-generate' && (
+                        <div className="space-y-4">
+                          {aiGeneratedQuestions.length === 0 ? (
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                    Chủ đề <span className="text-red-500">*</span>
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={aiGenerateForm.topic}
+                                    onChange={(e) => setAiGenerateForm({ ...aiGenerateForm, topic: e.target.value })}
+                                    placeholder="Ví dụ: Quadratic Equations, Geometry..."
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                    Môn học
+                                  </label>
+                                  <select
+                                    value={aiGenerateForm.subject}
+                                    onChange={(e) => setAiGenerateForm({ ...aiGenerateForm, subject: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  >
+                                    <option value="Mathematics">Mathematics</option>
+                                    <option value="Physics">Physics</option>
+                                    <option value="Chemistry">Chemistry</option>
+                                    <option value="Biology">Biology</option>
+                                    <option value="English">English</option>
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                    Độ khó
+                                  </label>
+                                  <select
+                                    value={aiGenerateForm.difficulty}
+                                    onChange={(e) => setAiGenerateForm({ ...aiGenerateForm, difficulty: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  >
+                                    <option value="easy">Easy</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="hard">Hard</option>
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                    Số lượng (1-10)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="10"
+                                    value={aiGenerateForm.count}
+                                    onChange={(e) => setAiGenerateForm({ ...aiGenerateForm, count: parseInt(e.target.value) || 5 })}
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                    Thể loại
+                                  </label>
+                                  <select
+                                    value={aiGenerateForm.tag}
+                                    onChange={(e) => setAiGenerateForm({ ...aiGenerateForm, tag: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  >
+                                    {questionTagOptions.map(tag => (
+                                      <option key={tag} value={tag}>{tag.charAt(0).toUpperCase() + tag.slice(1)}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+
+                              {questionError && (
+                                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
+                                  <p className="text-sm text-red-700 dark:text-red-300">{questionError}</p>
+                                </div>
+                              )}
+
+                              <div className="flex justify-end gap-3">
+                                <button
+                                  type="button"
+                                  onClick={handleAIGenerate}
+                                  disabled={isAIGenerating || !aiGenerateForm.topic.trim()}
+                                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {isAIGenerating ? (
+                                    <>
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      Đang tạo...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Sparkles className="w-4 h-4" />
+                                      Generate Questions
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-4">
+                              <div className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3">
+                                <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                                  ✅ Đã tạo {aiGeneratedQuestions.length} câu hỏi thành công!
+                                </p>
+                              </div>
+
+                              <div className="max-h-96 space-y-3 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+                                {aiGeneratedQuestions.map((question, index) => (
+                                  <div
+                                    key={index}
+                                    className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 p-4"
+                                  >
+                                    <div className="mb-2 flex items-start justify-between">
+                                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                        {index + 1}. {question.question}
+                                      </p>
+                                      <input
+                                        type="checkbox"
+                                        defaultChecked
+                                        className="mt-1 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                        id={`ai-exam-q-${index}`}
+                                      />
+                                    </div>
+                                    {question.options && (
+                                      <div className="ml-4 space-y-1 text-sm">
+                                        {Object.entries(question.options).map(([key, value]) => (
+                                          <div
+                                            key={key}
+                                            className={`flex items-center gap-2 ${
+                                              question.correctOption === key
+                                                ? 'font-semibold text-green-600 dark:text-green-400'
+                                                : 'text-gray-600 dark:text-gray-400'
+                                            }`}
+                                          >
+                                            <span className="font-medium">{key}.</span>
+                                            <span>{value}</span>
+                                            {question.correctOption === key && (
+                                              <Check className="h-4 w-4" />
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="flex justify-end gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setAiGeneratedQuestions([]);
+                                    setQuestionError('');
+                                  }}
+                                  className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  Tạo lại
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const selectedIndices = aiGeneratedQuestions.map((_, i) => i);
+                                    handleAddAIGeneratedQuestions(selectedIndices);
+                                  }}
+                                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all"
+                                >
+                                  <Check className="w-4 h-4" />
+                                  Thêm vào bài thi
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {questionList.length > 0 && (
                         <div className="mt-6 space-y-3">
                           <h5 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Questions in this exam</h5>
@@ -1866,49 +2225,67 @@ export default function TeacherExams() {
 
                   {currentStep === 3 && (
                     <div className="space-y-5">
-                      <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
-                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Exam overview</h4>
-                        <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                          <div>
-                            <dt className="font-medium text-gray-600 dark:text-gray-400">Title</dt>
-                            <dd className="text-gray-900 dark:text-white">{form.title || '-'}</dd>
+                      <div className="bg-gradient-to-br from-orange-50/50 to-amber-50/50 dark:from-orange-900/10 dark:to-orange-800/5 rounded-xl p-4 border-2 border-orange-200 dark:border-orange-800">
+                        <h4 className="text-sm font-bold text-orange-800 dark:text-orange-300 mb-1">Review & Confirm</h4>
+                        <p className="text-xs text-orange-600 dark:text-orange-400">Please review all details before creating the exam</p>
+                      </div>
+
+                      <div className="rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-lg">
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                            <FileText className="w-5 h-5 text-white" />
                           </div>
-                          <div>
-                            <dt className="font-medium text-gray-600 dark:text-gray-400">Subject</dt>
-                            <dd className="text-gray-900 dark:text-white">{form.subject || '-'}</dd>
+                          <h4 className="text-base font-bold text-gray-900 dark:text-white">Exam Overview</h4>
+                        </div>
+                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                          <div className="space-y-1">
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Title</dt>
+                            <dd className="text-gray-900 dark:text-white font-medium">{form.title || '-'}</dd>
                           </div>
-                          <div>
-                            <dt className="font-medium text-gray-600 dark:text-gray-400">Class</dt>
-                            <dd className="text-gray-900 dark:text-white">{form.className || '-'}</dd>
+                          <div className="space-y-1">
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Subject</dt>
+                            <dd className="text-gray-900 dark:text-white font-medium">{form.subject || '-'}</dd>
                           </div>
-                          <div>
-                            <dt className="font-medium text-gray-600 dark:text-gray-400">Date & Time</dt>
-                            <dd className="text-gray-900 dark:text-white">
+                          <div className="space-y-1">
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Class</dt>
+                            <dd className="text-gray-900 dark:text-white font-medium">{form.className || '-'}</dd>
+                          </div>
+                          <div className="space-y-1">
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Date & Time</dt>
+                            <dd className="text-gray-900 dark:text-white font-medium">
                               {form.date || '-'} {form.time ? `• ${form.time}` : ''}
                             </dd>
                           </div>
-                          <div>
-                            <dt className="font-medium text-gray-600 dark:text-gray-400">Duration</dt>
-                            <dd className="text-gray-900 dark:text-white">{form.time_limit ? `${form.time_limit} minutes` : '-'}</dd>
+                          <div className="space-y-1">
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Duration</dt>
+                            <dd className="text-gray-900 dark:text-white font-medium">{form.time_limit ? `${form.time_limit} minutes` : '-'}</dd>
                           </div>
-                          <div>
-                            <dt className="font-medium text-gray-600 dark:text-gray-400">Planned questions</dt>
-                            <dd className="text-gray-900 dark:text-white">
+                          <div className="space-y-1">
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Planned Questions</dt>
+                            <dd className="text-gray-900 dark:text-white font-medium">
                               {hasPlannedQuestionCount ? plannedQuestionCount : questionList.length}
                             </dd>
                           </div>
                         </dl>
-                        <div className="mt-4 rounded-xl bg-gray-50 dark:bg-gray-700/40 p-4 text-sm text-gray-600 dark:text-gray-300">
-                          {form.description ? form.description : 'No additional description provided.'}
-                        </div>
+                        {form.description && (
+                          <div className="mt-5 rounded-xl bg-gray-50 dark:bg-gray-700/60 p-4 border border-gray-200 dark:border-gray-600">
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide mb-2">Description</dt>
+                            <dd className="text-sm text-gray-700 dark:text-gray-300">{form.description}</dd>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Question summary</h4>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
+                      <div className="rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-lg">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                              <FileText className="w-5 h-5 text-white" />
+                            </div>
+                            <h4 className="text-base font-bold text-gray-900 dark:text-white">Question Summary</h4>
+                          </div>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-sm font-bold text-white shadow-md shadow-orange-200/50 dark:shadow-orange-900/30">
                             {questionList.length}
-                            <span className="text-gray-500 dark:text-gray-400">
+                            <span className="text-orange-100">
                               / {hasPlannedQuestionCount ? plannedQuestionCount : questionList.length}
                             </span>
                           </span>
@@ -1959,22 +2336,22 @@ export default function TeacherExams() {
                   )}
                 </div>
                 
-                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="px-6 py-5 bg-gradient-to-r from-gray-50 to-orange-50/30 dark:from-gray-800 dark:to-gray-800 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <button
                     type="button"
                     onClick={currentStep === 1 ? closeCreateModal : prevStep}
-                    className="w-full sm:w-auto px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                    className="w-full sm:w-auto px-5 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md"
                   >
-                    {currentStep === 1 ? 'Cancel' : 'Back'}
+                    {currentStep === 1 ? 'Cancel' : '← Back'}
                   </button>
                   <div className="flex w-full sm:w-auto gap-3">
                     {currentStep < creationSteps.length && (
                       <button
                         type="button"
                         onClick={nextStep}
-                        className="flex-1 sm:flex-none px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
+                        className="flex-1 sm:flex-none px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-orange-500/50 dark:hover:shadow-orange-900/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                       >
-                        Next Step
+                        Next Step →
                       </button>
                     )}
                     {currentStep === creationSteps.length && (
@@ -1982,7 +2359,7 @@ export default function TeacherExams() {
                         type="button"
                         onClick={handleCreateExam}
                         disabled={isSubmitting}
-                        className="flex-1 sm:flex-none px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 sm:flex-none px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-orange-500/50 dark:hover:shadow-orange-900/50 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] disabled:transform-none"
                       >
                         {isSubmitting ? (
                           <>

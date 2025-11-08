@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, Search, Filter, Trash2, Edit, Eye, X, Check, AlertCircle, BookOpen, Tag, Gauge, FileText } from 'lucide-react';
+import { Plus, Search, Filter, Trash2, Edit, Eye, X, Check, AlertCircle, BookOpen, Tag, Gauge, FileText, Sparkles, Loader2 } from 'lucide-react';
 import { questionService } from '../../services/questionService';
+import { aiService } from '../../services/aiService';
 
 export default function QuestionBank() {
   const [questions, setQuestions] = useState([]);
@@ -17,6 +18,16 @@ export default function QuestionBank() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAIGenerateModal, setShowAIGenerateModal] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedQuestions, setGeneratedQuestions] = useState([]);
+  const [aiForm, setAiForm] = useState({
+    topic: '',
+    subject: 'Mathematics',
+    difficulty: 'medium',
+    count: 5,
+    tag: 'other'
+  });
 
   const tagOptions = ['geometry', 'algebra', 'probability', 'calculus', 'statistics', 'other'];
   const difficultyOptions = ['easy', 'medium', 'hard'];
@@ -216,6 +227,50 @@ export default function QuestionBank() {
     }
   };
 
+  // Handle AI generation
+  const handleAIGenerate = async () => {
+    try {
+      setIsGenerating(true);
+      setError('');
+
+      if (!aiForm.topic.trim()) {
+        setError('Vui lòng nhập chủ đề');
+        return;
+      }
+
+      const response = await aiService.generateQuestions(aiForm);
+      const generated = response?.questions || response?.data?.questions || [];
+      setGeneratedQuestions(generated);
+    } catch (err) {
+      console.error('Error generating questions:', err);
+      setError(err.message || 'Không thể tạo câu hỏi bằng AI. Vui lòng thử lại.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Save generated questions to bank
+  const handleSaveGeneratedQuestions = async (selectedIndices) => {
+    try {
+      setIsSubmitting(true);
+      setError('');
+
+      const questionsToSave = generatedQuestions.filter((_, index) => selectedIndices.includes(index));
+      
+      // Save each question
+      await Promise.all(questionsToSave.map(q => questionService.createQuestion(q)));
+      
+      setShowAIGenerateModal(false);
+      setGeneratedQuestions([]);
+      await loadQuestions();
+    } catch (err) {
+      console.error('Error saving questions:', err);
+      setError(err.message || 'Không thể lưu câu hỏi');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Filtered questions
   const filteredQuestions = questions.filter(q => {
     const matchesSearch = !searchTerm || 
@@ -246,16 +301,35 @@ export default function QuestionBank() {
               Quản lý ngân hàng câu hỏi của bạn
             </p>
           </div>
-          <button
-            onClick={() => {
-              setForm(defaultFormState);
-              setShowCreateModal(true);
-            }}
-            className="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700"
-          >
-            <Plus className="h-4 w-4" />
-            Tạo câu hỏi mới
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setAiForm({
+                  topic: '',
+                  subject: 'Mathematics',
+                  difficulty: 'medium',
+                  count: 5,
+                  tag: 'other'
+                });
+                setGeneratedQuestions([]);
+                setShowAIGenerateModal(true);
+              }}
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg"
+            >
+              <Sparkles className="h-4 w-4" />
+              Generate with AI
+            </button>
+            <button
+              onClick={() => {
+                setForm(defaultFormState);
+                setShowCreateModal(true);
+              }}
+              className="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700"
+            >
+              <Plus className="h-4 w-4" />
+              Tạo câu hỏi mới
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -772,6 +846,242 @@ export default function QuestionBank() {
                   {isSubmitting ? 'Đang xóa...' : 'Xóa'}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* AI Generate Modal */}
+        {showAIGenerateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-indigo-600">
+                    <Sparkles className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Generate Questions with AI
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Tạo câu hỏi tự động bằng AI
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowAIGenerateModal(false);
+                    setGeneratedQuestions([]);
+                    setError('');
+                  }}
+                  className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {error && (
+                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+                  {error}
+                </div>
+              )}
+
+              {generatedQuestions.length === 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Chủ đề <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={aiForm.topic}
+                        onChange={(e) => setAiForm({ ...aiForm, topic: e.target.value })}
+                        placeholder="Ví dụ: Quadratic Equations, Geometry, Algebra..."
+                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Môn học <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={aiForm.subject}
+                        onChange={(e) => setAiForm({ ...aiForm, subject: e.target.value })}
+                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      >
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Biology">Biology</option>
+                        <option value="English">English</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Độ khó
+                      </label>
+                      <select
+                        value={aiForm.difficulty}
+                        onChange={(e) => setAiForm({ ...aiForm, difficulty: e.target.value })}
+                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      >
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Số lượng câu hỏi
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={aiForm.count}
+                        onChange={(e) => setAiForm({ ...aiForm, count: parseInt(e.target.value) || 5 })}
+                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Thể loại
+                      </label>
+                      <select
+                        value={aiForm.tag}
+                        onChange={(e) => setAiForm({ ...aiForm, tag: e.target.value })}
+                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      >
+                        {tagOptions.map(tag => (
+                          <option key={tag} value={tag}>{tag.charAt(0).toUpperCase() + tag.slice(1)}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4">
+                    <button
+                      onClick={() => {
+                        setShowAIGenerateModal(false);
+                        setGeneratedQuestions([]);
+                        setError('');
+                      }}
+                      className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      onClick={handleAIGenerate}
+                      disabled={isGenerating || !aiForm.topic.trim()}
+                      className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Đang tạo...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4" />
+                          Generate Questions
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
+                    <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                      ✅ Đã tạo {generatedQuestions.length} câu hỏi thành công!
+                    </p>
+                  </div>
+
+                  <div className="max-h-96 space-y-3 overflow-y-auto">
+                    {generatedQuestions.map((question, index) => (
+                      <div
+                        key={index}
+                        className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50"
+                      >
+                        <div className="mb-2 flex items-start justify-between">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {index + 1}. {question.question}
+                          </p>
+                          <input
+                            type="checkbox"
+                            defaultChecked
+                            className="mt-1 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            id={`ai-q-${index}`}
+                          />
+                        </div>
+                        {question.options && (
+                          <div className="ml-4 space-y-1 text-sm">
+                            {Object.entries(question.options).map(([key, value]) => (
+                              <div
+                                key={key}
+                                className={`flex items-center gap-2 ${
+                                  question.correctOption === key
+                                    ? 'font-semibold text-green-600 dark:text-green-400'
+                                    : 'text-gray-600 dark:text-gray-400'
+                                }`}
+                              >
+                                <span className="font-medium">{key}.</span>
+                                <span>{value}</span>
+                                {question.correctOption === key && (
+                                  <Check className="h-4 w-4" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {question.explanation && (
+                          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            💡 {question.explanation}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-end gap-3 border-t border-gray-200 pt-4 dark:border-gray-700">
+                    <button
+                      onClick={() => {
+                        setGeneratedQuestions([]);
+                        setError('');
+                      }}
+                      className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                    >
+                      Tạo lại
+                    </button>
+                    <button
+                      onClick={() => {
+                        const selectedIndices = generatedQuestions.map((_, i) => i);
+                        handleSaveGeneratedQuestions(selectedIndices);
+                      }}
+                      disabled={isSubmitting}
+                      className="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Đang lưu...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4" />
+                          Lưu tất cả vào Question Bank
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

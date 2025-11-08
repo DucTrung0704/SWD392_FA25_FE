@@ -104,42 +104,26 @@ const AdminLayout = () => {
             ))}
           </nav>
 
-          {/* User info */}
+          {/* Logout button at bottom */}
           <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-            <div className={`flex items-center mb-4 ${sidebarCollapsed ? 'justify-center' : ''}`}>
-              <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-sm">{user?.name?.charAt(0) || 'A'}</span>
-              </div>
-              {!sidebarCollapsed && (
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Admin'}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Administrator</p>
-                </div>
-              )}
-            </div>
-            
-            <div className={`flex items-center ${sidebarCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
-              <ThemeToggle />
-              {!sidebarCollapsed && (
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
-                >
-                  Logout
-                </button>
-              )}
-              {sidebarCollapsed && (
-                <button
-                  onClick={handleLogout}
-                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
-                  title="Logout"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                </button>
-              )}
-            </div>
+            {!sidebarCollapsed && (
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+              >
+                <Icon name="logout" className="w-4 h-4 mr-2" />
+                Logout
+              </button>
+            )}
+            {sidebarCollapsed && (
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+                title="Logout"
+              >
+                <Icon name="logout" className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -165,6 +149,20 @@ const AdminLayout = () => {
               </div>
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span className="text-xs text-gray-500 dark:text-gray-400">System Online</span>
+            </div>
+
+            {/* Profile and Theme Toggle */}
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Admin'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Administrator</p>
+                </div>
+                <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-red-500 transition-all">
+                  <span className="text-white font-bold text-sm">{user?.name?.charAt(0) || 'A'}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

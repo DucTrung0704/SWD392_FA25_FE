@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Eye, Edit, Trash2, FileText, Users, TrendingUp, BookOpen, Globe, Lock, Play, X, MoreVertical } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, FileText, Users, TrendingUp, BookOpen, Globe, Lock, Play, X, MoreVertical, Sparkles } from 'lucide-react';
 import { flashcardService } from '../../services/flashcardService';
+import { aiService } from '../../services/aiService';
 
 export default function TeacherFlashcards() {
   const navigate = useNavigate();
@@ -26,6 +27,18 @@ export default function TeacherFlashcards() {
     difficulty: 'easy',
     isPublic: false
   });
+
+  // AI Generation state
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiForm, setAiForm] = useState({
+    topic: '',
+    subject: '',
+    difficulty: 'medium',
+    count: 5,
+    tag: 'other'
+  });
+  const [generatedFlashcards, setGeneratedFlashcards] = useState([]);
 
   // Helper function to transform deck data
   const transformDeck = (deck) => {
@@ -140,6 +153,53 @@ export default function TeacherFlashcards() {
       difficulty: 'easy',
       isPublic: false
     });
+    setGeneratedFlashcards([]);
+    setShowAIGenerator(false);
+    setAiForm({
+      topic: '',
+      subject: '',
+      difficulty: 'medium',
+      count: 5,
+      tag: 'other'
+    });
+  };
+
+  // Handle AI form change
+  const handleAIFormChange = (field, value) => {
+    setAiForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Generate flashcards with AI
+  const generateFlashcardsWithAI = async () => {
+    if (!aiForm.topic.trim() || !aiForm.subject.trim()) {
+      setError('Vui lòng nhập topic và subject');
+      return;
+    }
+
+    setAiLoading(true);
+    setError('');
+    try {
+      const response = await aiService.generateFlashcards(aiForm);
+      const generatedFlashcards = response.flashcards || [];
+      
+      if (generatedFlashcards.length === 0) {
+        setError('Không tạo được flashcard nào. Vui lòng thử lại.');
+        return;
+      }
+
+      // Store generated flashcards
+      setGeneratedFlashcards(generatedFlashcards);
+      setError('');
+    } catch (err) {
+      console.error('Error generating flashcards with AI:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Không thể tạo flashcard. Vui lòng thử lại.';
+      setError(errorMessage);
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   // Handle create deck
@@ -166,7 +226,27 @@ export default function TeacherFlashcards() {
       };
       
       console.log('Creating deck with data:', apiData);
-      await flashcardService.createDeck(apiData);
+      const createdDeck = await flashcardService.createDeck(apiData);
+      
+      // If we have generated flashcards, create them for this deck
+      if (generatedFlashcards.length > 0 && createdDeck.deck?._id) {
+        try {
+          const deckId = createdDeck.deck._id;
+          // Create flashcards one by one
+          for (const fc of generatedFlashcards) {
+            await flashcardService.createFlashcard({
+              deck_id: deckId,
+              question: fc.question,
+              answer: fc.answer,
+              tag: fc.tag,
+              status: fc.status
+            });
+          }
+        } catch (flashcardError) {
+          console.error('Error creating flashcards:', flashcardError);
+          // Don't fail the whole operation if flashcards fail
+        }
+      }
       
       // Reload decks
       const decks = await flashcardService.getAllDecks();
@@ -178,6 +258,15 @@ export default function TeacherFlashcards() {
       // Close modal and reset form
       setShowCreateModal(false);
       resetForm();
+      setGeneratedFlashcards([]);
+      setShowAIGenerator(false);
+      setAiForm({
+        topic: '',
+        subject: '',
+        difficulty: 'medium',
+        count: 5,
+        tag: 'other'
+      });
     } catch (err) {
       console.error('Failed to create deck:', err);
       setError(err.message || 'Failed to create deck. Please try again.');
@@ -809,6 +898,125 @@ export default function TeacherFlashcards() {
                   </div>
                   
                   <div className="px-6 py-4 space-y-4">
+                    {/* AI Generator Section */}
+                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-4 mb-4 border-2 border-purple-200 dark:border-purple-800">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                            Tạo Flashcard với AI
+                          </h4>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowAIGenerator(!showAIGenerator)}
+                          className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
+                        >
+                          {showAIGenerator ? 'Ẩn' : 'Hiện'}
+                        </button>
+                      </div>
+
+                      {showAIGenerator && (
+                        <div className="mt-3 space-y-3 bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-200 dark:border-purple-700">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Topic (Chủ đề)
+                              </label>
+                              <input
+                                type="text"
+                                value={aiForm.topic}
+                                onChange={(e) => handleAIFormChange('topic', e.target.value)}
+                                placeholder="Ví dụ: Quadratic Equations..."
+                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Subject (Môn học)
+                              </label>
+                              <input
+                                type="text"
+                                value={aiForm.subject}
+                                onChange={(e) => handleAIFormChange('subject', e.target.value)}
+                                placeholder="Ví dụ: Mathematics..."
+                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-3 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Độ khó
+                              </label>
+                              <select
+                                value={aiForm.difficulty}
+                                onChange={(e) => handleAIFormChange('difficulty', e.target.value)}
+                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              >
+                                <option value="easy">Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Số lượng
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                max="20"
+                                value={aiForm.count}
+                                onChange={(e) => handleAIFormChange('count', parseInt(e.target.value) || 5)}
+                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Tag
+                              </label>
+                              <select
+                                value={aiForm.tag}
+                                onChange={(e) => handleAIFormChange('tag', e.target.value)}
+                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              >
+                                <option value="geometry">Geometry</option>
+                                <option value="algebra">Algebra</option>
+                                <option value="probability">Probability</option>
+                                <option value="calculus">Calculus</option>
+                                <option value="statistics">Statistics</option>
+                                <option value="other">Other</option>
+                              </select>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={generateFlashcardsWithAI}
+                            disabled={aiLoading || !aiForm.topic.trim() || !aiForm.subject.trim()}
+                            className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            {aiLoading ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Đang tạo...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-4 h-4" />
+                                Tạo Flashcard với AI
+                              </>
+                            )}
+                          </button>
+                          {generatedFlashcards.length > 0 && (
+                            <div className="text-xs text-green-600 dark:text-green-400 font-medium">
+                              ✓ Đã tạo {generatedFlashcards.length} flashcard. Chúng sẽ được thêm vào deck khi bạn tạo deck.
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Deck Title <span className="text-red-500">*</span>
@@ -920,7 +1128,7 @@ export default function TeacherFlashcards() {
                     >
                       {isSubmitting ? (
                         <>
-                          <div className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2"></div>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                           Creating...
                         </>
                       ) : (

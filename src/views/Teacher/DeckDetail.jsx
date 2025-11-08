@@ -18,6 +18,7 @@ export default function TeacherDeckDetail() {
   const [cardForm, setCardForm] = useState({ question: '', answer: '', explanation: '', tag: 'algebra' });
   const [showEditCardModal, setShowEditCardModal] = useState(false);
   const [showDeleteCardModal, setShowDeleteCardModal] = useState(false);
+  const [deleteCardError, setDeleteCardError] = useState('');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
   const [previewCardIndex, setPreviewCardIndex] = useState(0);
@@ -171,9 +172,7 @@ export default function TeacherDeckDetail() {
     try {
       setIsSubmitting(true);
       setError('');
-      
       await flashcardService.deleteDeck(id);
-      
       // Navigate back to flashcards list
       navigate('/dashboard/teacher/flashcards');
     } catch (err) {
