@@ -27,6 +27,7 @@ export default function StudentLayout() {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard/student', icon: 'home' },
+    { name: 'Classes', href: '/dashboard/student/class', icon: 'home' },
     { name: 'Library', href: '/dashboard/student/library', icon: 'flashcards' },
     { name: 'Study', href: '/dashboard/student/study', icon: 'study' },
     { name: 'Exams', href: '/dashboard/student/exams', icon: 'exams' },

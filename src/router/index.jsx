@@ -41,6 +41,7 @@ import StudentFlashcardStudy from '../views/Student/FlashcardStudy';
 import StudentExams from '../views/Student/Exams';
 import MySubmissions from '../views/Student/MySubmissions';
 import SubmissionDetail from '../views/Student/SubmissionDetail';
+import StudentClasses from '../views/Student/Classes';
 
 // Teacher Views
 import TeacherStudents from '../views/Teacher/Students';
@@ -154,6 +155,7 @@ export function AppRouter() {
         <Route path="progress" element={<StudentProgress />} />
         <Route path="submissions" element={<MySubmissions />} />
         <Route path="exams/:submissionId" element={<SubmissionDetail />} />
+        <Route path="class" element={<StudentClasses />} />
       </Route>
       
       {/* ========== PROFILE ROUTE ========== */}
