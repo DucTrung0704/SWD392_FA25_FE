@@ -1,150 +1,265 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search, Filter, RefreshCcw } from 'lucide-react';
+import PageHeader from '../../components/student/PageHeader';
+import ExamGrid from '../../components/student/ExamGrid';
 import { submissionService } from '../../services/submissionService';
 import { examService } from '../../services/examService';
 
+const PAGE_SIZE = 6;
+
 export default function StudentExams() {
   const navigate = useNavigate();
-  const [exams, setExams] = useState([]);
+  const [rawExams, setRawExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
   const [search, setSearch] = useState('');
   const [subject, setSubject] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(6);
+  const [actionState, setActionState] = useState({});
 
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const list = await examService.listStudentExams();
-        const arr = Array.isArray(list?.exams) ? list.exams : (Array.isArray(list) ? list : []);
-        const normalized = arr.map(e => ({
-          _id: e._id || e.id,
-          title: e.title,
-          subject: e.subject || 'General',
-          duration: e.duration || e.durationMinutes || 60,
-          date: e.date || e.scheduled_at || e.createdAt || new Date().toISOString(),
-        }));
-        setExams(normalized);
-      } catch (e) {
-        console.error(e);
-        setError(e.message || 'Failed to load exams');
-      } finally {
-        setLoading(false);
-      }
-    })();
+  const loadExams = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const list = await examService.listStudentExams();
+      const arr = Array.isArray(list?.exams) ? list.exams : Array.isArray(list) ? list : [];
+      setRawExams(arr);
+    } catch (e) {
+      console.error(e);
+      setError(e.message || 'Không thể tải danh sách kỳ thi');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const subjects = useMemo(() => ['all', ...new Set(exams.map(e => e.subject))], [exams]);
+  useEffect(() => {
+    loadExams();
+  }, [loadExams]);
 
-  const filtered = exams.filter(e => {
-    const q = search.toLowerCase();
-    const matchQ = !q || e.title.toLowerCase().includes(q) || e.subject.toLowerCase().includes(q);
-    const matchS = subject === 'all' || e.subject === subject;
-    return matchQ && matchS;
-  });
+  const normalizedExams = useMemo(() => {
+    return rawExams.map((exam) => {
+      const id = exam._id || exam.id;
+      const submission =
+        exam.activeSubmission || exam.submission || (Array.isArray(exam.submissions) ? exam.submissions[0] : null);
+      const submissionStatus = (submission?.status || '').toLowerCase();
+      const baseStatus = (exam.status || submission?.status || (exam.isPublic ? 'scheduled' : 'draft') || '').toLowerCase();
+      const canContinue = ['in-progress', 'pending', 'started'].includes(submissionStatus);
+      const canReview = ['completed', 'submitted', 'graded'].includes(submissionStatus);
+      const score =
+        submission?.score ?? submission?.result?.score ?? submission?.summary?.score ?? submission?.finalScore ?? null;
+      const maxScore = submission?.result?.maxScore ?? submission?.maxScore ?? null;
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      return {
+        id,
+        title: exam.title || 'Chưa đặt tên',
+        subject: exam.subject || 'General',
+        duration: exam.time_limit || exam.duration || exam.durationMinutes || 60,
+        date: exam.date || exam.scheduled_at || exam.startTime || submission?.started_at || exam.createdAt,
+        description: exam.description,
+        status: canContinue ? 'in-progress' : canReview ? submissionStatus || baseStatus : baseStatus,
+        progress: submission?.progress ?? submission?.percentage ?? null,
+        score: score != null && maxScore != null ? `${score}/${maxScore}` : score,
+        canContinue,
+        canReview,
+        disabled: canReview && !canContinue
+      };
+    });
+  }, [rawExams]);
+
+  const subjects = useMemo(() => ['all', ...new Set(normalizedExams.map((exam) => exam.subject || 'General'))], [
+    normalizedExams
+  ]);
+
+  const statusOptions = useMemo(
+    () => ['all', ...new Set(normalizedExams.map((exam) => exam.status || 'scheduled'))],
+    [normalizedExams]
+  );
+
+  const filteredExams = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    return normalizedExams.filter((exam) => {
+      const matchesKeyword =
+        !keyword ||
+        exam.title.toLowerCase().includes(keyword) ||
+        (exam.subject || '').toLowerCase().includes(keyword) ||
+        (exam.description || '').toLowerCase().includes(keyword);
+      const matchesSubject = subject === 'all' || exam.subject === subject;
+      const matchesStatus = statusFilter === 'all' || (exam.status || '').toLowerCase() === statusFilter;
+      return matchesKeyword && matchesSubject && matchesStatus;
+    });
+  }, [normalizedExams, search, subject, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredExams.length / PAGE_SIZE));
   const safePage = Math.min(Math.max(1, currentPage), totalPages);
-  const startIndex = (safePage - 1) * pageSize;
-  const pageItems = filtered.slice(startIndex, startIndex + pageSize);
+  const startIndex = (safePage - 1) * PAGE_SIZE;
+  const pageItems = filteredExams.slice(startIndex, startIndex + PAGE_SIZE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, subject, statusFilter]);
+
+  const handleStartExam = useCallback(
+    async (examId) => {
+      if (!examId) return;
+      try {
+        setActionState({ id: examId, type: 'start' });
+        const res = await submissionService.startExam(examId);
+        const submissionId = res?.submission?._id || res?.submissionId || res?._id;
+        if (submissionId) {
+          navigate(`/dashboard/student/exams/${submissionId}`);
+        } else {
+          throw new Error('Không xác định được bài làm');
+        }
+      } catch (e) {
+        console.error(e);
+        setError(e.message || 'Không thể bắt đầu kỳ thi');
+      } finally {
+        setActionState({});
+      }
+    },
+    [navigate]
+  );
+
+  const handleContinueExam = useCallback(
+    async (examId) => {
+      if (!examId) return;
+      try {
+        setActionState({ id: examId, type: 'continue' });
+        const submission = await submissionService.getSubmissionByExam(examId);
+        const submissionId = submission?._id || submission?.submissionId || submission?.submission?._id;
+        if (submissionId) {
+          navigate(`/dashboard/student/exams/${submissionId}`);
+        } else {
+          throw new Error('Chưa có bài nộp cho kỳ thi này');
+        }
+      } catch (e) {
+        console.error(e);
+        setError(e.message || 'Không thể mở lại kỳ thi');
+      } finally {
+        setActionState({});
+      }
+    },
+    [navigate]
+  );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-6 sm:pt-3 lg:pt-4">
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Exams</h1>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-orange-50 py-4 dark:from-gray-900 dark:to-gray-800 sm:py-6 lg:py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <PageHeader
+          title="Kỳ thi"
+          subtitle="Bắt đầu luyện tập và theo dõi tiến trình của bạn"
+          actions={
+            <button
+              onClick={loadExams}
+              className="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-white px-4 py-2 text-sm font-medium text-orange-600 transition-all hover:border-orange-300 hover:bg-orange-50 dark:border-orange-500/40 dark:bg-gray-800 dark:text-orange-300 dark:hover:bg-orange-900/30"
+            >
+              <RefreshCcw className="h-4 w-4" />
+              Làm mới
+            </button>
+          }
+        />
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-100 dark:border-gray-700 p-4 sm:p-6 mb-6">
-        <div className="flex flex-col md:flex-row gap-3">
-          <input
-            value={search}
-            onChange={(e)=>setSearch(e.target.value)}
-            placeholder="Search exams..."
-            className="flex-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          />
-          <select
-            value={subject}
-            onChange={(e)=>setSubject(e.target.value)}
-            className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          >
-            {subjects.map(s => <option key={s} value={s}>{s === 'all' ? 'All Subjects' : s}</option>)}
-          </select>
-        </div>
-      </div>
+        {error && (
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+            {error}
+          </div>
+        )}
 
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="ml-3 text-gray-600 dark:text-gray-400">Loading exams...</span>
-        </div>
-      ) : pageItems.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-12 text-center border border-gray-100 dark:border-gray-700">
-          <p className="text-gray-600 dark:text-gray-400">{error || 'No exams found'}</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {pageItems.map(exam => (
-            <div key={exam.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-100 dark:border-gray-700 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-900 dark:text-white truncate">{exam.title}</h3>
-                <span className="text-xs px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">{exam.duration} mins</span>
+        <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Tìm kiếm theo tên kỳ thi hoặc môn học"
+                className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-11 pr-4 text-sm text-gray-900 transition-shadow focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-orange-400"
+              />
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700">
+                <Filter className="h-4 w-4 text-gray-400" />
+                <select
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="bg-transparent text-gray-700 focus:outline-none dark:text-gray-200"
+                >
+                  {subjects.map((s) => (
+                    <option key={s} value={s}>
+                      {s === 'all' ? 'Tất cả môn học' : s}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{exam.subject}</p>
-              <div className="text-xs text-gray-500 dark:text-gray-400">{new Date(exam.date).toLocaleDateString()}</div>
-              <div className="mt-3 flex justify-end gap-2">
-                <button
-                  onClick={async () => {
-                    try {
-                      const res = await submissionService.startExam(exam._id);
-                      const submissionId = res?.submission?._id || res?.submissionId || res?._id;
-                      if (submissionId) {
-                        navigate(`/dashboard/student/exams/${submissionId}`);
-                      }
-                    } catch (e) {
-                      console.error(e);
-                      alert(e.message || 'Failed to start exam');
-                    }
-                  }}
-                  className="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700"
+              <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700">
+                <Filter className="h-4 w-4 text-gray-400" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="bg-transparent text-gray-700 focus:outline-none dark:text-gray-200"
                 >
-                  Start
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      const s = await submissionService.getSubmissionByExam(exam._id);
-                      const submissionId = s?._id || s?.submissionId || s?.submission?._id;
-                      if (submissionId) {
-                        navigate(`/dashboard/student/exams/${submissionId}`);
-                      } else {
-                        alert('No submission found for this exam');
-                      }
-                    } catch (e) {
-                      console.error(e);
-                      alert(e.message || 'Failed to load submission');
-                    }
-                  }}
-                  className="px-3 py-2 rounded-lg border text-sm text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Continue
-                </button>
+                  {statusOptions.map((s) => (
+                    <option key={s} value={s}>
+                      {s === 'all' ? 'Mọi trạng thái' : s.replace('-', ' ')}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      )}
 
-      <div className="flex items-center justify-between mt-6 text-sm">
-        <div className="text-gray-600 dark:text-gray-400">Showing {filtered.length === 0 ? 0 : startIndex + 1}-{Math.min(startIndex + pageSize, filtered.length)} / {filtered.length}</div>
-        <div className="flex items-center gap-2">
-          <button onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} disabled={safePage===1} className={`px-3 py-2 rounded-lg border ${safePage===1 ? 'text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>Prev</button>
-          <span className="text-gray-700 dark:text-gray-300">Page {safePage}/{totalPages}</span>
-          <button onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} disabled={safePage===totalPages} className={`px-3 py-2 rounded-lg border ${safePage===totalPages ? 'text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>Next</button>
-        </div>
+        <ExamGrid
+          exams={pageItems}
+          loading={loading}
+          onStart={handleStartExam}
+          onContinue={handleContinueExam}
+          actionState={actionState}
+          emptyTitle="Không tìm thấy kỳ thi phù hợp"
+          emptyMessage="Hãy thử thay đổi từ khoá hoặc bộ lọc để thấy thêm lựa chọn."
+        />
+
+        {filteredExams.length > 0 && (
+          <div className="mt-8 flex flex-col items-center justify-between gap-3 text-sm text-gray-600 dark:text-gray-300 sm:flex-row">
+            <div>
+              Hiển thị <span className="font-semibold text-gray-900 dark:text-white">{startIndex + 1}</span>
+              {' - '}
+              <span className="font-semibold text-gray-900 dark:text-white">{Math.min(startIndex + PAGE_SIZE, filteredExams.length)}</span>
+              {' trong '}
+              <span className="font-semibold text-gray-900 dark:text-white">{filteredExams.length}</span> kỳ thi
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+                className={`rounded-lg border px-3 py-2 transition-colors ${
+                  safePage === 1
+                    ? 'cursor-not-allowed border-gray-200 text-gray-400 dark:border-gray-700'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                Trước
+              </button>
+              <span>
+                Trang <span className="font-semibold text-gray-900 dark:text-white">{safePage}</span> /{' '}
+                <span className="font-semibold text-gray-900 dark:text-white">{totalPages}</span>
+              </span>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+                className={`rounded-lg border px-3 py-2 transition-colors ${
+                  safePage === totalPages
+                    ? 'cursor-not-allowed border-gray-200 text-gray-400 dark:border-gray-700'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                Sau
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -14,6 +14,21 @@ export const flashcardService = {
     }
   },
 
+  // Get featured decks (for home page)
+  getFeatured: async () => {
+    try {
+      const data = await api.get('/deck/all');
+      // API returns array directly, not { decks: [...] }
+      const decks = Array.isArray(data) ? data : (data.decks || []);
+      // Return first 8 decks as featured, or all if less than 8
+      return decks.slice(0, 8);
+    } catch (error) {
+      console.error('Error fetching featured decks:', error);
+      // Return empty array instead of throwing to prevent app crash
+      return [];
+    }
+  },
+
   // Get deck by ID from API
   getDeckById: async (id) => {
     try {

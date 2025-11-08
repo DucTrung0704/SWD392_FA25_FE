@@ -376,7 +376,7 @@ export default function TeacherFlashcards() {
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
                 Flashcard Management
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">
@@ -388,7 +388,7 @@ export default function TeacherFlashcards() {
                 resetForm();
                 setShowCreateModal(true);
               }}
-              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               Create Deck
@@ -707,34 +707,46 @@ export default function TeacherFlashcards() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 mt-auto flex-shrink-0">
+                <div className="flex items-center justify-center gap-2 mt-auto flex-shrink-0 w-full">
                   <button 
-                    onClick={() => navigate(`/dashboard/teacher/flashcards/${deck.id}`)}
-                    className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                    onClick={() => navigate(`/dashboard/teacher/flashcards/${deck.id}/study`)}
+                    className="w-12 h-12 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all duration-200 flex items-center justify-center group relative"
+                    title="Preview"
                   >
-                    <Eye className="w-4 h-4" />
-                    View
+                    <Play className="w-5 h-5" />
+                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                      Preview
+                    </span>
                   </button>
                   <button 
-                    onClick={() => navigate(`/decks/${deck.id}/study`)}
-                    className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex-shrink-0"
-                    title="Preview Deck"
+                    onClick={() => navigate(`/dashboard/teacher/flashcards/${deck.id}`)}
+                    className="w-12 h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 flex items-center justify-center group relative"
+                    title="View"
                   >
-                    <Play className="w-4 h-4" />
+                    <Eye className="w-5 h-5" />
+                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                      View
+                    </span>
                   </button>
                   <button 
                     onClick={() => openEditModal(deck)}
-                    className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                    className="w-12 h-12 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center justify-center group relative"
+                    title="Edit"
                   >
-                    <Edit className="w-4 h-4" />
-                    Edit
+                    <Edit className="w-5 h-5" />
+                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                      Edit
+                    </span>
                   </button>
                   <button 
                     onClick={() => openDeleteModal(deck)}
-                    className="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                    className="w-12 h-12 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 flex items-center justify-center group relative"
+                    title="Delete"
                   >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
+                    <Trash2 className="w-5 h-5" />
+                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                      Delete
+                    </span>
                   </button>
                 </div>
               </div>
@@ -908,7 +920,7 @@ export default function TeacherFlashcards() {
                     >
                       {isSubmitting ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <div className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2"></div>
                           Creating...
                         </>
                       ) : (

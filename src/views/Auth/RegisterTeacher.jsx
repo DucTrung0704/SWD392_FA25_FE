@@ -84,7 +84,7 @@ export default function RegisterTeacher() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 sm:py-12">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* Left Side - Benefits */}
@@ -92,10 +92,10 @@ export default function RegisterTeacher() {
             {/* Main Heading */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-14 h-14 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
                   <UserCheck className="w-8 h-8 text-white" />
                 </div>
-                <div className="text-sm font-semibold text-purple-600 dark:text-purple-400">FlashLearn</div>
+                <div className="text-sm font-semibold text-orange-600 dark:text-orange-400">FlashLearn</div>
               </div>
               <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
                 Share Your Knowledge<br/>With Students Worldwide
@@ -108,7 +108,7 @@ export default function RegisterTeacher() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">500+</div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">500+</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Teachers</div>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
@@ -130,7 +130,7 @@ export default function RegisterTeacher() {
                 { icon: <Users className="w-6 h-6" />, title: 'Engage Students', desc: 'Connect with your learners' }
               ].map((benefit, idx) => (
                 <div key={idx} className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-400">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-100 to-orange-100 dark:from-orange-900/30 dark:to-orange-900/30 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400">
                     {benefit.icon}
                   </div>
                   <div>
@@ -142,12 +142,12 @@ export default function RegisterTeacher() {
             </div>
 
             {/* Quote */}
-            <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-6 rounded-3xl text-white shadow-xl">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-3xl text-white shadow-xl">
               <div className="flex items-start gap-4">
                 <Award className="w-8 h-8 flex-shrink-0 mt-1" />
                 <div>
                   <p className="text-lg font-medium mb-2">"Teaching is the greatest act of optimism."</p>
-                  <p className="text-purple-100 text-sm">Join us and make a difference in student learning.</p>
+                  <p className="text-orange-100 text-sm">Join us and make a difference in student learning.</p>
                 </div>
               </div>
             </div>
@@ -155,15 +155,15 @@ export default function RegisterTeacher() {
 
           {/* Right Side - Registration Form */}
           <div className="w-full">
-            <Card className="w-full shadow-2xl border-0 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90">
+            <Card className="w-full shadow-2xl border-0 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90" style={{ boxShadow: '0 25px 50px -12px rgba(251, 146, 60, 0.5)' }}>
               {/* Header Section */}
               <CardHeader className="text-center pb-2 pt-8">
             <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 bg-gradient-to-r from-orange-600 to-orange-500 rounded-3xl flex items-center justify-center shadow-lg">
                 <UserCheck className="w-10 h-10 text-white" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent mb-2">
               Join as Educator
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
@@ -246,15 +246,15 @@ export default function RegisterTeacher() {
                 type="checkbox"
                 checked={agreedToTerms}
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="mt-1 w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                className="mt-1 w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
               />
               <label className="text-sm text-gray-600 dark:text-gray-400">
                 I agree to the{' '}
-                <Link to="/terms" className="text-purple-600 dark:text-purple-400 hover:underline font-medium">
+                <Link to="/terms" className="text-orange-600 dark:text-orange-400 hover:underline font-medium">
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link to="/privacy" className="text-purple-600 dark:text-purple-400 hover:underline font-medium">
+                <Link to="/privacy" className="text-orange-600 dark:text-orange-400 hover:underline font-medium">
                   Privacy Policy
                 </Link>
                 , and confirm that I am a qualified educator
@@ -264,7 +264,7 @@ export default function RegisterTeacher() {
             {/* Submit Button */}
             <Button 
               type="submit" 
-              className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+              className="w-full py-3 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
               disabled={loading || success}
             >
               {loading || success ? (
@@ -297,7 +297,7 @@ export default function RegisterTeacher() {
           <CardFooter className="text-center">
             <Link 
               to="/login" 
-              className="inline-flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium transition-colors duration-200"
+              className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium transition-colors duration-200"
             >
               ← Back to Sign In
             </Link>

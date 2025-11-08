@@ -14,7 +14,7 @@ export default function TeacherDeckDetail() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddCardModal, setShowAddCardModal] = useState(false);
-  const allowedTags = ['geometry', 'algebra', 'probability'];
+  const allowedTags = ['geometry', 'algebra', 'probability', 'calculus', 'statistics', 'other'];
   const [cardForm, setCardForm] = useState({ question: '', answer: '', explanation: '', tag: 'algebra' });
   const [showEditCardModal, setShowEditCardModal] = useState(false);
   const [showDeleteCardModal, setShowDeleteCardModal] = useState(false);
@@ -58,9 +58,16 @@ export default function TeacherDeckDetail() {
         };
 
         // Load flashcards for this deck
-        const fcRes = await flashcardService.getFlashcardsByDeckId(id);
-        const fcList = Array.isArray(fcRes) ? fcRes : (fcRes?.flashcards || []);
-        transformedDeck.flashcards = fcList;
+        try {
+          const fcRes = await flashcardService.getFlashcardsByDeckId(id);
+          const fcList = Array.isArray(fcRes) ? fcRes : (fcRes?.flashcards || []);
+          transformedDeck.flashcards = fcList;
+        } catch (fcErr) {
+          // If flashcards fail to load, it's okay - deck might be empty
+          // Just set flashcards to empty array and continue
+          console.log('No flashcards found or error loading flashcards:', fcErr);
+          transformedDeck.flashcards = [];
+        }
 
         setDeck(transformedDeck);
       } catch (err) {
@@ -180,14 +187,18 @@ export default function TeacherDeckDetail() {
 
   const openAddCardModal = () => {
     const subjectLower = (deck?.subject || '').toString().toLowerCase();
-    const suggestedTag = allowedTags.includes(subjectLower) ? subjectLower : 'algebra';
+    const suggestedTag = allowedTags.includes(subjectLower) ? subjectLower : 'other';
     setCardForm({ question: '', answer: '', explanation: '', tag: suggestedTag });
+    setError('');
     setShowAddCardModal(true);
   };
 
   const handleCreateCard = async (e) => {
     e.preventDefault();
-    if (!cardForm.question.trim() || !cardForm.answer.trim()) {
+    const trimmedQuestion = cardForm.question.trim();
+    const trimmedAnswer = cardForm.answer.trim();
+
+    if (!trimmedQuestion || !trimmedAnswer) {
       setError('Please enter question and answer');
       return;
     }
@@ -196,8 +207,8 @@ export default function TeacherDeckDetail() {
       setError('');
       await flashcardService.createFlashcard({
         deck_id: id,
-        question: cardForm.question,
-        answer: cardForm.answer,
+        question: trimmedQuestion,
+        answer: trimmedAnswer,
         note: cardForm.explanation || '',
         tag: (cardForm.tag || '').toString().toLowerCase()
       });
@@ -216,12 +227,15 @@ export default function TeacherDeckDetail() {
   const openEditCardModal = (card) => {
     setSelectedCard(card);
     const isObj = typeof card === 'object';
+    const subjectLower = (deck?.subject || '').toString().toLowerCase();
+    const fallbackTag = allowedTags.includes(subjectLower) ? subjectLower : 'other';
+    const normalizedTag = isObj ? (card.tag || '').toString().toLowerCase() : '';
+    const safeTag = allowedTags.includes(normalizedTag) ? normalizedTag : fallbackTag;
     setEditCardForm({
       question: isObj ? (card.question || '') : String(card || ''),
       answer: isObj ? (card.answer || '') : '',
       explanation: isObj ? (card.explanation || card.note || '') : '',
-      tag: (isObj ? (card.tag || '') : '').toString().toLowerCase() ||
-           (allowedTags.includes((deck?.subject || '').toString().toLowerCase()) ? (deck?.subject || '').toString().toLowerCase() : 'algebra')
+      tag: safeTag
     });
     setShowEditCardModal(true);
   };
@@ -229,8 +243,14 @@ export default function TeacherDeckDetail() {
   const handleUpdateCard = async (e) => {
     e.preventDefault();
     if (!selectedCard) return;
-    if (!editCardForm.question.trim() || !editCardForm.answer.trim()) {
+    const trimmedQuestion = editCardForm.question.trim();
+    const trimmedAnswer = editCardForm.answer.trim();
+    if (!trimmedQuestion || !trimmedAnswer) {
       setError('Please enter question and answer');
+      return;
+    }
+    if (!allowedTags.includes(editCardForm.tag)) {
+      setError('Please choose a valid tag for this card.');
       return;
     }
     try {
@@ -238,8 +258,8 @@ export default function TeacherDeckDetail() {
       setError('');
       const cardId = selectedCard._id || selectedCard.id;
       await flashcardService.updateFlashcard(cardId, {
-        question: editCardForm.question,
-        answer: editCardForm.answer,
+        question: trimmedQuestion,
+        answer: trimmedAnswer,
         note: editCardForm.explanation || '',
         tag: (editCardForm.tag || '').toString().toLowerCase()
       });
@@ -258,6 +278,7 @@ export default function TeacherDeckDetail() {
 
   const openDeleteCardModal = (card) => {
     setSelectedCard(card);
+    setDeleteCardError('');
     setShowDeleteCardModal(true);
   };
 
@@ -285,7 +306,7 @@ export default function TeacherDeckDetail() {
     if (!selectedCard) return;
     try {
       setIsSubmitting(true);
-      setError('');
+      setDeleteCardError('');
       const cardId = selectedCard._id || selectedCard.id;
       await flashcardService.deleteFlashcard(cardId);
       const refreshed = await flashcardService.getFlashcardsByDeckId(id);
@@ -295,7 +316,7 @@ export default function TeacherDeckDetail() {
       setSelectedCard(null);
     } catch (err) {
       console.error('Failed to delete flashcard:', err);
-      setError(err.message || 'Failed to delete flashcard. Please try again.');
+      setDeleteCardError(err.message || 'Failed to delete flashcard. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -417,8 +438,9 @@ export default function TeacherDeckDetail() {
 
             <div className="flex gap-3">
               <button 
-                onClick={() => navigate(`/decks/${id}/study`)}
+                onClick={() => navigate(`/dashboard/teacher/flashcards/${id}/study`)}
                 className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-colors flex items-center gap-2"
+                title="Review Deck"
               >
                 Review
               </button>
@@ -1000,7 +1022,7 @@ export default function TeacherDeckDetail() {
                   {(() => {
                     const currentCard = deck.flashcards[previewCardIndex];
                     const cardObj = typeof currentCard === 'object' ? currentCard : { question: currentCard };
-                    
+
                     return (
                       <div className="relative">
                         <div

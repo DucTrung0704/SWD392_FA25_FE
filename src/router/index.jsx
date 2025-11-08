@@ -37,6 +37,7 @@ import StudentDashboard from '../views/Dashboards/StudentDashboard';
 import StudentStudy from '../views/Student/Study';
 import StudentProgress from '../views/Student/Progress';
 import StudentLibrary from '../views/Student/Library';
+import StudentFlashcardStudy from '../views/Student/FlashcardStudy';
 import StudentExams from '../views/Student/Exams';
 import MySubmissions from '../views/Student/MySubmissions';
 import SubmissionDetail from '../views/Student/SubmissionDetail';
@@ -50,6 +51,7 @@ import TeacherExamDetail from '../views/Teacher/ExamDetail';
 import TeacherClasses from '../views/Teacher/Classes';
 import TeacherAnalytics from '../views/Teacher/Analytics';
 import TeacherSettings from '../views/Teacher/Settings';
+import QuestionBank from '../views/Teacher/QuestionBank';
 
 // Flashcard Views
 import Decks from '../views/Flashcards/Decks';
@@ -61,18 +63,17 @@ import DeckDetail from '../views/Flashcards/DeckDetail';
 export function AppRouter() {
   return (
     <Routes>
-      {/* Public Routes (guest-only) */}
+      {/* ========== PUBLIC ROUTES ========== */}
       <Route path="/" element={<GuestRoute><Home /></GuestRoute>} />
-      <Route path="/exams" element={<Exams />} />
       <Route path="/not-authorized" element={<NotAuthorized />} />
       
-      {/* Auth Routes (guest-only) */}
+      {/* ========== AUTH ROUTES (Guest Only) ========== */}
       <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
       <Route path="/register/student" element={<GuestRoute><RegisterStudent /></GuestRoute>} />
       <Route path="/register/teacher" element={<GuestRoute><RegisterTeacher /></GuestRoute>} />
       <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
       
-      {/* Dashboard Routes */}
+      {/* ========== ADMIN DASHBOARD ROUTES ========== */}
       <Route
         path="/dashboard/admin"
         element={
@@ -91,6 +92,7 @@ export function AppRouter() {
         <Route path="settings" element={<Settings />} />
       </Route>
       
+      {/* ========== TEACHER DASHBOARD ROUTES ========== */}
       <Route
         path="/dashboard/teacher"
         element={
@@ -105,12 +107,37 @@ export function AppRouter() {
         <Route path="flashcards/:id" element={<TeacherDeckDetail />} />
         <Route path="exams" element={<TeacherExams />} />
         <Route path="exams/:id" element={<TeacherExamDetail />} />
+        <Route path="question-bank" element={<QuestionBank />} />
         <Route path="classes" element={<TeacherClasses />} />
         <Route path="analytics" element={<TeacherAnalytics />} />
         <Route path="settings" element={<TeacherSettings />} />
+        
       </Route>
       
-      {/* Student Dashboard Routes - Using StudentLayout */}
+      {/* ========== TEACHER STUDY ROUTE (with layout) ========== */}
+      {/* Keep teacher study under dashboard namespace */}
+      <Route
+        path="/dashboard/teacher/flashcards/:id/study"
+        element={
+          <RoleRoute roles={["Teacher"]}>
+            <TeacherLayout />
+          </RoleRoute>
+        }
+      >
+        <Route index element={<Study />} />
+      </Route>
+
+      {/* General study route for authenticated users */}
+      <Route
+        path="/decks/:id/study"
+        element={
+          <ProtectedRoute>
+            <Study />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* ========== STUDENT DASHBOARD ROUTES ========== */}
       <Route
         path="/dashboard/student"
         element={
@@ -121,6 +148,7 @@ export function AppRouter() {
       >
         <Route index element={<StudentDashboard />} />
         <Route path="library" element={<StudentLibrary />} />
+        <Route path="library/:id/study" element={<StudentFlashcardStudy />} />
         <Route path="study" element={<StudentStudy />} />
         <Route path="exams" element={<StudentExams />} />
         <Route path="progress" element={<StudentProgress />} />
@@ -128,7 +156,7 @@ export function AppRouter() {
         <Route path="exams/:submissionId" element={<SubmissionDetail />} />
       </Route>
       
-      {/* Protected Profile Route for logged-in users */}
+      {/* ========== PROFILE ROUTE ========== */}
       <Route
         path="/profile"
         element={
@@ -138,15 +166,8 @@ export function AppRouter() {
         }
       />
       
-      {/* Flashcard Routes */}
-      <Route
-        path="/flashcards"
-        element={
-          <ProtectedRoute>
-            <Decks />
-          </ProtectedRoute>
-        }
-      />
+      {/* ========== FLASHCARD ROUTES ========== */}
+      {/* Note: More specific routes must come before less specific ones */}
       <Route
         path="/decks/create"
         element={
@@ -156,18 +177,28 @@ export function AppRouter() {
         }
       />
       <Route
-        path="/decks/:id/study"
-        element={
-          <ProtectedRoute>
-            <Study />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/decks/:id"
         element={
           <ProtectedRoute>
             <DeckDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/flashcards"
+        element={
+          <ProtectedRoute>
+            <Decks />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* ========== EXAM ROUTES ========== */}
+      <Route
+        path="/exams"
+        element={
+          <ProtectedRoute>
+            <Exams />
           </ProtectedRoute>
         }
       />

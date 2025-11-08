@@ -30,9 +30,9 @@ export default function Navbar() {
         {/* Logo */}
         <Link 
           to="/" 
-          className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+          className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent"
         >
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
             <span className="text-white text-sm">FL</span>
           </div>
           FlashLearn
@@ -46,7 +46,7 @@ export default function Navbar() {
               to={item.href}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActiveLink(item.href)
-                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                  ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
@@ -69,7 +69,7 @@ export default function Navbar() {
                   to="/profile" 
                   className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                     {user.avatar ? (
                       <img 
                         src={user.avatar.startsWith('http') ? user.avatar : user.avatar}
@@ -93,7 +93,7 @@ export default function Navbar() {
               {/* Mobile User Avatar Only */}
               <Link 
                 to="/profile" 
-                className="sm:hidden w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold overflow-hidden"
+                className="sm:hidden w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white text-sm font-bold overflow-hidden"
               >
                 {user.avatar ? (
                   <img 
@@ -118,12 +118,7 @@ export default function Navbar() {
               >
                 Login
               </Link>
-              <Link 
-                to="/register" 
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              >
-                Get Started
-              </Link>
+              
             </div>
           )}
 

@@ -35,11 +35,11 @@ export default function Exams() {
   };
 
   return (
-    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-orange-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-6xl mx-auto px-2 sm:px-4">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2 sm:mb-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent mb-2 sm:mb-4">
             Practice Exams
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-4">
@@ -77,7 +77,7 @@ export default function Exams() {
                   placeholder="Search exams by title or subject..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 pl-10 sm:pl-12 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 pl-10 sm:pl-12 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm sm:text-base"
                 />
                 <div className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2">
                   <span className="text-gray-400 text-sm sm:text-base">🔍</span>
@@ -91,7 +91,7 @@ export default function Exams() {
                   onClick={() => setFilter(category)}
                   className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-medium transition-all duration-200 text-sm sm:text-base ${
                     filter === category
-                      ? 'bg-blue-600 text-white shadow-lg'
+                      ? 'bg-orange-600 text-white shadow-lg'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
@@ -127,14 +127,14 @@ export default function Exams() {
                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                     : exam.status === 'in-progress'
                     ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                    : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
                 }`}>
                   {exam.status === 'completed' ? 'Completed' : exam.status === 'in-progress' ? 'In Progress' : 'New'}
                 </span>
               </div>
 
               {/* Exam Icon */}
-              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 shadow-md">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 shadow-md">
                 <span className="text-xl sm:text-2xl text-white">📝</span>
               </div>
               
@@ -188,7 +188,7 @@ export default function Exams() {
                     </Link>
                     <Link
                       to={`/exams/${exam.id}/retake`}
-                      className="flex-1 bg-blue-600 text-white py-2 px-3 sm:px-4 rounded-xl text-center font-medium hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base"
+                      className="flex-1 bg-orange-600 text-white py-2 px-3 sm:px-4 rounded-xl text-center font-medium hover:bg-orange-700 transition-colors duration-200 text-sm sm:text-base"
                     >
                       Retake
                     </Link>
@@ -203,7 +203,7 @@ export default function Exams() {
                 ) : (
                   <Link
                     to={`/exams/${exam.id}/start`}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-3 sm:px-4 rounded-xl text-center font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 text-sm sm:text-base"
+                    className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500 text-white py-2 px-3 sm:px-4 rounded-xl text-center font-medium hover:from-orange-700 hover:to-orange-600 transition-all duration-200 transform hover:scale-105 text-sm sm:text-base"
                   >
                     Start Exam
                   </Link>
@@ -211,7 +211,7 @@ export default function Exams() {
               </div>
 
               {/* Hover Effect Overlay */}
-              <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
           ))}
         </div>
@@ -230,22 +230,22 @@ export default function Exams() {
         )}
 
         {/* Quick Tips */}
-        <div className="mt-8 sm:mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-white">
+        <div className="mt-8 sm:mt-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-white">
           <div className="flex flex-col sm:flex-row items-center justify-between">
             <div>
               <h3 className="text-xl sm:text-2xl font-bold mb-2">Exam Preparation Tips</h3>
-              <p className="text-blue-100 max-w-2xl text-sm sm:text-base">
+              <p className="text-orange-100 max-w-2xl text-sm sm:text-base">
                 Practice regularly, review your mistakes, and simulate exam conditions for better performance.
               </p>
             </div>
             <div className="flex gap-4 mt-4 sm:mt-0">
               <div className="text-center">
                 <div className="text-xl sm:text-2xl font-bold">25%</div>
-                <div className="text-blue-100 text-xs sm:text-sm">Better Recall</div>
+                <div className="text-orange-100 text-xs sm:text-sm">Better Recall</div>
               </div>
               <div className="text-center">
                 <div className="text-xl sm:text-2xl font-bold">40%</div>
-                <div className="text-blue-100 text-xs sm:text-sm">Less Anxiety</div>
+                <div className="text-orange-100 text-xs sm:text-sm">Less Anxiety</div>
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Facebook, Twitter, Linkedin, Youtube, Globe } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -24,10 +25,10 @@ export default function Footer() {
       { name: 'Careers', href: '/careers' }
     ],
     social: [
-      { name: 'Facebook', href: '#', icon: '📘' },
-      { name: 'Twitter', href: '#', icon: '🐦' },
-      { name: 'LinkedIn', href: '#', icon: '💼' },
-      { name: 'YouTube', href: '#', icon: '📺' }
+      { name: 'Facebook', href: '#', icon: Facebook },
+      { name: 'Twitter', href: '#', icon: Twitter },
+      { name: 'LinkedIn', href: '#', icon: Linkedin },
+      { name: 'YouTube', href: '#', icon: Youtube }
     ]
   };
 
@@ -41,9 +42,9 @@ export default function Footer() {
             <div className="lg:col-span-2">
               <Link 
                 to="/" 
-                className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4"
+                className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent mb-4"
               >
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
                   <span className="text-white text-sm">FL</span>
                 </div>
                 FlashLearn
@@ -56,16 +57,19 @@ export default function Footer() {
               
               {/* Social Links */}
               <div className="flex gap-3">
-                {footerLinks.social.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
-                    aria-label={social.name}
-                  >
-                    <span className="text-lg">{social.icon}</span>
-                  </a>
-                ))}
+                {footerLinks.social.map((social) => {
+                  const IconComponent = social.icon;
+                  return (
+                    <a
+                      key={social.name}
+                      href={social.href}
+                      className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center hover:bg-orange-100 dark:hover:bg-orange-900/30 hover:text-orange-600 dark:hover:text-orange-400 text-gray-600 dark:text-gray-400 transition-colors duration-200"
+                      aria-label={social.name}
+                    >
+                      <IconComponent className="w-5 h-5" />
+                    </a>
+                  );
+                })}
               </div>
             </div>
 
@@ -144,9 +148,9 @@ export default function Footer() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 sm:w-64 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="flex-1 sm:w-64 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
               />
-              <button className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium text-sm whitespace-nowrap">
+              <button className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all duration-200 font-medium text-sm whitespace-nowrap">
                 Subscribe
               </button>
             </div>
@@ -176,7 +180,7 @@ export default function Footer() {
                 Terms of Service
               </Link>
               <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                <span>🌍</span>
+                <Globe className="w-4 h-4" />
                 <span>English</span>
               </div>
             </div>

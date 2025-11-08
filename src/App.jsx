@@ -27,11 +27,13 @@ function Layout({ children }) {
     };
   }, []);
   
-  // Check if current route is a dashboard route that should use their own layout
-  // Teacher/Admin/Student dashboards use their own sidebar layouts
-  const usesOwnLayout = location.pathname.startsWith('/dashboard/teacher') || 
-                        location.pathname.startsWith('/dashboard/admin') ||
-                        location.pathname.startsWith('/dashboard/student');
+  // Check if current route uses a dedicated layout (dashboard/study pages)
+  const isTeacherDashboard = location.pathname.startsWith('/dashboard/teacher');
+  const isAdminDashboard = location.pathname.startsWith('/dashboard/admin');
+  const isStudentDashboard = location.pathname.startsWith('/dashboard/student');
+  const isDeckStudyPage = /^\/decks\/[^/]+\/study/.test(location.pathname);
+
+  const usesOwnLayout = isTeacherDashboard || isAdminDashboard || isStudentDashboard || isDeckStudyPage;
   
   // If it uses own layout, don't wrap with navbar and footer
   if (usesOwnLayout) {

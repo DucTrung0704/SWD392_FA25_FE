@@ -90,7 +90,7 @@ export default function RegisterStudent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 sm:py-12">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* Left Side - Benefits */}
@@ -98,10 +98,10 @@ export default function RegisterStudent() {
             {/* Main Heading */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-14 h-14 bg-gradient-to-r from-emerald-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-14 h-14 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
                   <GraduationCap className="w-8 h-8 text-white" />
                 </div>
-                <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">FlashLearn</div>
+                <div className="text-sm font-semibold text-orange-600 dark:text-orange-400">FlashLearn</div>
               </div>
               <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
                 Start Your Learning<br/>Journey Today
@@ -114,7 +114,7 @@ export default function RegisterStudent() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">10K+</div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">10K+</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Students</div>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
@@ -136,7 +136,7 @@ export default function RegisterStudent() {
                 { icon: <Users className="w-6 h-6" />, title: 'Join Community', desc: 'Connect with fellow learners' }
               ].map((benefit, idx) => (
                 <div key={idx} className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-100 to-cyan-100 dark:from-emerald-900/30 dark:to-cyan-900/30 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-100 to-orange-100 dark:from-orange-900/30 dark:to-orange-900/30 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400">
                     {benefit.icon}
                   </div>
                   <div>
@@ -148,12 +148,12 @@ export default function RegisterStudent() {
             </div>
 
             {/* Quote */}
-            <div className="bg-gradient-to-r from-emerald-500 to-cyan-600 p-6 rounded-3xl text-white shadow-xl">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-3xl text-white shadow-xl">
               <div className="flex items-start gap-4">
                 <Award className="w-8 h-8 flex-shrink-0 mt-1" />
                 <div>
                   <p className="text-lg font-medium mb-2">"The best investment you can make is in yourself."</p>
-                  <p className="text-emerald-100 text-sm">Start learning today and unlock your potential.</p>
+                  <p className="text-orange-100 text-sm">Start learning today and unlock your potential.</p>
                 </div>
               </div>
             </div>
@@ -161,11 +161,11 @@ export default function RegisterStudent() {
 
           {/* Right Side - Registration Form */}
           <div className="w-full">
-            <Card className="w-full shadow-2xl border-0 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90">
+            <Card className="w-full shadow-2xl border-0 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90" style={{ boxShadow: '0 25px 50px -12px rgba(251, 146, 60, 0.5)' }}>
               <CardHeader className="text-center pb-6 pt-8">
                 <div className="flex justify-center mb-6">
                   <div className="relative">
-                    <div className="w-20 h-20 bg-gradient-to-r from-emerald-500 to-cyan-600 rounded-3xl flex items-center justify-center shadow-xl">
+                    <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-orange-600 rounded-3xl flex items-center justify-center shadow-xl">
                       <GraduationCap className="w-10 h-10 text-white" />
                     </div>
                     <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
@@ -173,7 +173,7 @@ export default function RegisterStudent() {
                     </div>
                   </div>
                 </div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent mb-2">
                   Create Student Account
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400">
@@ -242,7 +242,7 @@ export default function RegisterStudent() {
                           <div
                             key={index}
                             className={`flex-1 h-2 rounded-full transition-all duration-300 ${
-                              passwordStrength.strong ? 'bg-emerald-500' :
+                              passwordStrength.strong ? 'bg-orange-500' :
                               passwordStrength.medium ? 'bg-yellow-500' :
                               passwordStrength.weak ? 'bg-red-500' : 'bg-gray-200 dark:bg-gray-700'
                             }`}
@@ -250,7 +250,7 @@ export default function RegisterStudent() {
                         ))}
                       </div>
                       <p className={`text-xs font-medium ${
-                        passwordStrength.strong ? 'text-emerald-600 dark:text-emerald-400' :
+                        passwordStrength.strong ? 'text-orange-600 dark:text-orange-400' :
                         passwordStrength.medium ? 'text-yellow-600 dark:text-yellow-400' :
                         passwordStrength.weak ? 'text-red-600 dark:text-red-400' :
                         'text-gray-500'
@@ -276,20 +276,20 @@ export default function RegisterStudent() {
                 />
 
                 {/* Terms */}
-                <div className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-800">
+                <div className="flex items-start gap-3 p-4 bg-orange-50 dark:bg-orange-900/10 rounded-xl border border-orange-100 dark:border-orange-800">
                   <input
                     type="checkbox"
                     checked={agreedToTerms}
                     onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    className="mt-1 w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                    className="mt-1 w-5 h-5 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer"
                   />
                   <label className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                     I agree to the{' '}
-                    <Link to="/terms" className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium">
+                    <Link to="/terms" className="text-orange-600 dark:text-orange-400 hover:underline font-medium">
                       Terms of Service
                     </Link>{' '}
                     and{' '}
-                    <Link to="/privacy" className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium">
+                    <Link to="/privacy" className="text-orange-600 dark:text-orange-400 hover:underline font-medium">
                       Privacy Policy
                     </Link>
                   </label>
@@ -297,7 +297,7 @@ export default function RegisterStudent() {
 
                 <Button 
                   type="submit" 
-                  className="w-full py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+                  className="w-full py-4 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
                   disabled={loading || success}
                 >
                   {loading || success ? (
@@ -328,7 +328,7 @@ export default function RegisterStudent() {
               <CardFooter className="text-center pb-8">
                 <Link 
                   to="/login" 
-                  className="inline-flex items-center gap-2 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium transition-colors"
+                  className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium transition-colors"
                 >
                   ← Back to Sign In
                 </Link>

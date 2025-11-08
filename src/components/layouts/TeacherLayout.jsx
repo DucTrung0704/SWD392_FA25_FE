@@ -13,6 +13,9 @@ const TeacherLayout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Check if current route is study page - hide navbar
+  const isStudyPage = location.pathname.includes('/decks/') && location.pathname.includes('/study');
 
   const toggleSidebar = () => {
     const newState = !sidebarCollapsed;
@@ -25,6 +28,7 @@ const TeacherLayout = () => {
     { name: 'Students', href: '/dashboard/teacher/students', icon: 'users', current: location.pathname.startsWith('/dashboard/teacher/students') },
     { name: 'Flashcards', href: '/dashboard/teacher/flashcards', icon: 'flashcards', current: location.pathname.startsWith('/dashboard/teacher/flashcards') },
     { name: 'Exams', href: '/dashboard/teacher/exams', icon: 'exams', current: location.pathname.startsWith('/dashboard/teacher/exams') },
+    { name: 'Question Bank', href: '/dashboard/teacher/question-bank', icon: 'file-text', current: location.pathname.startsWith('/dashboard/teacher/question-bank') },
     { name: 'Classes', href: '/dashboard/teacher/classes', icon: 'home', current: location.pathname.startsWith('/dashboard/teacher/classes') },
     { name: 'Analytics', href: '/dashboard/teacher/analytics', icon: 'stats', current: location.pathname.startsWith('/dashboard/teacher/analytics') },
     { name: 'Settings', href: '/dashboard/teacher/settings', icon: 'settings', current: location.pathname.startsWith('/dashboard/teacher/settings') },
@@ -55,7 +59,7 @@ const TeacherLayout = () => {
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
             <div className={`flex items-center transition-all duration-300 ${sidebarCollapsed ? 'justify-center w-full' : ''}`}>
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-sm">T</span>
               </div>
               {!sidebarCollapsed && (
@@ -65,7 +69,7 @@ const TeacherLayout = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleSidebar}
-                className="hidden lg:flex items-center justify-center p-2 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-600 text-white hover:from-blue-600 hover:to-cyan-700 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-200"
+                className="hidden lg:flex items-center justify-center p-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-200"
                 title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               >
                 <svg className={`h-4 w-4 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,7 +96,7 @@ const TeacherLayout = () => {
                 to={item.href}
                 className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
                   item.current
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200'
                     : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                 } ${sidebarCollapsed ? 'justify-center' : ''}`}
                 title={sidebarCollapsed ? item.name : ''}
@@ -157,28 +161,30 @@ const TeacherLayout = () => {
 
       {/* Main content */}
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-        {/* Top bar */}
-        <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-          <div className="flex items-center justify-between h-16 px-6">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            >
-              <span className="sr-only">Open sidebar</span>
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Teacher Dashboard
+        {/* Top bar - Hide on study page */}
+        {!isStudyPage && (
+          <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <div className="flex items-center justify-between h-16 px-6">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <span className="sr-only">Open sidebar</span>
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
+              <div className="flex items-center space-x-4">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Teacher Dashboard
+                </div>
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Online</span>
               </div>
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Online</span>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Page content */}
         <main className="flex-1 overflow-auto">

@@ -17,4 +17,18 @@ export const examService = {
     }
     throw e;
   }),
+  
+  // Student: get exam details by ID - sử dụng /exam/all và filter
+  getStudentExamById: async (id) => {
+    // Lấy tất cả exams và tìm exam theo ID
+    const allExams = await api.get('/exam/all');
+    const examsList = allExams?.exams || allExams?.data?.exams || (Array.isArray(allExams) ? allExams : []);
+    const exam = examsList.find((e) => (e._id || e.id) === id);
+    
+    if (exam) {
+      return { exam };
+    }
+    
+    throw new Error(`Exam with ID ${id} not found`);
+  },
 };

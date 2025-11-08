@@ -58,9 +58,9 @@ export default function StudentLayout() {
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
             <Link 
               to="/dashboard/student" 
-              className={`flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent transition-all duration-300 ${sidebarCollapsed ? 'justify-center w-full' : ''}`}
+              className={`flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent transition-all duration-300 ${sidebarCollapsed ? 'justify-center w-full' : ''}`}
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-sm">FL</span>
               </div>
               {!sidebarCollapsed && <span className="whitespace-nowrap">FlashLearn</span>}
@@ -68,7 +68,7 @@ export default function StudentLayout() {
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleSidebar}
-                className="hidden lg:flex items-center justify-center p-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-200"
+                className="hidden lg:flex items-center justify-center p-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-200"
                 title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               >
                 <svg className={`h-4 w-4 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -84,26 +84,6 @@ export default function StudentLayout() {
             </div>
           </div>
 
-          {/* User Info */}
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <div className={`flex items-center gap-3 ${sidebarCollapsed ? 'justify-center' : ''}`}>
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
-              </div>
-              {!sidebarCollapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {user?.name || 'Student'}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {user?.email}
-                  </p>
-                  <RoleBadge role={user?.role} />
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
             {navigation.map((item) => (
@@ -112,7 +92,7 @@ export default function StudentLayout() {
                 to={item.href}
                 className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
                   isActiveLink(item.href)
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200'
                     : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                 } ${sidebarCollapsed ? 'justify-center' : ''}`}
                 title={sidebarCollapsed ? item.name : ''}
@@ -123,18 +103,40 @@ export default function StudentLayout() {
             ))}
           </nav>
 
-          {/* Logout */}
-          <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              onClick={handleLogout}
-              className={`flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white rounded-lg transition-colors duration-200 ${
-                sidebarCollapsed ? 'justify-center' : ''
-              }`}
-              title={sidebarCollapsed ? 'Logout' : ''}
-            >
-              <Icon name="logout" className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-0'}`} />
-              {!sidebarCollapsed && <span>Logout</span>}
-            </button>
+          {/* User Info */}
+          <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+            <div className={`flex items-center mb-4 ${sidebarCollapsed ? 'justify-center' : ''}`}>
+              <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-sm">{user?.name?.charAt(0).toUpperCase() || 'U'}</span>
+              </div>
+              {!sidebarCollapsed && (
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Student'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
+                  <RoleBadge role={user?.role} />
+                </div>
+              )}
+            </div>
+            
+            <div className={`flex items-center ${sidebarCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
+              {!sidebarCollapsed && (
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-200"
+                >
+                  Logout
+                </button>
+              )}
+              {sidebarCollapsed && (
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-200"
+                  title="Logout"
+                >
+                  <Icon name="logout" className="w-5 h-5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -1,70 +1,88 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RefreshCcw } from 'lucide-react';
+import PageHeader from '../../components/student/PageHeader';
+import SubmissionList from '../../components/student/SubmissionList';
 import { submissionService } from '../../services/submissionService';
 
 export default function MySubmissions() {
-  const [items, setItems] = useState([]);
+  const navigate = useNavigate();
+  const [rawSubmissions, setRawSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const res = await submissionService.getMySubmissions();
-        const list = Array.isArray(res?.submissions) ? res.submissions : (Array.isArray(res) ? res : []);
-        setItems(list);
-      } catch (e) {
-        setError(e.message || 'Failed to load submissions');
-      } finally {
-        setLoading(false);
-      }
-    })();
+  const loadSubmissions = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const res = await submissionService.getMySubmissions();
+      const list = Array.isArray(res?.submissions) ? res.submissions : Array.isArray(res) ? res : [];
+      setRawSubmissions(list);
+    } catch (e) {
+      console.error(e);
+      setError(e.message || 'Không thể tải danh sách bài nộp');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-6 sm:pt-3 lg:pt-4">
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="ml-3 text-gray-600 dark:text-gray-400">Loading...</span>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    loadSubmissions();
+  }, [loadSubmissions]);
+
+  const submissions = useMemo(() => {
+    return rawSubmissions.map((submission) => {
+      const id = submission._id || submission.id;
+      const startedAt = submission.started_at || submission.startedAt || submission.createdAt;
+      const submittedAt = submission.submitted_at || submission.submittedAt || submission.completed_at;
+      const score =
+        submission.score ?? submission.finalScore ?? submission.result?.score ?? submission.summary?.score ?? null;
+      const maxScore = submission.maxScore ?? submission.result?.maxScore ?? submission.summary?.maxScore ?? null;
+      return {
+        id,
+        title: submission.exam?.title || 'Kỳ thi',
+        status: submission.status,
+        startedAt,
+        submittedAt,
+        score,
+        maxScore
+      };
+    });
+  }, [rawSubmissions]);
+
+  const handleViewSubmission = useCallback(
+    (submissionId) => {
+      if (!submissionId) return;
+      navigate(`/dashboard/student/exams/${submissionId}`);
+    },
+    [navigate]
+  );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-6 sm:pt-3 lg:pt-4">
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">My Submissions</h1>
+    <div className="mx-auto min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 px-4 py-4 dark:from-gray-900 dark:to-gray-800 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-7xl">
+        <PageHeader
+          title="Bài nộp của tôi"
+          subtitle="Theo dõi các kỳ thi đã tham gia và xem lại kết quả chi tiết"
+          actions={
+            <button
+              onClick={loadSubmissions}
+              className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-600 transition-all hover:border-blue-300 hover:bg-blue-50 dark:border-blue-500/40 dark:bg-gray-800 dark:text-blue-200 dark:hover:bg-blue-900/30"
+            >
+              <RefreshCcw className="h-4 w-4" />
+              Làm mới
+            </button>
+          }
+        />
+
+        {error && (
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+            {error}
+          </div>
+        )}
+
+        <SubmissionList items={submissions} loading={loading} onView={handleViewSubmission} />
       </div>
-      {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4 mb-4">
-          <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
-        </div>
-      )}
-      {items.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-12 text-center border border-gray-100 dark:border-gray-700">
-          <p className="text-gray-600 dark:text-gray-400">No submissions found</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((s) => (
-            <div key={s._id} className="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-100 dark:border-gray-700 p-4">
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="font-semibold text-gray-900 dark:text-white truncate">{s.exam?.title || 'Exam'}</h3>
-                <span className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">{s.status}</span>
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">{new Date(s.started_at || s.createdAt || Date.now()).toLocaleString()}</div>
-              <div className="mt-3 flex justify-end">
-                <button onClick={()=>navigate(`/dashboard/student/exams/${s._id}`)} className="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700">View</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

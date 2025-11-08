@@ -86,18 +86,18 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-orange-200 via-white to-orange-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-md mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-center min-h-[80vh]">
-        <Card className="w-full max-w-md mx-4 shadow-2xl border-0">
+        <Card className="w-full max-w-md mx-4 shadow-2xl border-0" style={{ boxShadow: '0 25px 50px -12px rgba(251, 146, 60, 0.5)' }}>
           {/* Header Section */}
           <CardHeader className="text-center pb-2">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
                 <Lock className="w-8 h-8 text-white" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent mb-2">
               Welcome Back
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
@@ -136,7 +136,7 @@ export default function Login() {
                 type="email"
                 required
                 icon={<Mail className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="transition-all duration-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
               
               <Input 
@@ -147,7 +147,7 @@ export default function Login() {
                 type="password"
                 required
                 icon={<Lock className="w-4 h-4" />}
-                className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="transition-all duration-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             </div>
 
@@ -155,7 +155,7 @@ export default function Login() {
             <div className="text-right">
               <Link 
                 to="/forgot-password" 
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200"
+                className="text-sm text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:underline transition-colors duration-200"
               >
                 Forgot your password?
               </Link>
@@ -164,7 +164,7 @@ export default function Login() {
             {/* Login Button */}
             <Button 
               type="submit" 
-              className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+              className="w-full py-3 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
               disabled={loading}
             >
               {loading ? (
@@ -231,7 +231,7 @@ export default function Login() {
                 </Link>
                 <Link 
                   to="/register/teacher" 
-                  className="flex-1 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors duration-200 text-sm font-medium text-center flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800 rounded-xl hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors duration-200 text-sm font-medium text-center flex items-center justify-center gap-2"
                 >
                   <UserCheck className="w-4 h-4" />
                   Teacher
@@ -239,17 +239,7 @@ export default function Login() {
               </div>
               
               {/* Guest Access */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">
-                  Just want to explore?
-                </p>
-                <Link 
-                  to="/demo" 
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline text-sm font-medium"
-                >
-                  Try Demo Mode →
-                </Link>
-              </div>
+              
             </div>
           </CardFooter>
         </Card>

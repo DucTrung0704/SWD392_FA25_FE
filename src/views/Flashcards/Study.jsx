@@ -2,10 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
 import Button from '../../components/ui/Button';
+import { XCircle, CheckCircle, NotebookText, ArrowLeft, ArrowRight, Shuffle, ListOrdered, LogOut } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function Study() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const userRole = (user?.role || '').toString().toLowerCase();
+  const isTeacher = userRole === 'teacher';
+  const isStudent = userRole === 'student';
+  const backPath = isTeacher
+    ? '/dashboard/teacher/flashcards'
+    : isStudent
+    ? '/dashboard/student/library'
+    : '/flashcards';
   const [deck, setDeck] = useState(null);
   const [cards, setCards] = useState([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -58,8 +69,8 @@ export default function Study() {
     if (currentCardIndex < cards.length - 1) {
       setCurrentCardIndex(prev => prev + 1);
     } else {
-      // Completed deck
-      navigate('/flashcards', { 
+      // Completed deck -> back to appropriate list
+      navigate(backPath, { 
         state: { 
           message: `Completed studying ${deck?.title}!`,
           cardsStudied: cards.length 
@@ -89,7 +100,7 @@ export default function Study() {
 
   if (loading) {
     return (
-      <div className="min-h-screen py-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen py-8 bg-gradient-to-br from-slate-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded w-1/3 mx-auto mb-4"></div>
@@ -107,9 +118,61 @@ export default function Study() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Deck not found</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">{error || 'The deck you are looking for does not exist.'}</p>
-          <Button onClick={() => navigate('/flashcards')} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button onClick={() => navigate(backPath)} className="bg-orange-600 hover:bg-orange-700 text-white">
             Back to Decks
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (cards.length === 0) {
+    return (
+      <div className="min-h-screen py-8 bg-gradient-to-br from-slate-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                {deck?.title || 'Deck'}
+              </h1>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => navigate(-1)}
+              className="border-gray-300 dark:border-gray-600"
+            >
+              Quay lại
+            </Button>
+          </div>
+
+          {/* Empty State */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center border border-gray-100 dark:border-gray-700">
+            <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+              <NotebookText className="w-10 h-10 text-gray-500 dark:text-gray-300" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Chưa có flashcards
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg">
+              Deck này chưa có thẻ flashcard nào để học. Vui lòng thêm flashcards vào deck trước khi bắt đầu học.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                onClick={() => navigate(-1)}
+                variant="outline"
+                className="border-gray-300 dark:border-gray-600"
+              >
+                Quay lại
+              </Button>
+              <Button 
+                onClick={() => navigate(backPath)}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                Xem tất cả decks
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -121,7 +184,7 @@ export default function Study() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">No cards in deck</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">This deck doesn't have any cards to study.</p>
-          <Button onClick={() => navigate('/flashcards')} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button onClick={() => navigate(backPath)} className="bg-orange-600 hover:bg-orange-700 text-white">
             Back to Decks
           </Button>
         </div>
@@ -130,7 +193,7 @@ export default function Study() {
   }
 
   return (
-    <div className="min-h-screen py-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-8 bg-gradient-to-br from-slate-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -144,9 +207,10 @@ export default function Study() {
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate('/flashcards')}
-            className="border-gray-300 dark:border-gray-600"
+            onClick={() => navigate(backPath)}
+            className="border-gray-300 dark:border-gray-600 inline-flex items-center gap-2"
           >
+            <LogOut className="w-4 h-4" />
             Exit Study
           </Button>
         </div>
@@ -159,7 +223,7 @@ export default function Study() {
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
             <div
-              className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 h-3 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
@@ -192,11 +256,11 @@ export default function Study() {
             </div>
 
             {/* Back of Card */}
-            <div className={`absolute inset-0 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border-2 border-blue-200 dark:border-blue-800 p-8 flex items-center justify-center backface-hidden [transform:rotateY(180deg)] ${
+            <div className={`absolute inset-0 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border-2 border-orange-200 dark:border-orange-800 p-8 flex items-center justify-center backface-hidden [transform:rotateY(180deg)] ${
               isFlipped ? 'opacity-100' : 'opacity-0'
             }`}>
               <div className="text-center">
-                <div className="text-sm text-blue-600 dark:text-blue-400 mb-4">ANSWER</div>
+                <div className="text-sm text-orange-600 dark:text-orange-400 mb-4">ANSWER</div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
                   {currentCard.answer || 'Image answer'}
                 </h2>
@@ -224,53 +288,70 @@ export default function Study() {
             disabled={currentCardIndex === 0}
             className="flex items-center gap-2"
           >
-            ← Previous
+            <ArrowLeft className="w-4 h-4" />
+            Previous
           </Button>
 
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={handleDontKnow}
-              className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30"
-            >
-              ❌ Need Review
-            </Button>
-            <Button
-              onClick={handleKnow}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              ✅ I Know This
-            </Button>
-          </div>
+          {!isTeacher && (
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={handleDontKnow}
+                className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 inline-flex items-center gap-2"
+              >
+                <XCircle className="w-4 h-4" />
+                Need Review
+              </Button>
+              <Button
+                onClick={handleKnow}
+                className="bg-green-600 hover:bg-green-700 text-white inline-flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                I Know This
+              </Button>
+            </div>
+          )}
 
           <Button
             onClick={handleNext}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white"
           >
-            {currentCardIndex === cards.length - 1 ? 'Complete' : 'Next →'}
+            {currentCardIndex === cards.length - 1 ? (
+              'Complete'
+            ) : (
+              <>
+                Next
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </Button>
         </div>
 
         {/* Study Mode Selector */}
         <div className="mt-8 text-center">
           <div className="inline-flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
-            {[
-              { value: 'sequential', label: 'Sequential', icon: '🔢' },
-              { value: 'random', label: 'Random', icon: '🎲' }
-            ].map(mode => (
-              <button
-                key={mode.value}
-                onClick={() => setStudyMode(mode.value)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                  studyMode === mode.value
-                    ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-              >
-                <span>{mode.icon}</span>
-                {mode.label}
-              </button>
-            ))}
+            <button
+              onClick={() => setStudyMode('sequential')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                studyMode === 'sequential'
+                  ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <ListOrdered className="w-4 h-4" />
+              Sequential
+            </button>
+            <button
+              onClick={() => setStudyMode('random')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                studyMode === 'random'
+                  ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <Shuffle className="w-4 h-4" />
+              Random
+            </button>
           </div>
         </div>
       </div>

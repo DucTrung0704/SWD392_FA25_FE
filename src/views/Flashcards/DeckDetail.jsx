@@ -2,15 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
 import Button from '../../components/ui/Button';
+import { useAuth } from '../../hooks/useAuth';
+import { Plus } from 'lucide-react';
 
 export default function DeckDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [deck, setDeck] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
+  
+  // Check if user is teacher or admin
+  const isTeacherOrAdmin = user && (user.role === 'teacher' || user.role === 'admin');
 
   useEffect(() => {
     loadDeck();
@@ -102,7 +108,7 @@ export default function DeckDetail() {
     );
   }
 
-  const currentCard = deck.cards[currentCardIndex];
+  const currentCard = deck.cards.length > 0 ? deck.cards[currentCardIndex] : null;
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -118,9 +124,25 @@ export default function DeckDetail() {
               <span>Quay lại</span>
             </button>
             <div className="flex gap-3">
-              <Button onClick={handleStartStudy} variant="primary">
-                Bắt đầu học
-              </Button>
+              {deck.cards.length > 0 ? (
+                <Button onClick={handleStartStudy} variant="primary">
+                  Bắt đầu học
+                </Button>
+              ) : (
+                <Button onClick={handleStartStudy} variant="primary" disabled>
+                  Bắt đầu học
+                </Button>
+              )}
+              {isTeacherOrAdmin && (
+                <Button 
+                  onClick={() => navigate(`/dashboard/teacher/flashcards/${id}`)}
+                  variant="primary"
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Tạo Flashcards
+                </Button>
+              )}
             </div>
           </div>
           
@@ -291,11 +313,21 @@ export default function DeckDetail() {
               <span className="text-2xl">📝</span>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Deck trống
+              Chưa có flashcards
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Deck này chưa có thẻ nào. Hãy thêm thẻ để bắt đầu học!
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Deck này chưa có thẻ flashcard nào. {isTeacherOrAdmin ? 'Hãy thêm flashcards để bắt đầu!' : 'Vui lòng đợi giáo viên thêm flashcards.'}
             </p>
+            {isTeacherOrAdmin && (
+              <Button 
+                onClick={() => navigate(`/dashboard/teacher/flashcards/${id}`)}
+                variant="primary"
+                className="inline-flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Tạo Flashcards
+              </Button>
+            )}
           </div>
         )}
       </div>

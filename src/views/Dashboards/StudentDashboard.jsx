@@ -102,8 +102,8 @@ export default function StudentDashboard() {
       title: 'Study',
       description: 'Học theo thứ tự hoặc ngẫu nhiên',
       icon: 'study',
-      color: 'from-blue-500 to-blue-600',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+      color: 'from-orange-500 to-orange-600',
+      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
       link: '/dashboard/student/study'
     },
     {
@@ -118,8 +118,8 @@ export default function StudentDashboard() {
       title: 'Exams',
       description: 'Làm bài thi thử trực tuyến',
       icon: 'exams',
-      color: 'from-purple-500 to-purple-600',
-      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+      color: 'from-orange-500 to-orange-600',
+      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
       link: '/dashboard/student/exams'
     },
     {
@@ -155,7 +155,7 @@ export default function StudentDashboard() {
   ];
 
   return (
-    <div className="min-h-screen pt-2 pb-6 sm:pt-3 lg:pt-4 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen pt-2 pb-6 sm:pt-3 lg:pt-4 bg-gradient-to-br from-slate-50 to-orange-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main content (sidebar provided by StudentLayout) */}
         {/* Header */}
@@ -163,7 +163,7 @@ export default function StudentDashboard() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
                   Student Dashboard
                 </h1>
                 <div className="sm:hidden">
@@ -196,7 +196,7 @@ export default function StudentDashboard() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Decks</p>
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{studentStats.totalDecks}</p>
               </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 dark:bg-orange-900 rounded-xl flex items-center justify-center">
                 <Icon name="study" className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
             </div>
@@ -326,23 +326,23 @@ export default function StudentDashboard() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search public decks..."
-                    className="w-full px-4 py-3 pl-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 pl-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                <select value={selectedSubject} onChange={(e)=>setSelectedSubject(e.target.value)} className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <select value={selectedSubject} onChange={(e)=>setSelectedSubject(e.target.value)} className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                   {subjects.map(s => (
                     <option key={s} value={s}>{s === 'all' ? 'All Subjects' : s}</option>
                   ))}
                 </select>
-                <select value={difficultyFilter} onChange={(e)=>setDifficultyFilter(e.target.value)} className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <select value={difficultyFilter} onChange={(e)=>setDifficultyFilter(e.target.value)} className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                   <option value="all">All Difficulty</option>
                   <option value="easy">Easy</option>
                   <option value="medium">Medium</option>
                   <option value="hard">Hard</option>
                 </select>
-                <select value={sortBy} onChange={(e)=>setSortBy(e.target.value)} className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <select value={sortBy} onChange={(e)=>setSortBy(e.target.value)} className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>
                   <option value="popular">Most Popular</option>
@@ -354,7 +354,7 @@ export default function StudentDashboard() {
           {/* Decks Grid */}
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
               <span className="ml-3 text-gray-600 dark:text-gray-400">Loading decks...</span>
             </div>
           ) : filteredDecks.length === 0 ? (
@@ -372,14 +372,14 @@ export default function StudentDashboard() {
                       PUBLIC
                     </div>
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">{deck.title?.[0] || 'F'}</div>
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-semibold">{deck.title?.[0] || 'F'}</div>
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">{deck.title}</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{deck.description || 'No description'}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-3">
-                      <span className="px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">{deck.subject}</span>
+                      <span className="px-2 py-1 rounded-full bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200">{deck.subject}</span>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${deck.difficulty==='hard' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : deck.difficulty==='medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'}`}>{deck.difficulty}</span>
                     </div>
                   </div>
@@ -402,15 +402,15 @@ export default function StudentDashboard() {
         </div>
 
         {/* Study Recommendations */}
-        <div className="mt-6 sm:mt-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 sm:p-8 text-white">
+        <div className="mt-6 sm:mt-8 bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl p-6 sm:p-8 text-white">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h3 className="text-xl sm:text-2xl font-bold mb-2">Ready to Study?</h3>
-              <p className="text-blue-100">Continue from where you left off or start a new deck</p>
+              <p className="text-orange-100">Continue from where you left off or start a new deck</p>
             </div>
             <Link
               to="/dashboard/student/study"
-              className="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors duration-200 whitespace-nowrap"
+              className="px-6 py-3 bg-white text-orange-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors duration-200 whitespace-nowrap"
             >
               Start Studying
             </Link>
