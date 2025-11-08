@@ -156,6 +156,7 @@ export function AppRouter() {
         <Route path="submissions" element={<MySubmissions />} />
         <Route path="exams/:submissionId" element={<SubmissionDetail />} />
         <Route path="class" element={<StudentClasses />} />
+        <Route path="profile" element={<Profile />} />
       </Route>
       
       {/* ========== PROFILE ROUTE ========== */}

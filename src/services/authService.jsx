@@ -220,6 +220,35 @@ export const authService = {
       throw new Error(error.message || 'Failed to update profile');
     }
   },
+
+  // Change user password
+  changePassword: async (currentPassword, newPassword, confirmPassword) => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      throw new Error('All password fields are required');
+    }
+
+    if (newPassword !== confirmPassword) {
+      throw new Error('New password and confirm password do not match');
+    }
+
+    if (newPassword.length < 6) {
+      throw new Error('New password must be at least 6 characters long');
+    }
+
+    try {
+      const data = await api.put('/user/change-password', {
+        currentPassword,
+        newPassword,
+        confirmPassword
+      });
+
+      console.log('Password changed successfully');
+      return data;
+    } catch (error) {
+      console.error('Change password error:', error);
+      throw new Error(error.message || 'Failed to change password');
+    }
+  },
   
   // Clear all localStorage (for complete cleanup)
   clearAllStorage: () => {
