@@ -107,6 +107,14 @@ export default function StudentDashboard() {
       link: '/dashboard/student/study'
     },
     {
+      title: 'Classes',
+      description: 'Join and manage your classes',
+      icon: 'users',
+      color: 'from-blue-500 to-blue-600',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+      link: '/dashboard/student/class'
+    },
+    {
       title: 'Smart Review',
       description: 'Gợi ý ôn dựa trên thẻ chưa nhớ',
       icon: 'review',
