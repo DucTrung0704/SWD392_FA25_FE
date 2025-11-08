@@ -40,9 +40,9 @@ export default function TeacherExams() {
   const [tempFilter, setTempFilter] = useState({ field: 'title', operator: 'contains', value: '' });
   const questionTagOptions = ['geometry', 'algebra', 'probability', 'calculus', 'statistics', 'other'];
   const questionDifficultyOptions = [
-    { value: 'easy', label: 'Easy', helper: 'Recall and fundamentals' },
-    { value: 'medium', label: 'Medium', helper: 'Balanced practice level' },
-    { value: 'hard', label: 'Hard', helper: 'Stretch for mastery' }
+    { value: 'easy', label: 'Dễ', helper: 'Nhớ lại và kiến thức cơ bản' },
+    { value: 'medium', label: 'Trung Bình', helper: 'Mức độ luyện tập cân bằng' },
+    { value: 'hard', label: 'Khó', helper: 'Nâng cao để thành thạo' }
   ];
   const optionKeys = ['A', 'B', 'C', 'D'];
   const emptyOptions = { A: '', B: '', C: '', D: '' };
@@ -88,9 +88,9 @@ export default function TeacherExams() {
 
   const statuses = ['all', 'draft', 'scheduled', 'completed', 'graded'];
   const creationSteps = [
-    { id: 1, title: 'Exam Details', description: 'Nhập thông tin kỳ thi' },
-    { id: 2, title: 'Questions', description: 'Tạo câu hỏi' },
-    { id: 3, title: 'Confirm', description: 'Xác nhận & lưu' }
+    { id: 1, title: 'Thông Tin Bài Thi', description: 'Nhập thông tin bài thi' },
+    { id: 2, title: 'Câu Hỏi', description: 'Tạo câu hỏi' },
+    { id: 3, title: 'Xác Nhận', description: 'Xác nhận & lưu' }
   ];
   const plannedQuestionCount = Number(form.totalQuestions);
   const hasPlannedQuestionCount = Boolean(form.totalQuestions) && !Number.isNaN(plannedQuestionCount);
@@ -402,7 +402,7 @@ export default function TeacherExams() {
     switch (step) {
       case 1: {
         if (!form.title.trim()) {
-          setStepError('Vui lòng nhập tiêu đề kỳ thi.');
+          setStepError('Vui lòng nhập tiêu đề bài thi.');
           return false;
         }
         if (!form.subject) {
@@ -879,10 +879,10 @@ export default function TeacherExams() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
-                Exam Management
+                Quản Lý Bài Thi
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">
-                Create, schedule, and monitor examinations for your classes.
+                Tạo, lên lịch và theo dõi các bài thi cho lớp học của bạn.
               </p>
             </div>
             <button
@@ -890,7 +890,7 @@ export default function TeacherExams() {
                   className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              Create Exam
+              Tạo Bài Thi
             </button>
           </div>
         </div>
@@ -900,7 +900,7 @@ export default function TeacherExams() {
           <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Total Exams</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Tổng Số Bài Thi</p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   {exams.length}
                 </p>
@@ -914,7 +914,7 @@ export default function TeacherExams() {
           <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Scheduled</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Đã Lên Lịch</p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">
                   {exams.filter(exam => exam.status === 'scheduled').length}
                 </p>
@@ -928,7 +928,7 @@ export default function TeacherExams() {
           <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Completed</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Đã Hoàn Thành</p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
                   {exams.filter(exam => exam.status === 'completed').length}
                 </p>
@@ -942,7 +942,7 @@ export default function TeacherExams() {
           <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Avg Score</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Điểm Trung Bình</p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                   {Math.round(exams.filter(exam => exam.avgScore > 0).reduce((sum, exam) => sum + exam.avgScore, 0) / exams.filter(exam => exam.avgScore > 0).length) || 0}%
                 </p>
@@ -957,13 +957,13 @@ export default function TeacherExams() {
         {/* Filter Bar */}
         <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-5">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-            In this view show records
+            Hiển thị bản ghi trong chế độ xem này
           </h3>
           
           {filterRules.length === 0 ? (
             <div className="mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">Where</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">Trong đó</span>
                 <select
                   value={tempFilter.field}
                   onChange={(e) => {
@@ -974,10 +974,10 @@ export default function TeacherExams() {
                   }}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="title">Title</option>
-                  <option value="subject">Subject</option>
-                  <option value="status">Status</option>
-                  <option value="type">Type</option>
+                  <option value="title">Tiêu đề</option>
+                  <option value="subject">Môn học</option>
+                  <option value="status">Trạng thái</option>
+                  <option value="type">Loại</option>
                 </select>
                 <select
                   value={tempFilter.operator}
@@ -989,14 +989,14 @@ export default function TeacherExams() {
                   }}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="contains">contains</option>
-                  <option value="equals">equals</option>
-                  <option value="startsWith">starts with</option>
-                  <option value="endsWith">ends with</option>
+                  <option value="contains">chứa</option>
+                  <option value="equals">bằng</option>
+                  <option value="startsWith">bắt đầu bằng</option>
+                  <option value="endsWith">kết thúc bằng</option>
                 </select>
                 <input
                   type="text"
-                  placeholder="Enter value..."
+                  placeholder="Nhập giá trị..."
                   value={tempFilter.value}
                   onChange={(e) => {
                     const newTemp = { ...tempFilter, value: e.target.value };
@@ -1019,7 +1019,7 @@ export default function TeacherExams() {
               {filterRules.map((rule, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                    {index === 0 ? 'Where' : 'And'}
+                    {index === 0 ? 'Trong đó' : 'Và'}
                   </span>
                   <select
                     value={rule.field}
@@ -1030,10 +1030,10 @@ export default function TeacherExams() {
                     }}
                     className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="title">Title</option>
-                    <option value="subject">Subject</option>
-                    <option value="status">Status</option>
-                    <option value="type">Type</option>
+                    <option value="title">Tiêu đề</option>
+                    <option value="subject">Môn học</option>
+                    <option value="status">Trạng thái</option>
+                    <option value="type">Loại</option>
                   </select>
               <select
                     value={rule.operator}
@@ -1051,7 +1051,7 @@ export default function TeacherExams() {
                   </select>
                   <input
                     type="text"
-                    placeholder="Enter value..."
+                    placeholder="Nhập giá trị..."
                     value={rule.value}
                     onChange={(e) => {
                       const newRules = [...filterRules];
@@ -1085,7 +1085,7 @@ export default function TeacherExams() {
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Add filter
+              Thêm bộ lọc
             </button>
             {filterRules.length > 0 && (
               <button
@@ -1097,7 +1097,7 @@ export default function TeacherExams() {
                 }}
                 className="text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
               >
-                Clear all filters
+                Xóa tất cả bộ lọc
               </button>
             )}
           </div>
@@ -1108,7 +1108,7 @@ export default function TeacherExams() {
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-12">
             <div className="flex flex-col items-center justify-center">
               <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading exams...</p>
+              <p className="text-gray-600 dark:text-gray-400">Đang tải bài thi...</p>
             </div>
           </div>
         )}
@@ -1126,7 +1126,7 @@ export default function TeacherExams() {
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-700/50">
               <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Exams <span className="text-orange-600 dark:text-orange-400">({filteredExams.length})</span>
+                  Bài Thi <span className="text-orange-600 dark:text-orange-400">({filteredExams.length})</span>
             </h2>
                 {selectedExams.length > 0 && (
                   <button
@@ -1134,7 +1134,7 @@ export default function TeacherExams() {
                     className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center gap-2"
                   >
                     <Trash2 className="w-4 h-4" />
-                    Delete ({selectedExams.length})
+                    Xóa ({selectedExams.length})
                   </button>
                 )}
               </div>
@@ -1145,11 +1145,11 @@ export default function TeacherExams() {
                 <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
                   <FileText className="w-10 h-10 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No exams found</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Không tìm thấy bài thi</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   {searchTerm || selectedStatus !== 'all' 
-                    ? 'Try adjusting your filters to see more results.'
-                    : 'Get started by creating your first exam.'}
+                    ? 'Hãy điều chỉnh bộ lọc để xem thêm kết quả.'
+                    : 'Bắt đầu bằng cách tạo bài thi đầu tiên của bạn.'}
                 </p>
                 {!searchTerm && selectedStatus === 'all' && (
                   <button
@@ -1157,7 +1157,7 @@ export default function TeacherExams() {
                     className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2 mx-auto"
                   >
                     <Plus className="w-5 h-5" />
-                    Create Your First Exam
+                    Tạo Bài Thi Đầu Tiên
                   </button>
                 )}
               </div>
@@ -1180,42 +1180,42 @@ export default function TeacherExams() {
                         onClick={() => handleSort('title')}
                       >
                         <div className="flex items-center">
-                    Exam Details
+                    Chi Tiết Bài Thi
                           {getSortIcon('title')}
                         </div>
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                        Class
+                        Lớp
                   </th>
                       <th 
                         className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                         onClick={() => handleSort('date')}
                       >
                         <div className="flex items-center">
-                          Date
+                          Ngày
                           {getSortIcon('date')}
                         </div>
                   </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                    Duration
+                    Thời Lượng
                   </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                    Students
+                    Học Sinh
                   </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                    Avg Score
+                    Điểm TB
                   </th>
                       <th 
                         className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                         onClick={() => handleSort('status')}
                       >
                         <div className="flex items-center">
-                    Status
+                    Trạng Thái
                           {getSortIcon('status')}
                         </div>
                   </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                    Actions
+                    Thao Tác
                   </th>
                 </tr>
               </thead>
@@ -1245,7 +1245,7 @@ export default function TeacherExams() {
                             {exam.title}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                            {exam.subject} • {exam.totalQuestions} questions
+                            {exam.subject} • {exam.totalQuestions} câu hỏi
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(exam.type)}`}>
@@ -1270,7 +1270,7 @@ export default function TeacherExams() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
                       <div className="text-sm text-gray-900 dark:text-white">
-                        {exam.duration} minutes
+                        {exam.duration} phút
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
@@ -1278,7 +1278,7 @@ export default function TeacherExams() {
                         {exam.completedStudents}/{exam.enrolledStudents}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        completed
+                        đã hoàn thành
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
@@ -1300,21 +1300,21 @@ export default function TeacherExams() {
                         <button 
                           onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}
                           className="w-9 h-9 flex items-center justify-center text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95" 
-                          title="View Details"
+                          title="Xem Chi Tiết"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}
                           className="w-9 h-9 flex items-center justify-center text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95" 
-                          title="Edit Exam"
+                          title="Chỉnh Sửa Bài Thi"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={() => handleDeleteClick(exam)}
                           className="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95" 
-                          title="Delete Exam"
+                          title="Xóa Bài Thi"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1337,10 +1337,10 @@ export default function TeacherExams() {
               <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>
+                    Hiển thị <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>
                     {' - '}
                     <span className="font-medium text-gray-900 dark:text-white">{Math.min(endIndex, sortedExams.length)}</span>
-                    {' of '}
+                    {' trong '}
                     <span className="font-medium text-gray-900 dark:text-white">{sortedExams.length}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1353,10 +1353,10 @@ export default function TeacherExams() {
                           : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                     >
-                      Prev
+                      Trước
                     </button>
                     <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
+                      Trang <span className="font-semibold">{currentPage}</span> / <span className="font-semibold">{totalPages}</span>
                     </span>
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
@@ -1367,7 +1367,7 @@ export default function TeacherExams() {
                           : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                     >
-                      Next
+                      Sau
                     </button>
                   </div>
                 </div>
@@ -1386,8 +1386,8 @@ export default function TeacherExams() {
                 <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-orange-50 via-orange-50 to-amber-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">Create New Exam</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Fill in the details below to create your exam</p>
+                      <h3 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">Tạo Bài Thi Mới</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Điền thông tin bên dưới để tạo bài thi của bạn</p>
                     </div>
                     <button
                       onClick={closeCreateModal}
@@ -1448,34 +1448,34 @@ export default function TeacherExams() {
                   {currentStep === 1 && (
                     <div className="space-y-5">
                       <div className="bg-gradient-to-br from-orange-50/50 to-amber-50/50 dark:from-orange-900/10 dark:to-orange-800/5 rounded-xl p-4 border border-orange-100 dark:border-orange-900/30">
-                        <h4 className="text-sm font-semibold text-orange-800 dark:text-orange-300 mb-1">Exam Information</h4>
-                        <p className="text-xs text-orange-600 dark:text-orange-400">Provide basic details about your exam</p>
+                        <h4 className="text-sm font-semibold text-orange-800 dark:text-orange-300 mb-1">Thông Tin Bài Thi</h4>
+                        <p className="text-xs text-orange-600 dark:text-orange-400">Cung cấp thông tin cơ bản về bài thi của bạn</p>
                       </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                          Exam Title <span className="text-red-500">*</span>
+                          Tiêu Đề Bài Thi <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={form.title}
                           onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
                           className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
-                          placeholder="Enter exam title"
+                          placeholder="Nhập tiêu đề bài thi"
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Subject <span className="text-red-500">*</span>
+                            Môn Học <span className="text-red-500">*</span>
                           </label>
                           <select
                             value={form.subject}
                             onChange={(e) => setForm((prev) => ({ ...prev, subject: e.target.value }))}
                             className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                           >
-                            <option value="">Select subject</option>
+                            <option value="">Chọn môn học</option>
                             <option value="Mathematics">Mathematics</option>
                             <option value="Biology">Biology</option>
                             <option value="Physics">Physics</option>
@@ -1486,14 +1486,14 @@ export default function TeacherExams() {
 
                         <div>
                           <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Class <span className="text-red-500">*</span>
+                            Lớp <span className="text-red-500">*</span>
                           </label>
                           <select
                             value={form.className}
                             onChange={(e) => setForm((prev) => ({ ...prev, className: e.target.value }))}
                             className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                           >
-                            <option value="">Select class</option>
+                            <option value="">Chọn lớp</option>
                             <option value="10A">Class 10A</option>
                             <option value="10B">Class 10B</option>
                             <option value="11A">Class 11A</option>
@@ -1507,7 +1507,7 @@ export default function TeacherExams() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Date <span className="text-red-500">*</span>
+                            Ngày <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="date"
@@ -1529,7 +1529,7 @@ export default function TeacherExams() {
 
                         <div>
                           <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Time <span className="text-red-500">*</span>
+                            Giờ <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="time"
@@ -1543,7 +1543,7 @@ export default function TeacherExams() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Duration (minutes) <span className="text-red-500">*</span>
+                            Thời Lượng (phút) <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="number"
@@ -1557,7 +1557,7 @@ export default function TeacherExams() {
 
                         <div>
                           <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Total Questions <span className="text-red-500">*</span>
+                            Tổng Số Câu Hỏi <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="number"
@@ -1568,21 +1568,21 @@ export default function TeacherExams() {
                             placeholder="25"
                           />
                           <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-2 py-1.5">
-                            We will verify against the actual questions in the final step.
+                            Chúng tôi sẽ xác minh với số câu hỏi thực tế ở bước cuối cùng.
                           </p>
                         </div>
                       </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                          Description
+                          Mô Tả
                         </label>
                         <textarea
                           rows={3}
                           value={form.description}
                           onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                           className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500 resize-none"
-                          placeholder="Describe the exam content and requirements"
+                          placeholder="Mô tả nội dung và yêu cầu của bài thi"
                         />
                       </div>
                     </div>
@@ -1592,13 +1592,13 @@ export default function TeacherExams() {
                     <div className="border-2 border-dashed border-orange-200 dark:border-orange-800 rounded-2xl p-6 bg-gradient-to-br from-orange-50/30 via-amber-50/20 to-orange-50/30 dark:from-orange-900/10 dark:via-orange-800/5 dark:to-orange-900/10">
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
                         <div>
-                          <h4 className="text-base font-bold text-gray-900 dark:text-white mb-1">Question Builder</h4>
+                          <h4 className="text-base font-bold text-gray-900 dark:text-white mb-1">Tạo Câu Hỏi</h4>
                           <p className="text-xs text-gray-600 dark:text-gray-400">
-                            Add multiple-choice questions for this exam. Saved questions are stored in your bank for future use.
+                            Thêm câu hỏi trắc nghiệm cho bài thi này. Các câu hỏi đã lưu sẽ được lưu vào ngân hàng để sử dụng sau này.
                           </p>
                         </div>
                         <span className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-200/50 dark:shadow-orange-900/30">
-                          {questionList.length} added
+                          Đã thêm {questionList.length}
                         </span>
                       </div>
 
@@ -1613,7 +1613,7 @@ export default function TeacherExams() {
                               : 'border-transparent text-gray-500 hover:text-orange-600 dark:text-gray-400 dark:hover:text-orange-400 hover:bg-orange-50/30 dark:hover:bg-orange-900/10'
                           }`}
                         >
-                          Create New
+                          Tạo Mới
                           {questionMode === 'create' && (
                             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600"></span>
                           )}
@@ -1627,7 +1627,7 @@ export default function TeacherExams() {
                               : 'border-transparent text-gray-500 hover:text-orange-600 dark:text-gray-400 dark:hover:text-orange-400 hover:bg-orange-50/30 dark:hover:bg-orange-900/10'
                           }`}
                         >
-                          Select from Bank
+                          Chọn Từ Ngân Hàng
                           {questionMode === 'select' && (
                             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600"></span>
                           )}
@@ -1652,7 +1652,7 @@ export default function TeacherExams() {
                           }`}
                         >
                           <Sparkles className="h-4 w-4" />
-                          Generate with AI
+                          Tạo Bằng AI
                           {questionMode === 'ai-generate' && (
                             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-purple-600"></span>
                           )}
@@ -1680,14 +1680,14 @@ export default function TeacherExams() {
                         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
                           <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
                             <FileText className="w-4 h-4 text-orange-500" />
-                            Question Stem <span className="text-red-500">*</span>
+                            Nội Dung Câu Hỏi <span className="text-red-500">*</span>
                           </label>
                           <textarea
                             rows={4}
                             value={questionForm.question}
                             onChange={(e) => setQuestionForm({ ...questionForm, question: e.target.value })}
                             className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-inner hover:border-gray-300 dark:hover:border-gray-500 resize-none"
-                            placeholder="Type the full question prompt..."
+                            placeholder="Nhập nội dung câu hỏi đầy đủ..."
                             required
                           />
                         </div>
@@ -1696,7 +1696,7 @@ export default function TeacherExams() {
                           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
                             <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                              Topic Tag <span className="text-red-500">*</span>
+                              Thể Loại <span className="text-red-500">*</span>
                             </label>
                             <div className="flex flex-wrap gap-2.5">
                               {questionTagOptions.map((tag) => {
@@ -1722,7 +1722,7 @@ export default function TeacherExams() {
                           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
                             <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                              Difficulty <span className="text-red-500">*</span>
+                              Độ Khó <span className="text-red-500">*</span>
                             </label>
                             <div className="grid grid-cols-3 gap-2.5">
                               {questionDifficultyOptions.map((option) => {
@@ -1761,14 +1761,14 @@ export default function TeacherExams() {
                         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
                           <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
                             <span className="text-gray-400">💡</span>
-                            Explanation <span className="text-xs font-normal text-gray-500 dark:text-gray-400">(optional)</span>
+                            Giải Thích <span className="text-xs font-normal text-gray-500 dark:text-gray-400">(tùy chọn)</span>
                           </label>
                           <textarea
                             rows={3}
                             value={questionForm.explanation}
                             onChange={(e) => setQuestionForm({ ...questionForm, explanation: e.target.value })}
                             className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-inner hover:border-gray-300 dark:hover:border-gray-500 resize-none"
-                            placeholder="Add solution notes or teaching tips..."
+                            placeholder="Thêm ghi chú giải đáp hoặc mẹo giảng dạy..."
                           />
                         </div>
 
@@ -1793,7 +1793,7 @@ export default function TeacherExams() {
                                     }`}>
                                       {key}
                                     </span>
-                                    Option {key} <span className="text-red-500">*</span>
+                                    Lựa Chọn {key} <span className="text-red-500">*</span>
                                   </label>
                                   <input
                                     type="text"
@@ -1843,7 +1843,7 @@ export default function TeacherExams() {
                             onClick={resetQuestionForm}
                             className="w-full sm:w-auto px-5 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md"
                           >
-                            ↻ Reset Fields
+                            ↻ Đặt Lại
                           </button>
                           <button
                             type="submit"
@@ -1853,12 +1853,12 @@ export default function TeacherExams() {
                             {isQuestionSubmitting ? (
                               <>
                                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                Saving...
+                                Đang lưu...
                               </>
                             ) : (
                               <>
                                 <Plus className="w-4 h-4" />
-                                Save Question
+                                Lưu Câu Hỏi
                               </>
                             )}
                           </button>
@@ -1976,7 +1976,7 @@ export default function TeacherExams() {
                                           </span>
                                           {question.correctOption && (
                                             <span className="px-2 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
-                                              Correct: {question.correctOption}
+                                              Đúng: {question.correctOption}
                                             </span>
                                           )}
                                           {isAlreadyAdded && (
@@ -2040,9 +2040,9 @@ export default function TeacherExams() {
                                     onChange={(e) => setAiGenerateForm({ ...aiGenerateForm, difficulty: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                   >
-                                    <option value="easy">Easy</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="hard">Hard</option>
+                                    <option value="easy">Dễ</option>
+                                    <option value="medium">Trung Bình</option>
+                                    <option value="hard">Khó</option>
                                   </select>
                                 </div>
 
@@ -2097,7 +2097,7 @@ export default function TeacherExams() {
                                   ) : (
                                     <>
                                       <Sparkles className="w-4 h-4" />
-                                      Generate Questions
+                                      Tạo Câu Hỏi
                                     </>
                                   )}
                                 </button>
@@ -2182,7 +2182,7 @@ export default function TeacherExams() {
 
                       {questionList.length > 0 && (
                         <div className="mt-6 space-y-3">
-                          <h5 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Questions in this exam</h5>
+                          <h5 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Câu hỏi trong bài thi này</h5>
                           <ul className="space-y-3">
                             {questionList.map((question) => (
                               <li
@@ -2202,7 +2202,7 @@ export default function TeacherExams() {
                                     </span>
                                     {question.correctOption && (
                                       <span className="px-2 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
-                                        Correct: {question.correctOption}
+                                        Đúng: {question.correctOption}
                                       </span>
                                     )}
                                   </div>
@@ -2213,7 +2213,7 @@ export default function TeacherExams() {
                                   className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-300 border border-red-200 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                                 >
                                   <Trash2 className="w-4 h-4" />
-                                  Remove
+                                  Xóa
                                 </button>
                               </li>
                             ))}
@@ -2226,8 +2226,8 @@ export default function TeacherExams() {
                   {currentStep === 3 && (
                     <div className="space-y-5">
                       <div className="bg-gradient-to-br from-orange-50/50 to-amber-50/50 dark:from-orange-900/10 dark:to-orange-800/5 rounded-xl p-4 border-2 border-orange-200 dark:border-orange-800">
-                        <h4 className="text-sm font-bold text-orange-800 dark:text-orange-300 mb-1">Review & Confirm</h4>
-                        <p className="text-xs text-orange-600 dark:text-orange-400">Please review all details before creating the exam</p>
+                        <h4 className="text-sm font-bold text-orange-800 dark:text-orange-300 mb-1">Xem Lại & Xác Nhận</h4>
+                        <p className="text-xs text-orange-600 dark:text-orange-400">Vui lòng xem lại tất cả chi tiết trước khi tạo bài thi</p>
                       </div>
 
                       <div className="rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-lg">
@@ -2235,33 +2235,33 @@ export default function TeacherExams() {
                           <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
                             <FileText className="w-5 h-5 text-white" />
                           </div>
-                          <h4 className="text-base font-bold text-gray-900 dark:text-white">Exam Overview</h4>
+                          <h4 className="text-base font-bold text-gray-900 dark:text-white">Tổng Quan Bài Thi</h4>
                         </div>
                         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                           <div className="space-y-1">
-                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Title</dt>
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Tiêu Đề</dt>
                             <dd className="text-gray-900 dark:text-white font-medium">{form.title || '-'}</dd>
                           </div>
                           <div className="space-y-1">
-                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Subject</dt>
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Môn Học</dt>
                             <dd className="text-gray-900 dark:text-white font-medium">{form.subject || '-'}</dd>
                           </div>
                           <div className="space-y-1">
-                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Class</dt>
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Lớp</dt>
                             <dd className="text-gray-900 dark:text-white font-medium">{form.className || '-'}</dd>
                           </div>
                           <div className="space-y-1">
-                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Date & Time</dt>
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Ngày & Giờ</dt>
                             <dd className="text-gray-900 dark:text-white font-medium">
                               {form.date || '-'} {form.time ? `• ${form.time}` : ''}
                             </dd>
                           </div>
                           <div className="space-y-1">
-                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Duration</dt>
-                            <dd className="text-gray-900 dark:text-white font-medium">{form.time_limit ? `${form.time_limit} minutes` : '-'}</dd>
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Thời Lượng</dt>
+                            <dd className="text-gray-900 dark:text-white font-medium">{form.time_limit ? `${form.time_limit} phút` : '-'}</dd>
                           </div>
                           <div className="space-y-1">
-                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Planned Questions</dt>
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Số Câu Hỏi Dự Kiến</dt>
                             <dd className="text-gray-900 dark:text-white font-medium">
                               {hasPlannedQuestionCount ? plannedQuestionCount : questionList.length}
                             </dd>
@@ -2269,7 +2269,7 @@ export default function TeacherExams() {
                         </dl>
                         {form.description && (
                           <div className="mt-5 rounded-xl bg-gray-50 dark:bg-gray-700/60 p-4 border border-gray-200 dark:border-gray-600">
-                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide mb-2">Description</dt>
+                            <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide mb-2">Mô Tả</dt>
                             <dd className="text-sm text-gray-700 dark:text-gray-300">{form.description}</dd>
                           </div>
                         )}
@@ -2281,7 +2281,7 @@ export default function TeacherExams() {
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
                               <FileText className="w-5 h-5 text-white" />
                             </div>
-                            <h4 className="text-base font-bold text-gray-900 dark:text-white">Question Summary</h4>
+                            <h4 className="text-base font-bold text-gray-900 dark:text-white">Tóm Tắt Câu Hỏi</h4>
                           </div>
                           <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-sm font-bold text-white shadow-md shadow-orange-200/50 dark:shadow-orange-900/30">
                             {questionList.length}
@@ -2293,7 +2293,7 @@ export default function TeacherExams() {
 
                         <div className="mt-4 max-h-60 space-y-2 overflow-y-auto pr-1">
                           {questionList.length === 0 && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">No questions added yet.</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Chưa có câu hỏi nào được thêm.</p>
                           )}
                           {questionList.map((question, index) => (
                             <div
@@ -2312,7 +2312,7 @@ export default function TeacherExams() {
                                 </span>
                                 {question.correctOption && (
                                   <span className="rounded-full bg-purple-100 px-2 py-1 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
-                                    Correct: {question.correctOption}
+                                    Đúng: {question.correctOption}
                                   </span>
                                 )}
                               </div>
@@ -2322,7 +2322,7 @@ export default function TeacherExams() {
 
                         {hasPlannedQuestionCount && plannedQuestionCount !== questionList.length && (
                           <div className="mt-4 rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-3 text-xs text-yellow-700 dark:border-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-200">
-                            The number of questions added does not match the planned total. You can go back to adjust before confirming.
+                            Số câu hỏi đã thêm không khớp với tổng số dự kiến. Bạn có thể quay lại để điều chỉnh trước khi xác nhận.
                           </div>
                         )}
                       </div>
@@ -2342,7 +2342,7 @@ export default function TeacherExams() {
                     onClick={currentStep === 1 ? closeCreateModal : prevStep}
                     className="w-full sm:w-auto px-5 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md"
                   >
-                    {currentStep === 1 ? 'Cancel' : '← Back'}
+                    {currentStep === 1 ? 'Hủy' : '← Quay Lại'}
                   </button>
                   <div className="flex w-full sm:w-auto gap-3">
                     {currentStep < creationSteps.length && (
@@ -2351,7 +2351,7 @@ export default function TeacherExams() {
                         onClick={nextStep}
                         className="flex-1 sm:flex-none px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-orange-500/50 dark:hover:shadow-orange-900/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                       >
-                        Next Step →
+                        Sau Step →
                       </button>
                     )}
                     {currentStep === creationSteps.length && (
@@ -2364,12 +2364,12 @@ export default function TeacherExams() {
                         {isSubmitting ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Creating...
+                            Đang tạo...
                           </>
                         ) : (
                           <>
                             <Plus className="w-4 h-4" />
-                            Create Exam
+                            Tạo Bài Thi
                           </>
                         )}
                       </button>
@@ -2394,15 +2394,15 @@ export default function TeacherExams() {
                   </div>
                   
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
-                    Delete {selectedExams.length} Exam{selectedExams.length > 1 ? 's' : ''}
+                    Xóa {selectedExams.length} Bài Thi
                   </h3>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">
-                    Are you sure you want to delete {selectedExams.length} selected exam{selectedExams.length > 1 ? 's' : ''}?
+                    Bạn có chắc chắn muốn xóa {selectedExams.length} bài thi đã chọn không?
                   </p>
                   
                   <p className="text-sm text-red-600 dark:text-red-400 text-center">
-                    This action cannot be undone.
+                    Hành động này không thể hoàn tác.
                   </p>
                   
                   {error && (
@@ -2422,7 +2422,7 @@ export default function TeacherExams() {
                     disabled={isSubmitting}
                     className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    Hủy
                   </button>
                   <button 
                     onClick={handleDeleteSelected}
@@ -2432,12 +2432,12 @@ export default function TeacherExams() {
                     {isSubmitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Deleting...
+                        Đang xóa...
                       </>
                     ) : (
                       <>
                         <Trash2 className="w-4 h-4" />
-                        Delete {selectedExams.length} Exam{selectedExams.length > 1 ? 's' : ''}
+                        Xóa {selectedExams.length} Bài Thi
                       </>
                     )}
                   </button>
@@ -2460,15 +2460,15 @@ export default function TeacherExams() {
                   </div>
                   
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
-                    Delete Exam
+                    Xóa Bài Thi
                   </h3>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">
-                    Are you sure you want to delete "{examToDelete.title}"?
+                    Bạn có chắc chắn muốn xóa "{examToDelete.title}" không?
                   </p>
                   
                   <p className="text-sm text-red-600 dark:text-red-400 text-center">
-                    This action cannot be undone.
+                    Hành động này không thể hoàn tác.
                   </p>
                   
                   {error && (
@@ -2489,7 +2489,7 @@ export default function TeacherExams() {
                     disabled={isSubmitting}
                     className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    Hủy
                   </button>
                   <button 
                     onClick={handleDeleteExam}
@@ -2499,12 +2499,12 @@ export default function TeacherExams() {
                     {isSubmitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Deleting...
+                        Đang xóa...
                       </>
                     ) : (
                       <>
                         <Trash2 className="w-4 h-4" />
-                        Delete Exam
+                        Xóa Bài Thi
                       </>
                     )}
                   </button>
