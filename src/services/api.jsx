@@ -7,7 +7,10 @@ const getToken = () =>
 
 const buildHeaders = (extra = {}, hasBody = false) => {
   const token = getToken();
-  const headers = { ...extra };
+  const headers = {
+    'accept': 'application/json',
+    ...extra
+  };
   if (hasBody && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
@@ -38,16 +41,27 @@ const request = async (method, path, { headers, params, body, raw = false, timeo
 
   const hasJsonBody = body !== undefined && body !== null && !(body instanceof FormData);
 
+  const requestHeaders = buildHeaders(headers, hasJsonBody);
+  
+  // Debug logging
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[API] ${method} ${url.toString()}`);
+    console.log('[API] Headers:', requestHeaders);
+    if (body) {
+      console.log('[API] Body:', body);
+    }
+  }
+  
   const doFetch = (signal) =>
     fetch(url.toString(), {
       method,
-      headers: buildHeaders(headers, hasJsonBody),
+      headers: requestHeaders,
       body: hasJsonBody ? JSON.stringify(body) : body,
       signal,
     });
 
   const res = await withTimeout(doFetch, timeoutMs || 20000);
-
+  
   let data;
   const isJson = res.headers.get('content-type')?.includes('application/json');
   if (isJson) {
@@ -56,10 +70,16 @@ const request = async (method, path, { headers, params, body, raw = false, timeo
     data = await res.text();
   }
 
+  // Debug logging response (skip logging for 404 to reduce spam, handled in services)
+  if (process.env.NODE_ENV === 'development' && res.status !== 404) {
+    console.log(`[API] Response status: ${res.status}`);
+  }
+
   if (!res.ok) {
     const message = data?.message || `HTTP error! status: ${res.status}`;
     const error = new Error(message);
     error.status = res.status;
+    error.response = { status: res.status, data };
     error.data = data;
     throw error;
   }

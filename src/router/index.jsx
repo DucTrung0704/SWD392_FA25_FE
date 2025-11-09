@@ -50,6 +50,7 @@ import TeacherDeckDetail from '../views/Teacher/DeckDetail';
 import TeacherExams from '../views/Teacher/Exams';
 import TeacherExamDetail from '../views/Teacher/ExamDetail';
 import TeacherClasses from '../views/Teacher/Classes';
+import TeacherClassDetail from '../views/Teacher/ClassDetail';
 import TeacherAnalytics from '../views/Teacher/Analytics';
 import TeacherSettings from '../views/Teacher/Settings';
 import QuestionBank from '../views/Teacher/QuestionBank';
@@ -110,6 +111,7 @@ export function AppRouter() {
         <Route path="exams/:id" element={<TeacherExamDetail />} />
         <Route path="question-bank" element={<QuestionBank />} />
         <Route path="classes" element={<TeacherClasses />} />
+        <Route path="classes/:id" element={<TeacherClassDetail />} />
         <Route path="analytics" element={<TeacherAnalytics />} />
         <Route path="settings" element={<TeacherSettings />} />
         
