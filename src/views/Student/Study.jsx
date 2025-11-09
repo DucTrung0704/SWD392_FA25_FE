@@ -9,10 +9,10 @@ export default function Study() {
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Study Mode
+              Chế Độ Học Tập
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">
-              Choose your study method
+              Chọn phương pháp học tập của bạn
             </p>
           </div>
         </div>
@@ -25,8 +25,8 @@ export default function Study() {
             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
               <Icon name="flashcards" className="w-6 h-6" />
             </div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Flashcards</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Study with traditional flashcards</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Thẻ Ghi Nhớ</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Học với thẻ ghi nhớ truyền thống</p>
           </Link>
 
           <Link
@@ -36,8 +36,8 @@ export default function Study() {
             <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
               <Icon name="study" className="w-6 h-6" />
             </div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Simple Study</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Quick and easy study mode</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Học Đơn Giản</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Chế độ học nhanh và dễ dàng</p>
           </Link>
 
           <Link
@@ -47,8 +47,8 @@ export default function Study() {
             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
               <Icon name="exams" className="w-6 h-6" />
             </div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Practice Exams</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Test your knowledge with exams</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Luyện Thi</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Kiểm tra kiến thức của bạn với các bài thi</p>
           </Link>
         </div>
       </div>

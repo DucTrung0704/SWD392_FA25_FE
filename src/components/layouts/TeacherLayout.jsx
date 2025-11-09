@@ -24,14 +24,14 @@ const TeacherLayout = () => {
   };
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard/teacher', icon: 'stats', current: location.pathname === '/dashboard/teacher' },
-    { name: 'Students', href: '/dashboard/teacher/students', icon: 'users', current: location.pathname.startsWith('/dashboard/teacher/students') },
-    { name: 'Flashcards', href: '/dashboard/teacher/flashcards', icon: 'flashcards', current: location.pathname.startsWith('/dashboard/teacher/flashcards') },
-    { name: 'Exams', href: '/dashboard/teacher/exams', icon: 'exams', current: location.pathname.startsWith('/dashboard/teacher/exams') },
-    { name: 'Question Bank', href: '/dashboard/teacher/question-bank', icon: 'file-text', current: location.pathname.startsWith('/dashboard/teacher/question-bank') },
-    { name: 'Classes', href: '/dashboard/teacher/classes', icon: 'home', current: location.pathname.startsWith('/dashboard/teacher/classes') },
-    { name: 'Analytics', href: '/dashboard/teacher/analytics', icon: 'stats', current: location.pathname.startsWith('/dashboard/teacher/analytics') },
-    { name: 'Settings', href: '/dashboard/teacher/settings', icon: 'settings', current: location.pathname.startsWith('/dashboard/teacher/settings') },
+    { name: 'Bảng điều khiển', href: '/dashboard/teacher', icon: 'stats', current: location.pathname === '/dashboard/teacher' },
+    { name: 'Học sinh', href: '/dashboard/teacher/students', icon: 'users', current: location.pathname.startsWith('/dashboard/teacher/students') },
+    { name: 'Thẻ ghi nhớ', href: '/dashboard/teacher/flashcards', icon: 'flashcards', current: location.pathname.startsWith('/dashboard/teacher/flashcards') },
+    { name: 'Bài thi', href: '/dashboard/teacher/exams', icon: 'exams', current: location.pathname.startsWith('/dashboard/teacher/exams') },
+    { name: 'Ngân hàng câu hỏi', href: '/dashboard/teacher/question-bank', icon: 'file-text', current: location.pathname.startsWith('/dashboard/teacher/question-bank') },
+    { name: 'Lớp học', href: '/dashboard/teacher/classes', icon: 'home', current: location.pathname.startsWith('/dashboard/teacher/classes') },
+    { name: 'Phân tích', href: '/dashboard/teacher/analytics', icon: 'stats', current: location.pathname.startsWith('/dashboard/teacher/analytics') },
+    { name: 'Cài đặt', href: '/dashboard/teacher/settings', icon: 'settings', current: location.pathname.startsWith('/dashboard/teacher/settings') },
   ];
 
   const handleLogout = async () => {
@@ -63,14 +63,14 @@ const TeacherLayout = () => {
                 <span className="text-white font-bold text-sm">T</span>
               </div>
               {!sidebarCollapsed && (
-                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap">Teacher</span>
+                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap">Giáo viên</span>
               )}
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleSidebar}
                 className="hidden lg:flex items-center justify-center p-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-200"
-                title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                title={sidebarCollapsed ? 'Mở rộng thanh bên' : 'Thu gọn thanh bên'}
               >
                 <svg className={`h-4 w-4 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
@@ -80,7 +80,7 @@ const TeacherLayout = () => {
                 onClick={() => setSidebarOpen(false)}
                 className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
-                <span className="sr-only">Close sidebar</span>
+                <span className="sr-only">Đóng thanh bên</span>
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -115,14 +115,14 @@ const TeacherLayout = () => {
                 className="w-full flex items-center justify-center px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
               >
                 <Icon name="logout" className="w-4 h-4 mr-2" />
-                Logout
+                Đăng xuất
               </button>
             )}
             {sidebarCollapsed && (
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center justify-center p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
-                title="Logout"
+                title="Đăng xuất"
               >
                 <Icon name="logout" className="w-5 h-5" />
               </button>
@@ -141,7 +141,7 @@ const TeacherLayout = () => {
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
-                <span className="sr-only">Open sidebar</span>
+                <span className="sr-only">Mở thanh bên</span>
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
@@ -149,10 +149,10 @@ const TeacherLayout = () => {
               
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Teacher Dashboard
+                  Bảng điều khiển giáo viên
                 </div>
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Online</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Trực tuyến</span>
               </div>
 
               {/* Profile and Theme Toggle */}
@@ -160,8 +160,8 @@ const TeacherLayout = () => {
                 <ThemeToggle />
                 <div className="flex items-center gap-3">
                   <div className="text-right hidden sm:block">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Teacher'}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Educator</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Giáo viên'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Giáo viên</p>
                   </div>
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-orange-500 transition-all">
                     {user?.avatar ? (

@@ -19,6 +19,7 @@ export default function Study() {
     : '/flashcards';
   const [deck, setDeck] = useState(null);
   const [cards, setCards] = useState([]);
+  const [originalCards, setOriginalCards] = useState([]); // Store original order
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [studyMode, setStudyMode] = useState('sequential');
@@ -49,13 +50,18 @@ export default function Study() {
         questionImage: fc.questionImage || null,
         answerImage: fc.answerImage || null,
       }));
+      // Store original order for sequential mode
+      setOriginalCards([...deckCards]);
+      // Apply study mode
       if (studyMode === 'random') {
-        deckCards = deckCards.sort(() => Math.random() - 0.5);
+        deckCards = [...deckCards].sort(() => Math.random() - 0.5);
       }
       setCards(deckCards);
+      setCurrentCardIndex(0);
+      setIsFlipped(false);
     } catch (error) {
       console.error('Error loading deck:', error);
-      setError('Deck not found or failed to load');
+      setError('Không tìm thấy bộ thẻ hoặc không thể tải');
     } finally {
       setLoading(false);
     }
@@ -72,7 +78,7 @@ export default function Study() {
       // Completed deck -> back to appropriate list
       navigate(backPath, { 
         state: { 
-          message: `Completed studying ${deck?.title}!`,
+          message: `Đã hoàn thành học ${deck?.title}!`,
           cardsStudied: cards.length 
         }
       });
@@ -106,7 +112,7 @@ export default function Study() {
             <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded w-1/3 mx-auto mb-4"></div>
             <div className="h-96 bg-gray-300 dark:bg-gray-700 rounded-xl mb-6"></div>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">Loading deck...</p>
+          <p className="text-gray-600 dark:text-gray-400">Đang tải bộ thẻ...</p>
         </div>
       </div>
     );
@@ -116,10 +122,10 @@ export default function Study() {
     return (
       <div className="min-h-screen py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Deck not found</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">{error || 'The deck you are looking for does not exist.'}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Không tìm thấy bộ thẻ</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{error || 'Bộ thẻ bạn đang tìm không tồn tại.'}</p>
           <Button onClick={() => navigate(backPath)} className="bg-orange-600 hover:bg-orange-700 text-white">
-            Back to Decks
+            Quay lại Danh sách Bộ Thẻ
           </Button>
         </div>
       </div>
@@ -182,10 +188,10 @@ export default function Study() {
     return (
       <div className="min-h-screen py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">No cards in deck</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">This deck doesn't have any cards to study.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Không có thẻ trong bộ thẻ</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Bộ thẻ này không có thẻ nào để học.</p>
           <Button onClick={() => navigate(backPath)} className="bg-orange-600 hover:bg-orange-700 text-white">
-            Back to Decks
+            Quay lại Danh sách Bộ Thẻ
           </Button>
         </div>
       </div>
@@ -199,10 +205,10 @@ export default function Study() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Studying: {deck.title}
+              Đang học: {deck.title}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Card {currentCardIndex + 1} of {cards.length}
+              Thẻ {currentCardIndex + 1} / {cards.length}
             </p>
           </div>
           <Button
@@ -211,14 +217,14 @@ export default function Study() {
             className="border-gray-300 dark:border-gray-600 inline-flex items-center gap-2"
           >
             <LogOut className="w-4 h-4" />
-            Exit Study
+            Thoát Học Tập
           </Button>
         </div>
 
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-            <span>Progress</span>
+            <span>Tiến độ</span>
             <span>{progress}%</span>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
@@ -242,15 +248,15 @@ export default function Study() {
               isFlipped ? 'opacity-0' : 'opacity-100'
             }`}>
               <div className="text-center">
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">QUESTION</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">CÂU HỎI</div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                  {currentCard.question || 'Image question'}
+                  {currentCard.question || 'Câu hỏi hình ảnh'}
                 </h2>
                 {currentCard.questionImage && (
                   <img src={currentCard.questionImage} alt="question" className="max-h-52 mx-auto rounded-lg" />
                 )}
                 <p className="text-gray-600 dark:text-gray-400">
-                  Click to reveal answer
+                  Nhấp để xem câu trả lời
                 </p>
               </div>
             </div>
@@ -260,9 +266,9 @@ export default function Study() {
               isFlipped ? 'opacity-100' : 'opacity-0'
             }`}>
               <div className="text-center">
-                <div className="text-sm text-orange-600 dark:text-orange-400 mb-4">ANSWER</div>
+                <div className="text-sm text-orange-600 dark:text-orange-400 mb-4">CÂU TRẢ LỜI</div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                  {currentCard.answer || 'Image answer'}
+                  {currentCard.answer || 'Câu trả lời hình ảnh'}
                 </h2>
                 {currentCard.answerImage && (
                   <img src={currentCard.answerImage} alt="answer" className="max-h-52 mx-auto rounded-lg" />
@@ -273,7 +279,7 @@ export default function Study() {
                   </p>
                 )}
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  Click to see question again
+                  Nhấp để xem câu hỏi lại
                 </p>
               </div>
             </div>
@@ -289,7 +295,7 @@ export default function Study() {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Previous
+            Trước
           </Button>
 
           {!isTeacher && (
@@ -300,14 +306,14 @@ export default function Study() {
                 className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 inline-flex items-center gap-2"
               >
                 <XCircle className="w-4 h-4" />
-                Need Review
+                Cần Ôn Lại
               </Button>
               <Button
                 onClick={handleKnow}
                 className="bg-green-600 hover:bg-green-700 text-white inline-flex items-center gap-2"
               >
                 <CheckCircle className="w-4 h-4" />
-                I Know This
+                Tôi Biết Rồi
               </Button>
             </div>
           )}
@@ -317,10 +323,10 @@ export default function Study() {
             className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white"
           >
             {currentCardIndex === cards.length - 1 ? (
-              'Complete'
+              'Hoàn thành'
             ) : (
               <>
-                Next
+                Tiếp theo
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -331,7 +337,15 @@ export default function Study() {
         <div className="mt-8 text-center">
           <div className="inline-flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
             <button
-              onClick={() => setStudyMode('sequential')}
+              onClick={() => {
+                setStudyMode('sequential');
+                // Restore original order
+                if (originalCards.length > 0) {
+                  setCards([...originalCards]);
+                  setCurrentCardIndex(0);
+                  setIsFlipped(false);
+                }
+              }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                 studyMode === 'sequential'
                   ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white'
@@ -339,10 +353,19 @@ export default function Study() {
               }`}
             >
               <ListOrdered className="w-4 h-4" />
-              Sequential
+              Tuần tự
             </button>
             <button
-              onClick={() => setStudyMode('random')}
+              onClick={() => {
+                setStudyMode('random');
+                // Shuffle cards when switching to random mode
+                const shuffled = originalCards.length > 0 
+                  ? [...originalCards].sort(() => Math.random() - 0.5)
+                  : [...cards].sort(() => Math.random() - 0.5);
+                setCards(shuffled);
+                setCurrentCardIndex(0);
+                setIsFlipped(false);
+              }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                 studyMode === 'random'
                   ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white'
@@ -350,7 +373,7 @@ export default function Study() {
               }`}
             >
               <Shuffle className="w-4 h-4" />
-              Random
+              Ngẫu nhiên
             </button>
           </div>
         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
 import Button from '../../components/ui/Button';
+import { Shuffle, ListOrdered } from 'lucide-react';
 
 export default function StudySimple() {
   const { id } = useParams();
@@ -12,6 +13,8 @@ export default function StudySimple() {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [studyMode, setStudyMode] = useState('normal'); // normal, review, mastered
+  const [cardOrder, setCardOrder] = useState('sequential'); // sequential, random
+  const [originalCards, setOriginalCards] = useState([]); // Store original order
   const [studyStats, setStudyStats] = useState({
     correct: 0,
     incorrect: 0,
@@ -27,19 +30,31 @@ export default function StudySimple() {
       setLoading(true);
       const deckData = await flashcardService.getDeckById(id);
       const flashcards = await flashcardService.getFlashcardsByDeckId(id);
+      let deckCards = (flashcards || []).map(fc => ({
+        id: fc._id || fc.id,
+        question: fc.question,
+        answer: fc.answer,
+        explanation: fc.explanation || fc.note,
+        questionImage: fc.questionImage || null,
+        answerImage: fc.answerImage || null,
+      }));
+      
+      // Store original order
+      setOriginalCards([...deckCards]);
+      
+      // Apply card order mode
+      if (cardOrder === 'random') {
+        deckCards = [...deckCards].sort(() => Math.random() - 0.5);
+      }
+      
       const normalized = {
         id: deckData._id || deckData.id,
         title: deckData.title,
-        cards: (flashcards || []).map(fc => ({
-          id: fc._id || fc.id,
-          question: fc.question,
-          answer: fc.answer,
-          explanation: fc.explanation || fc.note,
-          questionImage: fc.questionImage || null,
-          answerImage: fc.answerImage || null,
-        })),
+        cards: deckCards,
       };
       setDeck(normalized);
+      setCurrentCardIndex(0);
+      setShowAnswer(false);
     } catch (err) {
       setError('Không thể tải deck. Vui lòng thử lại.');
       console.error('Error loading deck:', err);
@@ -93,6 +108,25 @@ export default function StudySimple() {
     setShowAnswer(false);
     setStudyMode('normal');
     setStudyStats({ correct: 0, incorrect: 0, skipped: 0 });
+    // Reapply card order
+    if (cardOrder === 'random' && originalCards.length > 0) {
+      const shuffled = [...originalCards].sort(() => Math.random() - 0.5);
+      setDeck(prev => ({ ...prev, cards: shuffled }));
+    } else if (cardOrder === 'sequential' && originalCards.length > 0) {
+      setDeck(prev => ({ ...prev, cards: [...originalCards] }));
+    }
+  };
+  
+  const handleCardOrderChange = (order) => {
+    setCardOrder(order);
+    if (order === 'random' && originalCards.length > 0) {
+      const shuffled = [...originalCards].sort(() => Math.random() - 0.5);
+      setDeck(prev => ({ ...prev, cards: shuffled }));
+    } else if (order === 'sequential' && originalCards.length > 0) {
+      setDeck(prev => ({ ...prev, cards: [...originalCards] }));
+    }
+    setCurrentCardIndex(0);
+    setShowAnswer(false);
   };
 
   if (loading) {
@@ -268,9 +302,38 @@ export default function StudySimple() {
             ></div>
           </div>
           
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white mt-4">
-            {deck.title}
-          </h1>
+          <div className="flex items-center justify-between mt-4">
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {deck.title}
+            </h1>
+            {/* Card Order Selector */}
+            <div className="inline-flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+              <button
+                onClick={() => handleCardOrderChange('sequential')}
+                className={`flex items-center gap-1 px-3 py-1 rounded text-xs transition-all duration-200 ${
+                  cardOrder === 'sequential'
+                    ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                title="Học theo thứ tự"
+              >
+                <ListOrdered className="w-3 h-3" />
+                Tuần tự
+              </button>
+              <button
+                onClick={() => handleCardOrderChange('random')}
+                className={`flex items-center gap-1 px-3 py-1 rounded text-xs transition-all duration-200 ${
+                  cardOrder === 'random'
+                    ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                title="Học ngẫu nhiên"
+              >
+                <Shuffle className="w-3 h-3" />
+                Ngẫu nhiên
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Card */}
@@ -290,7 +353,7 @@ export default function StudySimple() {
               <div className="mb-8">
                 <img 
                   src={currentCard.questionImage} 
-                  alt="Question" 
+                  alt="Câu hỏi" 
                   className="max-w-full h-auto rounded-lg shadow-md mx-auto"
                 />
               </div>
@@ -318,7 +381,7 @@ export default function StudySimple() {
                     <div className="mb-4">
                       <img 
                         src={currentCard.answerImage} 
-                        alt="Answer" 
+                        alt="Câu trả lời" 
                         className="max-w-full h-auto rounded-lg shadow-md mx-auto"
                       />
                     </div>

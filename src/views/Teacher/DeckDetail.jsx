@@ -49,7 +49,7 @@ export default function TeacherDeckDetail() {
           id: data._id,
           createdAt: data.created_at || data.createdAt,
           updatedAt: data.updated_at || data.updatedAt,
-          createdBy: data.created_by?.name || data.createdBy || 'Unknown',
+          createdBy: data.created_by?.name || data.createdBy || 'Không xác định',
           createdByEmail: data.created_by?.email,
           // Set defaults if not provided
           difficulty: data.difficulty || 'Medium',
@@ -73,7 +73,7 @@ export default function TeacherDeckDetail() {
         setDeck(transformedDeck);
       } catch (err) {
         console.error('Failed to load deck:', err);
-        setError(err.message || 'Failed to load deck details. Please try again.');
+        setError(err.message || 'Không thể tải chi tiết bộ thẻ. Vui lòng thử lại.');
       } finally {
         setIsLoading(false);
       }
@@ -99,18 +99,18 @@ export default function TeacherDeckDetail() {
   };
 
   const getTimeAgo = (dateString) => {
-    if (!dateString) return 'Unknown';
+    if (!dateString) return 'Không xác định';
     
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
     
-    if (seconds < 60) return 'Just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
-    if (seconds < 2592000) return `${Math.floor(seconds / 604800)} weeks ago`;
-    return `${Math.floor(seconds / 2592000)} months ago`;
+    if (seconds < 60) return 'Vừa xong';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} phút trước`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} giờ trước`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)} ngày trước`;
+    if (seconds < 2592000) return `${Math.floor(seconds / 604800)} tuần trước`;
+    return `${Math.floor(seconds / 2592000)} tháng trước`;
   };
 
   // Open edit modal with deck data
@@ -132,7 +132,7 @@ export default function TeacherDeckDetail() {
     e.preventDefault();
     
     if (!formData.title.trim()) {
-      setError('Please enter a deck title');
+      setError('Vui lòng nhập tiêu đề bộ thẻ');
       return;
     }
     
@@ -161,7 +161,7 @@ export default function TeacherDeckDetail() {
       setShowEditModal(false);
     } catch (err) {
       console.error('Failed to update deck:', err);
-      setError(err.message || 'Failed to update deck. Please try again.');
+      setError(err.message || 'Không thể cập nhật bộ thẻ. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -177,7 +177,7 @@ export default function TeacherDeckDetail() {
       navigate('/dashboard/teacher/flashcards');
     } catch (err) {
       console.error('Failed to delete deck:', err);
-      setError(err.message || 'Failed to delete deck. Please try again.');
+      setError(err.message || 'Không thể xóa bộ thẻ. Vui lòng thử lại.');
       setShowDeleteModal(false);
     } finally {
       setIsSubmitting(false);
@@ -198,7 +198,7 @@ export default function TeacherDeckDetail() {
     const trimmedAnswer = cardForm.answer.trim();
 
     if (!trimmedQuestion || !trimmedAnswer) {
-      setError('Please enter question and answer');
+      setError('Vui lòng nhập câu hỏi và câu trả lời');
       return;
     }
     try {
@@ -217,7 +217,7 @@ export default function TeacherDeckDetail() {
       setShowAddCardModal(false);
     } catch (err) {
       console.error('Failed to create flashcard:', err);
-      setError(err.message || 'Failed to create flashcard. Please try again.');
+      setError(err.message || 'Không thể tạo flashcard. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -245,11 +245,11 @@ export default function TeacherDeckDetail() {
     const trimmedQuestion = editCardForm.question.trim();
     const trimmedAnswer = editCardForm.answer.trim();
     if (!trimmedQuestion || !trimmedAnswer) {
-      setError('Please enter question and answer');
+      setError('Vui lòng nhập câu hỏi và câu trả lời');
       return;
     }
     if (!allowedTags.includes(editCardForm.tag)) {
-      setError('Please choose a valid tag for this card.');
+      setError('Vui lòng chọn một tag hợp lệ cho thẻ này.');
       return;
     }
     try {
@@ -269,7 +269,7 @@ export default function TeacherDeckDetail() {
       setSelectedCard(null);
     } catch (err) {
       console.error('Failed to update flashcard:', err);
-      setError(err.message || 'Failed to update flashcard. Please try again.');
+      setError(err.message || 'Không thể cập nhật flashcard. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -315,7 +315,7 @@ export default function TeacherDeckDetail() {
       setSelectedCard(null);
     } catch (err) {
       console.error('Failed to delete flashcard:', err);
-      setDeleteCardError(err.message || 'Failed to delete flashcard. Please try again.');
+      setDeleteCardError(err.message || 'Không thể xóa flashcard. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -339,7 +339,7 @@ export default function TeacherDeckDetail() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading deck details...</span>
+            <span className="ml-3 text-gray-600 dark:text-gray-400">Đang tải chi tiết bộ thẻ...</span>
           </div>
         </div>
       </div>
@@ -357,7 +357,7 @@ export default function TeacherDeckDetail() {
                 onClick={() => navigate('/dashboard/teacher/flashcards')}
                 className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
               >
-                Back to Flashcards
+                Quay lại Flashcard
               </button>
             </div>
           </div>
@@ -395,7 +395,7 @@ export default function TeacherDeckDetail() {
                     {deck.title}
                   </h1>
                   <p className="text-gray-600 dark:text-gray-400">
-                    {deck.description || 'No description available'}
+                    {deck.description || 'Không có mô tả'}
                   </p>
                 </div>
               </div>
@@ -415,22 +415,22 @@ export default function TeacherDeckDetail() {
                     : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-400'
                 }`}>
                   {deck.isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-                  {deck.isPublic ? 'Public' : 'Private'}
+                  {deck.isPublic ? 'Công khai' : 'Riêng tư'}
                 </span>
               </div>
 
               <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4" />
-                  <span>{deck.flashcards?.length || 0} cards</span>
+                  <span>{deck.flashcards?.length || 0} thẻ</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  <span>Created {getTimeAgo(deck.createdAt)}</span>
+                  <span>Đã tạo {getTimeAgo(deck.createdAt)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  <span>By {deck.createdBy || 'You'}</span>
+                  <span>Bởi {deck.createdBy || 'Bạn'}</span>
                 </div>
               </div>
             </div>
@@ -439,16 +439,16 @@ export default function TeacherDeckDetail() {
               <button 
                 onClick={() => navigate(`/dashboard/teacher/flashcards/${id}/study`)}
                 className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-colors flex items-center gap-2"
-                title="Review Deck"
+                title="Xem lại Bộ Thẻ"
               >
-                Review
+                Xem lại
               </button>
               <button 
                 onClick={openEditModal}
                 className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2"
               >
                 <Edit className="w-4 h-4" />
-                Edit Deck
+                Chỉnh sửa Bộ Thẻ
               </button>
               <button 
                 onClick={() => setShowDeleteModal(true)}
@@ -469,7 +469,7 @@ export default function TeacherDeckDetail() {
             </h2>
             <button onClick={openAddCardModal} className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center gap-2">
               <Plus className="w-4 h-4" />
-              Add Card
+              Thêm Thẻ
             </button>
           </div>
 
@@ -480,35 +480,35 @@ export default function TeacherDeckDetail() {
                   key={card._id || (startIndex + index)}
                   className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors cursor-pointer"
                   onClick={() => openPreviewModal(card, startIndex + index)}
-                  title="Click to preview"
+                  title="Nhấp để xem trước"
                   role="button"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Card #{startIndex + index + 1}
+                      Thẻ #{startIndex + index + 1}
                     </span>
                     <div className="flex gap-2">
-                      <button onClick={(e) => { e.stopPropagation(); openPreviewModal(card, startIndex + index); }} className="p-1 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900 rounded" title="Preview">
+                      <button onClick={(e) => { e.stopPropagation(); openPreviewModal(card, startIndex + index); }} className="p-1 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900 rounded" title="Xem trước">
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button onClick={(e) => { e.stopPropagation(); openEditCardModal(card); }} className="p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded" title="Edit">
+                      <button onClick={(e) => { e.stopPropagation(); openEditCardModal(card); }} className="p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded" title="Chỉnh sửa">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={(e) => { e.stopPropagation(); openDeleteCardModal(card); }} className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 rounded" title="Delete">
+                      <button onClick={(e) => { e.stopPropagation(); openDeleteCardModal(card); }} className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 rounded" title="Xóa">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Question:</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Câu hỏi:</p>
                       <p className="text-sm text-gray-900 dark:text-white font-medium">
-                        {typeof card === 'string' ? card : card.question || 'No question'}
+                        {typeof card === 'string' ? card : card.question || 'Không có câu hỏi'}
                       </p>
                     </div>
                     {typeof card === 'object' && card.answer && (
                       <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Answer:</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Câu trả lời:</p>
                         <p className="text-sm text-gray-700 dark:text-gray-300">
                           {card.answer}
                         </p>
@@ -522,14 +522,14 @@ export default function TeacherDeckDetail() {
             <div className="text-center py-12">
               <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                No flashcards yet
+                Chưa có flashcard nào
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Start building your deck by adding flashcards
+                Bắt đầu xây dựng bộ thẻ của bạn bằng cách thêm flashcard
               </p>
               <button onClick={openAddCardModal} className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2">
                 <Plus className="w-5 h-5" />
-                Add Your First Card
+                Thêm Thẻ Đầu Tiên
               </button>
             </div>
           )}
@@ -538,10 +538,10 @@ export default function TeacherDeckDetail() {
           {deck.flashcards && deck.flashcards.length > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-6">
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>
+                Hiển thị <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>
                 {' - '}
                 <span className="font-medium text-gray-900 dark:text-white">{Math.min(endIndex, totalCards)}</span>
-                {' of '}
+                {' trong tổng số '}
                 <span className="font-medium text-gray-900 dark:text-white">{totalCards}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -554,10 +554,10 @@ export default function TeacherDeckDetail() {
                       : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
-                  Prev
+                  Trước
                 </button>
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
+                  Trang <span className="font-semibold">{currentPage}</span> / <span className="font-semibold">{totalPages}</span>
                 </span>
                 <button
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
@@ -568,7 +568,7 @@ export default function TeacherDeckDetail() {
                       : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
-                  Next
+                  Sau
                 </button>
               </div>
             </div>
@@ -583,7 +583,7 @@ export default function TeacherDeckDetail() {
             <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <form onSubmit={handleCreateCard}>
                 <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Add Flashcard</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Thêm Flashcard</h3>
                 </div>
                 <div className="px-6 py-4 space-y-4">
                   {error && (
@@ -593,33 +593,33 @@ export default function TeacherDeckDetail() {
                   )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Question <span className="text-red-500">*</span>
+                      Câu hỏi <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       rows={3}
                       value={cardForm.question}
                       onChange={(e) => setCardForm({ ...cardForm, question: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter question"
+                      placeholder="Nhập câu hỏi"
                       required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Answer <span className="text-red-500">*</span>
+                      Câu trả lời <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       rows={3}
                       value={cardForm.answer}
                       onChange={(e) => setCardForm({ ...cardForm, answer: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter answer"
+                      placeholder="Nhập câu trả lời"
                       required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Tag <span className="text-red-500">*</span>
+                      Nhãn <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={cardForm.tag}
@@ -634,14 +634,14 @@ export default function TeacherDeckDetail() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Explanation (optional)
+                      Giải thích (tùy chọn)
                     </label>
                     <textarea
                       rows={3}
                       value={cardForm.explanation}
                       onChange={(e) => setCardForm({ ...cardForm, explanation: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Add explanation"
+                      placeholder="Thêm giải thích"
                     />
                   </div>
                 </div>
@@ -652,7 +652,7 @@ export default function TeacherDeckDetail() {
                     disabled={isSubmitting}
                     className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    Hủy
                   </button>
                   <button
                     type="submit"
@@ -662,12 +662,12 @@ export default function TeacherDeckDetail() {
                     {isSubmitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Adding...
+                        Đang thêm...
                       </>
                     ) : (
                       <>
                         <Plus className="w-4 h-4" />
-                        Add Card
+                        Thêm Thẻ
                       </>
                     )}
                   </button>
@@ -686,7 +686,7 @@ export default function TeacherDeckDetail() {
             <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <form onSubmit={handleUpdateCard}>
                 <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Flashcard</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Chỉnh sửa Flashcard</h3>
                 </div>
                 <div className="px-6 py-4 space-y-4">
                   {error && (
@@ -701,7 +701,7 @@ export default function TeacherDeckDetail() {
                       value={editCardForm.question}
                       onChange={(e) => setEditCardForm({ ...editCardForm, question: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter question"
+                      placeholder="Nhập câu hỏi"
                       required
                     />
                   </div>
@@ -712,7 +712,7 @@ export default function TeacherDeckDetail() {
                       value={editCardForm.answer}
                       onChange={(e) => setEditCardForm({ ...editCardForm, answer: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter answer"
+                      placeholder="Nhập câu trả lời"
                       required
                     />
                   </div>
@@ -723,7 +723,7 @@ export default function TeacherDeckDetail() {
                       value={editCardForm.explanation}
                       onChange={(e) => setEditCardForm({ ...editCardForm, explanation: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Add explanation"
+                      placeholder="Thêm giải thích"
                     />
                   </div>
                   <div>
@@ -746,12 +746,12 @@ export default function TeacherDeckDetail() {
                     {isSubmitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Updating...
+                        Đang cập nhật...
                       </>
                     ) : (
                       <>
                         <Edit className="w-4 h-4" />
-                        Update Card
+                        Cập nhật Thẻ
                       </>
                     )}
                   </button>
@@ -772,8 +772,8 @@ export default function TeacherDeckDetail() {
                 <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full">
                   <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">Delete Flashcard</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">Are you sure you want to delete this flashcard?</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">Xóa Flashcard</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">Bạn có chắc chắn muốn xóa flashcard này?</p>
                 {error && (
                   <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
                     <p className="text-red-700 dark:text-red-400 text-sm text-center">{error}</p>
@@ -786,12 +786,12 @@ export default function TeacherDeckDetail() {
                   {isSubmitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Deleting...
+                      Đang xóa...
                     </>
                   ) : (
                     <>
                       <Trash2 className="w-4 h-4" />
-                      Delete Card
+                        Xóa Thẻ
                     </>
                   )}
                 </button>
@@ -809,7 +809,7 @@ export default function TeacherDeckDetail() {
               <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <form onSubmit={handleEditDeck}>
                   <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Deck</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Chỉnh sửa Bộ Thẻ</h3>
                   </div>
                   
                   <div className="px-6 py-4 space-y-4">
@@ -821,34 +821,34 @@ export default function TeacherDeckDetail() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Deck Title <span className="text-red-500">*</span>
+                        Tiêu đề Bộ Thẻ <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter deck title"
+                        placeholder="Nhập tiêu đề bộ thẻ"
                         required
                       />
                     </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Subject
+                        Môn học
                       </label>
                       <input
                         type="text"
                         value={formData.subject}
                         onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="e.g., Biology, Mathematics"
+                        placeholder="ví dụ: Sinh học, Toán học"
                       />
                     </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Difficulty Level
+                        Mức Độ Khó
                       </label>
                       <select 
                         value={formData.difficulty}
@@ -863,14 +863,14 @@ export default function TeacherDeckDetail() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Description
+                        Mô tả
                       </label>
                       <textarea
                         rows={3}
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                        placeholder="Describe the content of this deck"
+                        placeholder="Mô tả nội dung của bộ thẻ này"
                       />
                     </div>
                     
@@ -883,7 +883,7 @@ export default function TeacherDeckDetail() {
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
                       <label htmlFor="isPublicEdit" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Make this deck public
+                        Công khai bộ thẻ này
                       </label>
                     </div>
                   </div>
@@ -898,7 +898,7 @@ export default function TeacherDeckDetail() {
                       disabled={isSubmitting}
                       className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Cancel
+                      Hủy
                     </button>
                     <button 
                       type="submit"
@@ -908,12 +908,12 @@ export default function TeacherDeckDetail() {
                       {isSubmitting ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Updating...
+                          Đang cập nhật...
                         </>
                       ) : (
                         <>
                           <Edit className="w-4 h-4" />
-                          Update Deck
+                          Cập nhật Bộ Thẻ
                         </>
                       )}
                     </button>
@@ -937,15 +937,15 @@ export default function TeacherDeckDetail() {
                   </div>
                   
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
-                    Delete Deck
+                    Xóa Bộ Thẻ
                   </h3>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">
-                    Are you sure you want to delete "{deck.title}"?
+                    Bạn có chắc chắn muốn xóa "{deck.title}"?
                   </p>
                   
                   <p className="text-sm text-red-600 dark:text-red-400 text-center">
-                    This action cannot be undone and will delete all {deck.flashcards?.length || 0} flashcards in this deck.
+                    Hành động này không thể hoàn tác và sẽ xóa tất cả {deck.flashcards?.length || 0} flashcard trong bộ thẻ này.
                   </p>
                   
                   {error && (
@@ -965,7 +965,7 @@ export default function TeacherDeckDetail() {
                     disabled={isSubmitting}
                     className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    Hủy
                   </button>
                   <button 
                     onClick={handleDeleteDeck}
@@ -975,12 +975,12 @@ export default function TeacherDeckDetail() {
                     {isSubmitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Deleting...
+                        Đang xóa...
                       </>
                     ) : (
                       <>
                         <Trash2 className="w-4 h-4" />
-                        Delete Deck
+                        Xóa Bộ Thẻ
                       </>
                     )}
                   </button>
@@ -999,7 +999,7 @@ export default function TeacherDeckDetail() {
               <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
                 <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Preview Flashcard
+                    Xem trước Flashcard
                   </h3>
                   <button
                     onClick={() => setShowPreviewModal(false)}
@@ -1013,7 +1013,7 @@ export default function TeacherDeckDetail() {
                   {/* Card Counter */}
                   <div className="text-center mb-6">
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Card {previewCardIndex + 1} of {deck.flashcards.length}
+                      Thẻ {previewCardIndex + 1} / {deck.flashcards.length}
                     </span>
                   </div>
 
@@ -1040,13 +1040,13 @@ export default function TeacherDeckDetail() {
                           >
                             <div className="text-center w-full">
                               <div className="text-sm text-blue-600 dark:text-blue-400 mb-4 font-medium">
-                                QUESTION
+                                CÂU HỎI
                               </div>
                               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                                {cardObj.question || 'No question'}
+                                {cardObj.question || 'Không có câu hỏi'}
                               </p>
                               <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-                                Click to reveal answer
+                                Nhấp để xem câu trả lời
                               </p>
                             </div>
                           </div>
@@ -1060,10 +1060,10 @@ export default function TeacherDeckDetail() {
                           >
                             <div className="text-center w-full">
                               <div className="text-sm text-green-600 dark:text-green-400 mb-4 font-medium">
-                                ANSWER
+                                CÂU TRẢ LỜI
                               </div>
                               <p className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                                {cardObj.answer || 'No answer'}
+                                {cardObj.answer || 'Không có câu trả lời'}
                               </p>
                               {cardObj.explanation || cardObj.note ? (
                                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mt-4">
@@ -1073,7 +1073,7 @@ export default function TeacherDeckDetail() {
                                 </div>
                               ) : null}
                               <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-                                Click to see question again
+                                Nhấp để xem câu hỏi lại
                               </p>
                             </div>
                           </div>
@@ -1090,14 +1090,14 @@ export default function TeacherDeckDetail() {
                       className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4" />
-                      Previous
+                      Trước
                     </button>
 
                     <button
                       onClick={() => setIsFlipped(!isFlipped)}
                       className="px-6 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all duration-300"
                     >
-                      {isFlipped ? 'Show Question' : 'Show Answer'}
+                      {isFlipped ? 'Hiện Câu Hỏi' : 'Hiện Câu Trả Lời'}
                     </button>
 
                     <button
@@ -1105,7 +1105,7 @@ export default function TeacherDeckDetail() {
                       disabled={previewCardIndex === (deck.flashcards?.length || 0) - 1}
                       className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                      Next
+                      Sau
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>

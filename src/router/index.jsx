@@ -38,6 +38,8 @@ import StudentStudy from '../views/Student/Study';
 import StudentProgress from '../views/Student/Progress';
 import StudentLibrary from '../views/Student/Library';
 import StudentFlashcardStudy from '../views/Student/FlashcardStudy';
+import FlashcardExam from '../views/Student/FlashcardExam';
+import FlashcardExamDetail from '../views/Student/FlashcardExamDetail';
 import StudentExams from '../views/Student/Exams';
 import MySubmissions from '../views/Student/MySubmissions';
 import SubmissionDetail from '../views/Student/SubmissionDetail';
@@ -152,6 +154,8 @@ export function AppRouter() {
         <Route index element={<StudentDashboard />} />
         <Route path="library" element={<StudentLibrary />} />
         <Route path="library/:id/study" element={<StudentFlashcardStudy />} />
+        <Route path="flashcard-exam/:id" element={<FlashcardExam />} />
+        <Route path="flashcard-exam-detail/:submissionId" element={<FlashcardExamDetail />} />
         <Route path="study" element={<StudentStudy />} />
         <Route path="exams" element={<StudentExams />} />
         <Route path="progress" element={<StudentProgress />} />

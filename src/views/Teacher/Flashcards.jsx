@@ -731,7 +731,7 @@ export default function TeacherFlashcards() {
             <div key={deck.id} className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg border overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full min-h-[480px] ${
               deck.status === 'active' 
                 ? 'border-green-300 dark:border-green-700 ring-2 ring-green-100 dark:ring-green-900' 
-                : 'border-gray-100 dark:border-gray-700'
+                : 'border-orange-300 dark:border-orange-700 ring-2 ring-orange-100 dark:ring-orange-900'
             }`}>
               {/* Public/Private Badge Banner */}
               {deck.status === 'active' && (

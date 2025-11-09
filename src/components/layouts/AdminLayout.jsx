@@ -21,14 +21,14 @@ const AdminLayout = () => {
   };
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard/admin', icon: 'stats', current: location.pathname === '/dashboard/admin' },
-    { name: 'Users', href: '/dashboard/admin/users', icon: 'users', current: location.pathname.startsWith('/dashboard/admin/users') },
-    { name: 'Roles', href: '/dashboard/admin/roles', icon: 'lock', current: location.pathname.startsWith('/dashboard/admin/roles') },
-    { name: 'Content', href: '/dashboard/admin/content', icon: 'file', current: location.pathname.startsWith('/dashboard/admin/content') },
-    { name: 'Analytics', href: '/dashboard/admin/analytics', icon: 'stats', current: location.pathname.startsWith('/dashboard/admin/analytics') },
-    { name: 'System', href: '/dashboard/admin/system', icon: 'settings', current: location.pathname.startsWith('/dashboard/admin/system') },
-    { name: 'Reports', href: '/dashboard/admin/reports', icon: 'file', current: location.pathname.startsWith('/dashboard/admin/reports') },
-    { name: 'Settings', href: '/dashboard/admin/settings', icon: 'settings', current: location.pathname.startsWith('/dashboard/admin/settings') },
+    { name: 'Bảng điều khiển', href: '/dashboard/admin', icon: 'stats', current: location.pathname === '/dashboard/admin' },
+    { name: 'Người dùng', href: '/dashboard/admin/users', icon: 'users', current: location.pathname.startsWith('/dashboard/admin/users') },
+    { name: 'Vai trò', href: '/dashboard/admin/roles', icon: 'lock', current: location.pathname.startsWith('/dashboard/admin/roles') },
+    { name: 'Nội dung', href: '/dashboard/admin/content', icon: 'file', current: location.pathname.startsWith('/dashboard/admin/content') },
+    { name: 'Phân tích', href: '/dashboard/admin/analytics', icon: 'stats', current: location.pathname.startsWith('/dashboard/admin/analytics') },
+    { name: 'Hệ thống', href: '/dashboard/admin/system', icon: 'settings', current: location.pathname.startsWith('/dashboard/admin/system') },
+    { name: 'Báo cáo', href: '/dashboard/admin/reports', icon: 'file', current: location.pathname.startsWith('/dashboard/admin/reports') },
+    { name: 'Cài đặt', href: '/dashboard/admin/settings', icon: 'settings', current: location.pathname.startsWith('/dashboard/admin/settings') },
   ];
 
   const handleLogout = async () => {
@@ -60,14 +60,14 @@ const AdminLayout = () => {
                 <span className="text-white font-bold text-sm">A</span>
               </div>
               {!sidebarCollapsed && (
-                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap">Admin</span>
+                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap">Quản trị viên</span>
               )}
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleSidebar}
                 className="hidden lg:flex items-center justify-center p-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-600 text-white hover:from-red-600 hover:to-pink-700 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-200"
-                title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                title={sidebarCollapsed ? 'Mở rộng thanh bên' : 'Thu gọn thanh bên'}
               >
                 <svg className={`h-4 w-4 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
@@ -77,7 +77,7 @@ const AdminLayout = () => {
                 onClick={() => setSidebarOpen(false)}
                 className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
-                <span className="sr-only">Close sidebar</span>
+                <span className="sr-only">Đóng thanh bên</span>
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -112,14 +112,14 @@ const AdminLayout = () => {
                 className="w-full flex items-center justify-center px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
               >
                 <Icon name="logout" className="w-4 h-4 mr-2" />
-                Logout
+                Đăng xuất
               </button>
             )}
             {sidebarCollapsed && (
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center justify-center p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
-                title="Logout"
+                title="Đăng xuất"
               >
                 <Icon name="logout" className="w-5 h-5" />
               </button>
@@ -137,7 +137,7 @@ const AdminLayout = () => {
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              <span className="sr-only">Open sidebar</span>
+              <span className="sr-only">Mở thanh bên</span>
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
@@ -145,10 +145,10 @@ const AdminLayout = () => {
             
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                System Administrator
+                Quản trị viên hệ thống
               </div>
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-xs text-gray-500 dark:text-gray-400">System Online</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Hệ thống trực tuyến</span>
             </div>
 
             {/* Profile and Theme Toggle */}
@@ -156,8 +156,8 @@ const AdminLayout = () => {
               <ThemeToggle />
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Admin'}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Administrator</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Quản trị viên'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Quản trị viên</p>
                 </div>
                 <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-red-500 transition-all">
                   <span className="text-white font-bold text-sm">{user?.name?.charAt(0) || 'A'}</span>

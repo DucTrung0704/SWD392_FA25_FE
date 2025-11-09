@@ -20,7 +20,11 @@ export default function SubmissionList({ items = [], loading = false, onView }) 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((submission) => (
-        <SubmissionCard key={submission.id} submission={submission} onView={onView} />
+        <SubmissionCard 
+          key={submission.id} 
+          submission={submission} 
+          onView={(id) => onView?.(id, submission)} 
+        />
       ))}
     </div>
   );

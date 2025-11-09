@@ -36,6 +36,15 @@ export const submissionService = {
   getAllSubmissions: async (params) => {
     return await api.get('/submission/teacher/all', { params });
   },
+
+  // Student: save flashcard exam result
+  saveFlashcardExamResult: async (deckId, resultData) => {
+    // resultData: { score, correctAnswers, totalQuestions, timeSpent, answers, questionResults }
+    return await api.post('/submission/student/flashcard-exam', {
+      deck_id: deckId,
+      ...resultData
+    });
+  },
 };
 
 export default submissionService;

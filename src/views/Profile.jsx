@@ -4,6 +4,7 @@ import { authService } from '../services/authService';
 import Button from '../components/ui/Button';
 import Icon from '../components/ui/Icon';
 import { useNavigate } from 'react-router-dom';
+import { Camera } from 'lucide-react';
 
 export default function Profile() {
   const { user, refresh, logout } = useAuth();
@@ -97,11 +98,11 @@ export default function Profile() {
   // Show loading only briefly
   if (isLoading && !user && !authService.currentUser()) {
     return (
-      <div className="min-h-screen py-10 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen py-10 bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center">
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading profile...</span>
+            <div className="w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+            <span className="ml-3 text-gray-600 dark:text-gray-400">Đang tải hồ sơ...</span>
           </div>
         </div>
       </div>
@@ -290,26 +291,26 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-4xl mx-auto px-2 sm:px-4">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Profile
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+            Hồ sơ
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">
-            Manage your account and track your learning progress
+            Quản lý tài khoản và theo dõi tiến độ học tập
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 border border-orange-100 dark:border-orange-900/50">
               {/* User Avatar */}
               <div className="text-center mb-6">
-                <div className="relative inline-block">
-                  <div className="w-24 h-24 rounded-full mx-auto mb-4 shadow-lg overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <div className="relative inline-block group">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 shadow-lg overflow-hidden bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center relative">
                     {avatarPreview ? (
                       <img 
                         src={avatarPreview} 
@@ -321,20 +322,31 @@ export default function Profile() {
                         }}
                       />
                     ) : (
-                      <span className="text-2xl text-white font-bold">
+                      <span className="text-2xl sm:text-3xl text-white font-bold">
                         {currentUser.name?.charAt(0).toUpperCase() || 'U'}
                       </span>
                     )}
+                    {/* Overlay khi hover */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full flex items-center justify-center">
+                      <Camera className="w-6 h-6 text-white" />
+                    </div>
                   </div>
-                  {isEditing && (
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-3 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
-                    >
-                      <Icon name="camera" className="w-4 h-4" />
-                    </button>
-                  )}
+                  {/* Nút upload ảnh - luôn hiển thị */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!isEditing) {
+                        setIsEditing(true);
+                      }
+                      setTimeout(() => {
+                        fileInputRef.current?.click();
+                      }, 100);
+                    }}
+                    className="absolute bottom-0 right-0 bg-gradient-to-r from-orange-500 to-amber-500 text-white p-3 rounded-full shadow-xl hover:from-orange-600 hover:to-amber-600 transition-all transform hover:scale-110 active:scale-95 border-3 border-white dark:border-gray-800 flex items-center justify-center group/btn"
+                    title="Chỉnh sửa ảnh đại diện"
+                  >
+                    <Camera className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                  </button>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -351,7 +363,7 @@ export default function Profile() {
                 </p>
                 {role && (
                   <div className="mt-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 text-orange-800 dark:text-orange-200">
                       {role}
                     </span>
                   </div>
@@ -366,16 +378,15 @@ export default function Profile() {
               {/* Navigation */}
               <nav className="space-y-2">
                 {[
-                  { id: 'profile', label: 'Profile', icon: 'profile' },
-                  // { id: 'stats', label: 'Statistics', icon: 'stats' },
-                  { id: 'settings', label: 'Settings', icon: 'settings' }
+                  { id: 'profile', label: 'Hồ sơ', icon: 'profile' },
+                  { id: 'settings', label: 'Cài đặt', icon: 'settings' }
                 ].map(item => (
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
                       activeTab === item.id
-                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                        ? 'bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800'
                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                   >
@@ -385,14 +396,14 @@ export default function Profile() {
                 ))}
               </nav>
 
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
+              <div className="mt-6 pt-6 border-t border-orange-200 dark:border-orange-800">
                 <Button
                   variant="outline"
                   onClick={handleLogout}
                   className="w-full justify-center text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
                   <Icon name="logout" className="w-4 h-4 mr-2" />
-                  Logout
+                  Đăng xuất
                 </Button>
               </div>
             </div>
@@ -413,18 +424,18 @@ export default function Profile() {
 
             {/* Profile Tab */}
             {activeTab === 'profile' && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 border border-orange-100 dark:border-orange-900/50">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Personal Information
+                    Thông tin cá nhân
                   </h3>
                   {!isEditing ? (
                     <Button
                       onClick={() => setIsEditing(true)}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-lg hover:shadow-xl"
                     >
                       <Icon name="edit" className="w-4 h-4 mr-2" />
-                      Edit Profile
+                      Chỉnh sửa
                     </Button>
                   ) : (
                     <div className="flex space-x-3">
@@ -434,22 +445,22 @@ export default function Profile() {
                         disabled={isUpdating}
                         className="border-gray-300 dark:border-gray-600"
                       >
-                        Cancel
+                        Hủy
                       </Button>
                       <Button
                         onClick={handleUpdate}
                         disabled={isUpdating}
-                        className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white shadow-lg hover:shadow-xl"
                       >
                         {isUpdating ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                            Saving...
+                            Đang lưu...
                           </>
                         ) : (
                           <>
                             <Icon name="save" className="w-4 h-4 mr-2" />
-                            Save Changes
+                            Lưu thay đổi
                           </>
                         )}
                       </Button>
@@ -461,28 +472,28 @@ export default function Profile() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Full Name
+                        Họ và tên
                       </label>
                       <input
                         value={name}
                         onChange={e => setName(e.target.value)}
                         disabled={!isEditing}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 transition-colors duration-200"
-                        placeholder="Enter your full name"
+                        className="w-full px-4 py-3 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
+                        placeholder="Nhập họ và tên"
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Email Address
+                        Địa chỉ email
                       </label>
                       <input
                         type="email"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                         disabled={!isEditing}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 transition-colors duration-200"
-                        placeholder="Enter your email"
+                        className="w-full px-4 py-3 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
+                        placeholder="Nhập địa chỉ email"
                       />
                     </div>
                   </div>
@@ -490,29 +501,29 @@ export default function Profile() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Role
+                        Vai trò
                       </label>
                       <input
                         value={role}
                         disabled
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed transition-colors duration-200"
-                        placeholder="Role"
+                        className="w-full px-4 py-3 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed transition-colors duration-200"
+                        placeholder="Vai trò"
                       />
                     </div>
 
                     {isEditing && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Change Avatar
+                          Thay đổi ảnh đại diện
                         </label>
                         <div className="flex items-center gap-4">
                           <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center gap-2 border border-gray-300 dark:border-gray-600"
+                            className="px-4 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl transition-all flex items-center gap-2 shadow-lg hover:shadow-xl"
                           >
                             <Icon name="upload" className="w-4 h-4" />
-                            Choose File
+                            Chọn ảnh
                           </button>
                           {avatarFile && (
                             <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-xs">
@@ -521,7 +532,7 @@ export default function Profile() {
                           )}
                         </div>
                         <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                          Max file size: 5MB. Supported formats: JPG, PNG, GIF
+                          Kích thước tối đa: 5MB. Định dạng hỗ trợ: JPG, PNG, GIF
                         </p>
                       </div>
                     )}
@@ -530,10 +541,10 @@ export default function Profile() {
                   {createdAt && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Member Since
+                        Thành viên từ
                       </label>
                       <input
-                        value={new Date(createdAt).toLocaleString('en-US', { 
+                        value={new Date(createdAt).toLocaleString('vi-VN', { 
                           year: 'numeric', 
                           month: 'long', 
                           day: 'numeric',
@@ -541,15 +552,15 @@ export default function Profile() {
                           minute: '2-digit'
                         })}
                         disabled
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed transition-colors duration-200"
+                        className="w-full px-4 py-3 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed transition-colors duration-200"
                       />
                     </div>
                   )}
 
                   {isEditing && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                      <p className="text-sm text-blue-700 dark:text-blue-400">
-                        <Icon name="info" className="w-4 h-4 mr-2" /> Make sure to save your changes before leaving this page.
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
+                      <p className="text-sm text-orange-700 dark:text-orange-400">
+                        <Icon name="info" className="w-4 h-4 mr-2" /> Hãy nhớ lưu thay đổi trước khi rời khỏi trang này.
                       </p>
                     </div>
                   )}
@@ -557,139 +568,75 @@ export default function Profile() {
               </div>
             )}
 
-            {/* Statistics Tab */}
-            {activeTab === 'stats' && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                  Learning Statistics
-                </h3>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                  {[
-                    { label: 'Flashcards Created', value: userStats.flashcardsCreated, icon: 'flashcards', color: 'blue' },
-                    { label: 'Decks Completed', value: userStats.decksCompleted, icon: 'check', color: 'green' },
-                    { label: 'Current Streak', value: `${userStats.streak} days`, icon: 'clock', color: 'orange' },
-                    { label: 'Accuracy', value: `${userStats.accuracy}%`, icon: 'progress', color: 'purple' }
-                  ].map((stat, index) => (
-                    <div
-                      key={index}
-                      className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-4 text-center"
-                    >
-                      <div className="mb-2 flex justify-center">
-                        <Icon name={stat.icon} className="w-6 h-6" />
-                      </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                        {stat.value}
-                      </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                        {stat.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Progress Section */}
-                <div className="space-y-4">
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Weekly Progress
-                  </h4>
-                  {[
-                    { day: 'Mon', progress: 80 },
-                    { day: 'Tue', progress: 60 },
-                    { day: 'Wed', progress: 90 },
-                    { day: 'Thu', progress: 75 },
-                    { day: 'Fri', progress: 85 },
-                    { day: 'Sat', progress: 50 },
-                    { day: 'Sun', progress: 70 }
-                  ].map((day, index) => (
-                    <div key={index} className="flex items-center space-x-4">
-                      <span className="w-12 text-sm text-gray-600 dark:text-gray-400">
-                        {day.day}
-                      </span>
-                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                        <div
-                          className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500"
-                          style={{ width: `${day.progress}%` }}
-                        ></div>
-                      </div>
-                      <span className="w-12 text-sm text-gray-600 dark:text-gray-400 text-right">
-                        {day.progress}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Settings Tab */}
             {activeTab === 'settings' && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 border border-orange-100 dark:border-orange-900/50">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                  Account Settings
+                  Cài đặt tài khoản
                 </h3>
 
                 {/* Change Password Section */}
-                <div className="mb-8">
+                <div>
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                        Change Password
+                        Đổi mật khẩu
                       </h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Update your password to keep your account secure
+                        Cập nhật mật khẩu để bảo vệ tài khoản của bạn
                       </p>
                     </div>
                     {!showChangePassword && (
                       <Button
                         onClick={() => setShowChangePassword(true)}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-lg hover:shadow-xl"
                       >
                         <Icon name="lock" className="w-4 h-4 mr-2" />
-                        Change Password
+                        Đổi mật khẩu
                       </Button>
                     )}
                   </div>
 
                   {showChangePassword && (
-                    <form onSubmit={handleChangePassword} className="space-y-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <form onSubmit={handleChangePassword} className="space-y-4 p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-xl border border-orange-200 dark:border-orange-800">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Current Password
+                          Mật khẩu hiện tại
                         </label>
                         <input
                           type="password"
                           value={passwordData.currentPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
-                          placeholder="Enter current password"
+                          className="w-full px-4 py-3 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
+                          placeholder="Nhập mật khẩu hiện tại"
                           required
                         />
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          New Password
+                          Mật khẩu mới
                         </label>
                         <input
                           type="password"
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
-                          placeholder="Enter new password (min 6 characters)"
+                          className="w-full px-4 py-3 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
+                          placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
                           required
                         />
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Confirm New Password
+                          Xác nhận mật khẩu mới
                         </label>
                         <input
                           type="password"
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
-                          placeholder="Confirm new password"
+                          className="w-full px-4 py-3 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
+                          placeholder="Xác nhận mật khẩu mới"
                           required
                         />
                       </div>
@@ -709,83 +656,28 @@ export default function Profile() {
                           disabled={isChangingPassword}
                           className="border-gray-300 dark:border-gray-600"
                         >
-                          Cancel
+                          Hủy
                         </Button>
                         <Button
                           type="submit"
                           disabled={isChangingPassword}
-                          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                          className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white shadow-lg hover:shadow-xl"
                         >
                           {isChangingPassword ? (
                             <>
                               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                              Changing Password...
+                              Đang đổi mật khẩu...
                             </>
                           ) : (
                             <>
                               <Icon name="save" className="w-4 h-4 mr-2" />
-                              Change Password
+                              Đổi mật khẩu
                             </>
                           )}
                         </Button>
                       </div>
                     </form>
                   )}
-                </div>
-
-                {/* Other Settings */}
-                <div className="space-y-6">
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Other Settings
-                  </h4>
-                  {[
-                    {
-                      title: 'Notifications',
-                      description: 'Manage how you receive notifications',
-                      icon: 'settings',
-                      action: 'Configure'
-                    },
-                    {
-                      title: 'Privacy',
-                      description: 'Control your privacy settings',
-                      icon: 'lock',
-                      action: 'Manage'
-                    },
-                    {
-                      title: 'Language',
-                      description: 'Change your preferred language',
-                      icon: 'settings',
-                      action: 'Select'
-                    },
-                    {
-                      title: 'Appearance',
-                      description: 'Switch between light and dark mode',
-                      icon: 'settings',
-                      action: 'Customize'
-                    }
-                  ].map((setting, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center">
-                          <Icon name={setting.icon} className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white">
-                            {setting.title}
-                          </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {setting.description}
-                          </p>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        {setting.action}
-                      </Button>
-                    </div>
-                  ))}
                 </div>
               </div>
             )}

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
 import Button from '../../components/ui/Button';
-import { XCircle, CheckCircle, NotebookText, ArrowLeft, ArrowRight, Shuffle, ListOrdered, LogOut } from 'lucide-react';
+import { XCircle, CheckCircle, NotebookText, ArrowLeft, ArrowRight, Shuffle, ListOrdered, LogOut, FileText } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function StudentFlashcardStudy() {
@@ -12,6 +12,7 @@ export default function StudentFlashcardStudy() {
   const backPath = '/dashboard/student/library';
   const [deck, setDeck] = useState(null);
   const [cards, setCards] = useState([]);
+  const [originalCards, setOriginalCards] = useState([]); // Store original order
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [studyMode, setStudyMode] = useState('sequential');
@@ -42,10 +43,15 @@ export default function StudentFlashcardStudy() {
         questionImage: fc.questionImage || null,
         answerImage: fc.answerImage || null,
       }));
+      // Store original order for sequential mode
+      setOriginalCards([...deckCards]);
+      // Apply study mode
       if (studyMode === 'random') {
-        deckCards = deckCards.sort(() => Math.random() - 0.5);
+        deckCards = [...deckCards].sort(() => Math.random() - 0.5);
       }
       setCards(deckCards);
+      setCurrentCardIndex(0);
+      setIsFlipped(false);
     } catch (error) {
       console.error('Error loading deck:', error);
       setError('Không thể tải bộ thẻ. Vui lòng thử lại.');
@@ -194,14 +200,23 @@ export default function StudentFlashcardStudy() {
               Thẻ {currentCardIndex + 1} / {cards.length}
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate(backPath)}
-            className="border-gray-300 dark:border-gray-600 inline-flex items-center gap-2"
-          >
-            <LogOut className="w-4 h-4" />
-            Thoát học
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => navigate(`/dashboard/student/flashcard-exam/${id}`)}
+              className="bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              Tạo bài thi thử
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate(backPath)}
+              className="border-gray-300 dark:border-gray-600 inline-flex items-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Thoát học
+            </Button>
+          </div>
         </div>
 
         <div className="mb-8">
@@ -235,7 +250,7 @@ export default function StudentFlashcardStudy() {
                   {currentCard.question || 'Câu hỏi dạng hình ảnh'}
                 </h2>
                 {currentCard.questionImage && (
-                  <img src={currentCard.questionImage} alt="question" className="max-h-52 mx-auto rounded-lg" />
+                  <img src={currentCard.questionImage} alt="Câu hỏi" className="max-h-52 mx-auto rounded-lg" />
                 )}
                 <p className="text-gray-600 dark:text-gray-400">Nhấp để xem đáp án</p>
               </div>
@@ -252,7 +267,7 @@ export default function StudentFlashcardStudy() {
                   {currentCard.answer || 'Đáp án dạng hình ảnh'}
                 </h2>
                 {currentCard.answerImage && (
-                  <img src={currentCard.answerImage} alt="answer" className="max-h-52 mx-auto rounded-lg" />
+                  <img src={currentCard.answerImage} alt="Câu trả lời" className="max-h-52 mx-auto rounded-lg" />
                 )}
                 {currentCard.explanation && (
                   <p className="text-gray-600 dark:text-gray-400 text-lg mb-4">
@@ -312,7 +327,15 @@ export default function StudentFlashcardStudy() {
         <div className="mt-8 text-center">
           <div className="inline-flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
             <button
-              onClick={() => setStudyMode('sequential')}
+              onClick={() => {
+                setStudyMode('sequential');
+                // Restore original order
+                if (originalCards.length > 0) {
+                  setCards([...originalCards]);
+                  setCurrentCardIndex(0);
+                  setIsFlipped(false);
+                }
+              }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                 studyMode === 'sequential'
                   ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white'
@@ -320,10 +343,19 @@ export default function StudentFlashcardStudy() {
               }`}
             >
               <ListOrdered className="w-4 h-4" />
-              Học tuần tự
+              Tuần tự
             </button>
             <button
-              onClick={() => setStudyMode('random')}
+              onClick={() => {
+                setStudyMode('random');
+                // Shuffle cards when switching to random mode
+                const shuffled = originalCards.length > 0 
+                  ? [...originalCards].sort(() => Math.random() - 0.5)
+                  : [...cards].sort(() => Math.random() - 0.5);
+                setCards(shuffled);
+                setCurrentCardIndex(0);
+                setIsFlipped(false);
+              }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                 studyMode === 'random'
                   ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white'
@@ -331,7 +363,7 @@ export default function StudentFlashcardStudy() {
               }`}
             >
               <Shuffle className="w-4 h-4" />
-              Học ngẫu nhiên
+              Ngẫu nhiên
             </button>
           </div>
         </div>

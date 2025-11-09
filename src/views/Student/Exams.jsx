@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, RefreshCcw } from 'lucide-react';
+import { Search, Filter, RefreshCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import PageHeader from '../../components/student/PageHeader';
 import ExamGrid from '../../components/student/ExamGrid';
 import { submissionService } from '../../services/submissionService';
@@ -224,7 +224,7 @@ export default function StudentExams() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-orange-50 py-4 dark:from-gray-900 dark:to-gray-800 sm:py-6 lg:py-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 sm:py-6 lg:py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <PageHeader
           title="Kỳ thi"
@@ -246,20 +246,20 @@ export default function StudentExams() {
           </div>
         )}
 
-        <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+        <div className="mb-6 rounded-2xl border border-orange-100 bg-white p-4 shadow-sm dark:border-orange-900/50 dark:bg-gray-800 sm:p-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-orange-400" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Tìm kiếm theo tên kỳ thi hoặc môn học"
-                className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-11 pr-4 text-sm text-gray-900 transition-shadow focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-orange-400"
+                className="w-full rounded-xl border border-orange-200 bg-white py-2.5 pl-11 pr-4 text-sm text-gray-900 transition-shadow focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100 dark:border-orange-500/40 dark:bg-gray-700 dark:text-white dark:focus:border-orange-400"
               />
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700">
-                <Filter className="h-4 w-4 text-gray-400" />
+              <div className="flex items-center gap-2 rounded-xl border border-orange-200 bg-white px-3 py-2 text-sm dark:border-orange-500/40 dark:bg-gray-700">
+                <Filter className="h-4 w-4 text-orange-400" />
                 <select
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
@@ -272,8 +272,8 @@ export default function StudentExams() {
                   ))}
                 </select>
               </div>
-              <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700">
-                <Filter className="h-4 w-4 text-gray-400" />
+              <div className="flex items-center gap-2 rounded-xl border border-orange-200 bg-white px-3 py-2 text-sm dark:border-orange-500/40 dark:bg-gray-700">
+                <Filter className="h-4 w-4 text-orange-400" />
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
@@ -300,41 +300,65 @@ export default function StudentExams() {
           emptyMessage="Hãy thử thay đổi từ khoá hoặc bộ lọc để thấy thêm lựa chọn."
         />
 
-        {filteredExams.length > 0 && (
-          <div className="mt-8 flex flex-col items-center justify-between gap-3 text-sm text-gray-600 dark:text-gray-300 sm:flex-row">
-            <div>
-              Hiển thị <span className="font-semibold text-gray-900 dark:text-white">{startIndex + 1}</span>
-              {' - '}
-              <span className="font-semibold text-gray-900 dark:text-white">{Math.min(startIndex + PAGE_SIZE, filteredExams.length)}</span>
-              {' trong '}
-              <span className="font-semibold text-gray-900 dark:text-white">{filteredExams.length}</span> kỳ thi
+        {!loading && filteredExams.length > PAGE_SIZE && (
+          <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Hiển thị <span className="font-semibold text-orange-600 dark:text-orange-400">{startIndex + 1}</span> - <span className="font-semibold text-orange-600 dark:text-orange-400">{Math.min(startIndex + PAGE_SIZE, filteredExams.length)}</span> trong tổng số <span className="font-semibold text-orange-600 dark:text-orange-400">{filteredExams.length}</span> kỳ thi
             </div>
+            
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={safePage === 1}
-                className={`rounded-lg border px-3 py-2 transition-colors ${
-                  safePage === 1
-                    ? 'cursor-not-allowed border-gray-200 text-gray-400 dark:border-gray-700'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
-                }`}
+                className="inline-flex items-center gap-1 rounded-xl border border-orange-200 bg-white px-4 py-2 text-sm font-medium text-orange-600 transition-all hover:border-orange-300 hover:bg-orange-50 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed dark:border-orange-500/40 dark:bg-gray-800 dark:text-orange-400 dark:hover:bg-orange-900/30"
               >
+                <ChevronLeft className="h-4 w-4" />
                 Trước
               </button>
-              <span>
-                Trang <span className="font-semibold text-gray-900 dark:text-white">{safePage}</span> /{' '}
-                <span className="font-semibold text-gray-900 dark:text-white">{totalPages}</span>
-              </span>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                  // Show first page, last page, current page, and pages around current
+                  const showPage = 
+                    page === 1 || 
+                    page === totalPages || 
+                    (page >= safePage - 1 && page <= safePage + 1);
+                  
+                  if (!showPage) {
+                    // Show ellipsis
+                    if (page === safePage - 2 || page === safePage + 2) {
+                      return (
+                        <span key={page} className="px-2 text-gray-500 dark:text-gray-400">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  }
+                  
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`h-10 w-10 rounded-xl text-sm font-semibold transition-all ${
+                        page === safePage
+                          ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg scale-105'
+                          : 'border border-orange-200 bg-white text-orange-600 hover:border-orange-300 hover:bg-orange-50 dark:border-orange-500/40 dark:bg-gray-800 dark:text-orange-400 dark:hover:bg-orange-900/30'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+              </div>
+              
               <button
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={safePage === totalPages}
-                className={`rounded-lg border px-3 py-2 transition-colors ${
-                  safePage === totalPages
-                    ? 'cursor-not-allowed border-gray-200 text-gray-400 dark:border-gray-700'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
-                }`}
+                className="inline-flex items-center gap-1 rounded-xl border border-orange-200 bg-white px-4 py-2 text-sm font-medium text-orange-600 transition-all hover:border-orange-300 hover:bg-orange-50 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed dark:border-orange-500/40 dark:bg-gray-800 dark:text-orange-400 dark:hover:bg-orange-900/30"
               >
                 Sau
+                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>

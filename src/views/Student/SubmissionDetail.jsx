@@ -422,9 +422,9 @@ export default function SubmissionDetail() {
     };
 
     return (
-      <div className="w-full">
+      <div className="w-full rounded-2xl border border-orange-200 bg-gradient-to-br from-white to-orange-50/30 p-4 shadow-md dark:border-orange-900/50 dark:from-gray-800 dark:to-orange-950/20">
         <div className="mb-4">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Question Navigation</h3>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2">Điều hướng câu hỏi</h3>
         </div>
         
         {/* Grid */}
@@ -443,12 +443,12 @@ export default function SubmissionDetail() {
                   toggleBookmark(index, e);
                 }}
                 className={`
-                  relative h-12 w-full rounded-lg text-sm font-semibold transition-all
+                  relative h-12 w-full rounded-xl text-sm font-bold transition-all shadow-sm
                   ${isCurrent 
-                    ? 'ring-2 ring-[#2D543D] ring-offset-2 bg-[#2D543D] text-white' 
+                    ? 'ring-2 ring-orange-500 ring-offset-2 bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-lg scale-105' 
                     : isAnswered
-                      ? 'bg-green-500 text-white hover:bg-green-600'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                      ? 'bg-gradient-to-br from-green-400 to-emerald-500 text-white hover:from-green-500 hover:to-emerald-600 hover:shadow-md'
+                      : 'bg-gradient-to-br from-gray-200 to-gray-300 text-gray-700 hover:from-gray-300 hover:to-gray-400 dark:from-gray-700 dark:to-gray-600 dark:text-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500'
                   }
                 `}
               >
@@ -457,11 +457,11 @@ export default function SubmissionDetail() {
                 {/* Bookmark flag */}
                 {isBookmarked && (
                   <div 
-                    className="absolute top-0 right-0 cursor-pointer"
+                    className="absolute -top-1 -right-1 cursor-pointer"
                     onClick={(e) => toggleBookmark(index, e)}
-                    title="Click to remove bookmark"
+                    title="Nhấp để bỏ đánh dấu"
                   >
-                    <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[12px] border-t-yellow-400"></div>
+                    <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[12px] border-t-amber-400 drop-shadow-md"></div>
                   </div>
                 )}
               </button>
@@ -470,24 +470,24 @@ export default function SubmissionDetail() {
         </div>
 
         {/* Legend */}
-        <div className="space-y-2 text-xs">
+        <div className="space-y-2 text-xs rounded-xl bg-orange-50/50 p-3 dark:bg-orange-900/10">
           <div className="flex items-center gap-2">
-            <div className="h-4 w-4 rounded bg-green-500"></div>
-            <span className="text-gray-600 dark:text-gray-400">Answered</span>
+            <div className="h-4 w-4 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500 shadow-sm"></div>
+            <span className="text-gray-700 dark:text-gray-300 font-medium">Đã trả lời</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-4 w-4 rounded bg-gray-200 dark:bg-gray-700"></div>
-            <span className="text-gray-600 dark:text-gray-400">Unanswered</span>
+            <div className="h-4 w-4 rounded-lg bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700"></div>
+            <span className="text-gray-700 dark:text-gray-300 font-medium">Chưa trả lời</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative h-4 w-4 rounded bg-gray-200 dark:bg-gray-700">
-              <div className="absolute top-0 right-0 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-yellow-400"></div>
+            <div className="relative h-4 w-4 rounded-lg bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700">
+              <div className="absolute -top-0.5 -right-0.5 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-amber-400"></div>
             </div>
-            <span className="text-gray-600 dark:text-gray-400">Book Marked</span>
+            <span className="text-gray-700 dark:text-gray-300 font-medium">Đã đánh dấu</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Click number to navigate. Double-click or right-click to bookmark.
+          <div className="mt-2 pt-2 border-t border-orange-200 dark:border-orange-800">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              Nhấp số để điều hướng. Nhấp đôi hoặc nhấp chuột phải để đánh dấu.
             </p>
           </div>
         </div>
@@ -531,27 +531,31 @@ export default function SubmissionDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header - Fixed at top */}
-        <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 py-4 mb-6">
+        <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md dark:bg-gray-900/80 border-b border-orange-200 dark:border-orange-900/50 shadow-sm py-4 mb-6">
           <div className="flex items-center justify-between">
             {/* Time remaining - Left */}
             {isInProgress && timeRemaining !== null && (
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">Time remaining</span>
-                <span className="text-lg font-bold text-gray-900 dark:text-white">
+              <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-orange-100 to-amber-100 px-4 py-2 dark:from-orange-900/30 dark:to-amber-900/30">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-amber-500 shadow-md">
+                  <Clock className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-orange-700 dark:text-orange-300">Thời gian còn lại</div>
+                  <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
                   {formatTime(timeRemaining)}
-                </span>
+                  </div>
+                </div>
               </div>
             )}
             {!isInProgress && (
               <div className="flex items-center gap-3">
                 <StatusBadge status={submission?.status} />
                 <button
-                  onClick={() => safeNavigate('/dashboard/student/exams')}
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                  onClick={() => safeNavigate('/dashboard/student/submissions')}
+                  className="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-white px-4 py-2 text-sm font-medium text-orange-600 transition-all hover:border-orange-300 hover:bg-orange-50 hover:shadow-md dark:border-orange-500/40 dark:bg-gray-800 dark:text-orange-400 dark:hover:bg-orange-900/30"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Quay lại danh sách
@@ -564,9 +568,9 @@ export default function SubmissionDetail() {
               <button
                 onClick={handleFinishExam}
                 disabled={submitting}
-                className="bg-[#2D543D] hover:bg-[#1e3a2a] text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white px-6 py-2 rounded-xl font-medium shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Submitting...' : 'Submit'}
+                {submitting ? 'Đang nộp...' : 'Nộp bài'}
               </button>
             )}
           </div>
@@ -580,28 +584,28 @@ export default function SubmissionDetail() {
 
         {/* Summary Stats - Only show when completed */}
         {isCompleted && (
-          <div className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 sm:grid-cols-4">
-            <div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Điểm số</div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="mb-6 grid grid-cols-2 gap-4 rounded-2xl border border-orange-200 bg-gradient-to-br from-white to-orange-50/50 p-6 shadow-lg dark:border-orange-900/50 dark:from-gray-800 dark:to-orange-950/20 sm:grid-cols-4">
+            <div className="rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 p-4 dark:from-orange-900/30 dark:to-amber-900/30">
+              <div className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-1">Điểm số</div>
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                 {submission?.score ?? submission?.result?.score ?? '-'}
               </div>
           </div>
-          <div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Đúng</div>
+          <div className="rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 p-4 dark:from-green-900/30 dark:to-emerald-900/30">
+              <div className="text-xs font-medium text-green-700 dark:text-green-300 mb-1">Đúng</div>
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {submission?.correct_answers ?? submission?.result?.correct_answers ?? '-'}
               </div>
           </div>
-          <div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Tổng câu</div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 p-4 dark:from-blue-900/30 dark:to-cyan-900/30">
+              <div className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">Tổng câu</div>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {submission?.total_questions ?? exam?.total_questions ?? questions.length ?? '-'}
               </div>
           </div>
-          <div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Thời gian</div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 p-4 dark:from-purple-900/30 dark:to-pink-900/30">
+              <div className="text-xs font-medium text-purple-700 dark:text-purple-300 mb-1">Thời gian</div>
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 {timeSpent > 0 
                   ? `${timeSpent} phút` 
                   : submission?.time_spent 
@@ -618,13 +622,13 @@ export default function SubmissionDetail() {
             {/* Left Column - Question Content */}
             <div className="lg:col-span-2">
               <div className="mb-4">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Question {currentQuestionIndex + 1} of {questions.length}
+                <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-100 to-amber-100 px-4 py-1.5 text-sm font-semibold text-orange-700 dark:from-orange-900/30 dark:to-amber-900/30 dark:text-orange-300">
+                  Câu {currentQuestionIndex + 1} / {questions.length}
                 </span>
               </div>
               
-              <div className="mb-6">
-                <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+              <div className="mb-6 rounded-2xl border border-orange-200 bg-gradient-to-br from-white to-orange-50/30 p-6 shadow-md dark:border-orange-900/50 dark:from-gray-800 dark:to-orange-950/20">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                   {currentQuestion.question || currentQuestion.content || 'Nội dung câu hỏi'}
                 </h2>
                 {currentQuestion.explanation && (
@@ -642,10 +646,10 @@ export default function SubmissionDetail() {
                       <button
                         key={key}
                         onClick={() => updateAnswer(qId, key)}
-                        className={`w-full rounded-lg border-2 p-4 text-left transition-all ${
+                        className={`w-full rounded-xl border-2 p-4 text-left transition-all ${
                           isSelected
-                            ? 'border-[#2D543D] bg-[#2D543D]/5'
-                            : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500'
+                            ? 'border-orange-500 bg-gradient-to-r from-orange-50 to-amber-50 shadow-md dark:from-orange-900/20 dark:to-amber-900/20'
+                            : 'border-orange-200 bg-white hover:border-orange-300 hover:bg-orange-50/50 dark:border-orange-800 dark:bg-gray-800 dark:hover:border-orange-700 dark:hover:bg-orange-900/20'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -662,7 +666,7 @@ export default function SubmissionDetail() {
                   onChange={(e) => updateAnswer(currentQuestion._id || currentQuestion.id, e.target.value)}
                   placeholder="Nhập câu trả lời của bạn..."
                   rows={6}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#2D543D] focus:outline-none focus:ring-2 focus:ring-[#2D543D]/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                  className="w-full rounded-xl border-2 border-orange-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 dark:border-orange-800 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:border-orange-600"
                 />
               )}
             </div>
@@ -675,17 +679,182 @@ export default function SubmissionDetail() {
             </div>
           </div>
         ) : isCompleted ? (
-          <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-800">
-            <CheckCircle className="mx-auto mb-4 h-16 w-16 text-green-500" />
-            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">Đã hoàn thành</h3>
-            <p className="mb-6 text-gray-600 dark:text-gray-400">Bạn đã nộp bài thi này.</p>
+          <div className="space-y-6">
+            {/* Completion Message */}
+            <div className="rounded-2xl border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 p-8 text-center shadow-lg dark:border-green-800 dark:from-green-900/20 dark:to-emerald-900/20">
+              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-emerald-500 shadow-lg">
+                <CheckCircle className="h-12 w-12 text-white" />
+              </div>
+              <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Đã hoàn thành</h3>
+              <p className="text-gray-600 dark:text-gray-400">Bạn đã nộp bài thi này. Xem chi tiết kết quả bên dưới.</p>
+            </div>
+
+            {/* Questions Results */}
+            {questions.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  Chi tiết từng câu hỏi
+                </h2>
+                
+                {questions.map((question, index) => {
+                  const qId = question._id || question.id;
+                  const userAnswer = answers[qId] || '';
+                  
+                  // Get correct answer from question
+                  let correctAnswer = null;
+                  if (question.options && Object.keys(question.options).length > 0) {
+                    // For multiple choice, find the correct option
+                    // Usually stored in question.correct_answer or we need to check submission result
+                    correctAnswer = question.correct_answer || question.correctAnswer;
+                  }
+                  
+                  // Check if answer is correct
+                  const isCorrect = userAnswer && correctAnswer ? userAnswer === correctAnswer : null;
+                  
+                  return (
+                    <div
+                      key={qId || index}
+                      className={`rounded-2xl border-2 p-6 shadow-md transition-all ${
+                        isCorrect === true
+                          ? 'border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 dark:border-green-700 dark:from-green-900/20 dark:to-emerald-900/20'
+                          : isCorrect === false
+                          ? 'border-red-300 bg-gradient-to-br from-red-50 to-rose-50 dark:border-red-700 dark:from-red-900/20 dark:to-rose-900/20'
+                          : 'border-orange-200 bg-gradient-to-br from-white to-orange-50/30 dark:border-orange-800 dark:from-gray-800 dark:to-orange-950/20'
+                      }`}
+                    >
+                      <div className="mb-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                            Câu {index + 1}
+                          </span>
+                          {isCorrect === true && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white">
+                              <CheckCircle className="h-3 w-3" />
+                              Đúng
+                            </span>
+                          )}
+                          {isCorrect === false && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-500 px-3 py-1 text-xs font-semibold text-white">
+                              <AlertCircle className="h-3 w-3" />
+                              Sai
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Question */}
+                      <div className="mb-4">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                          {question.question || question.content || 'Nội dung câu hỏi'}
+                        </h3>
+                        {question.explanation && (
+                          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{question.explanation}</p>
+                        )}
+                      </div>
+
+                      {/* Answer Options */}
+                      {question.options && Object.keys(question.options).length > 0 ? (
+                        <div className="mb-4 space-y-2">
+                          {Object.entries(question.options).map(([key, value]) => {
+                            const isUserAnswer = userAnswer === key;
+                            const isCorrectOption = correctAnswer === key;
+                            
+                            return (
+                              <div
+                                key={key}
+                                className={`rounded-xl border-2 p-4 transition-all ${
+                                  isCorrectOption
+                                    ? 'border-green-500 bg-gradient-to-r from-green-100 to-emerald-100 shadow-md dark:border-green-600 dark:from-green-900/30 dark:to-emerald-900/30'
+                                    : isUserAnswer && !isCorrectOption
+                                    ? 'border-red-500 bg-gradient-to-r from-red-100 to-rose-100 shadow-md dark:border-red-600 dark:from-red-900/30 dark:to-rose-900/30'
+                                    : 'border-orange-200 bg-white hover:border-orange-300 hover:bg-orange-50/50 dark:border-orange-800 dark:bg-gray-800 dark:hover:border-orange-700 dark:hover:bg-orange-900/20'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className={`font-semibold ${
+                                    isCorrectOption
+                                      ? 'text-green-700 dark:text-green-300'
+                                      : isUserAnswer && !isCorrectOption
+                                      ? 'text-red-700 dark:text-red-300'
+                                      : 'text-gray-900 dark:text-white'
+                                  }`}>
+                                    {key}.
+                                  </span>
+                                  <span className={`${
+                                    isCorrectOption
+                                      ? 'text-green-700 dark:text-green-300 font-medium'
+                                      : isUserAnswer && !isCorrectOption
+                                      ? 'text-red-700 dark:text-red-300'
+                                      : 'text-gray-900 dark:text-white'
+                                  }`}>
+                                    {value}
+                                  </span>
+                                  {isCorrectOption && (
+                                    <CheckCircle className="ml-auto h-5 w-5 text-green-600 dark:text-green-400" />
+                                  )}
+                                  {isUserAnswer && !isCorrectOption && (
+                                    <AlertCircle className="ml-auto h-5 w-5 text-red-600 dark:text-red-400" />
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        // For text answers
+                        <div className="mb-4 rounded-lg bg-gray-100 p-4 dark:bg-gray-700">
+                          <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                            Đáp án của bạn:
+                          </div>
+                          <div className="text-gray-900 dark:text-white">
+                            {userAnswer || 'Chưa trả lời'}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* User Answer vs Correct Answer Summary */}
+                      {question.options && userAnswer && (
+                        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <div className="rounded-lg bg-gray-100 p-3 dark:bg-gray-700">
+                            <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                              Đáp án của bạn:
+                            </div>
+                            <div className={`font-semibold ${
+                              isCorrect 
+                                ? 'text-green-600 dark:text-green-400' 
+                                : 'text-red-600 dark:text-red-400'
+                            }`}>
+                              {userAnswer}
+                            </div>
+                          </div>
+                          {!isCorrect && correctAnswer && (
+                            <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900/30">
+                              <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                Đáp án đúng:
+                              </div>
+                              <div className="font-semibold text-green-600 dark:text-green-400">
+                                {correctAnswer}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Back Button */}
+            <div className="flex justify-center">
             <button
-              onClick={() => navigate('/dashboard/student/exams')}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#2D543D] hover:bg-[#1e3a2a] px-6 py-2 text-sm font-medium text-white transition-colors"
+                onClick={() => navigate('/dashboard/student/submissions')}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:scale-105 active:scale-95"
             >
               <ArrowLeft className="h-4 w-4" />
-              Quay lại danh sách bài thi
+                Quay lại danh sách bài nộp
             </button>
+            </div>
           </div>
         ) : (
           <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-8 text-center dark:border-yellow-800 dark:bg-yellow-900/20">
