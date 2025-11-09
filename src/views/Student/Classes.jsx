@@ -17,19 +17,25 @@ export default function Classes() {
   const [classCode, setClassCode] = useState('');
   const [joinLoading, setJoinLoading] = useState(false);
   const [leavingClassId, setLeavingClassId] = useState(null);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [classToLeave, setClassToLeave] = useState(null);
 
   // Load classes based on active tab
-  const loadClasses = useCallback(async () => {
+  const loadClasses = useCallback(async (loadBoth = false) => {
     try {
       setLoading(true);
       setError('');
       
-      if (activeTab === 'my-classes') {
-        const data = await classService.getMyClasses();
-        setMyClasses(Array.isArray(data) ? data : []);
-      } else {
-        const data = await classService.getAllClasses();
-        setAllClasses(Array.isArray(data) ? data : []);
+      if (loadBoth || activeTab === 'my-classes') {
+        // Load my enrolled classes
+        const myData = await classService.getMyClasses();
+        setMyClasses(Array.isArray(myData) ? myData : []);
+      }
+      
+      if (loadBoth || activeTab === 'all-classes') {
+        // Load all available classes (including enrolled ones)
+        const allData = await classService.getAllClasses();
+        setAllClasses(Array.isArray(allData) ? allData : []);
       }
     } catch (err) {
       console.error('Error loading classes:', err);
@@ -40,9 +46,15 @@ export default function Classes() {
     }
   }, [activeTab]);
 
+  // Load both tabs on initial mount to show correct counts
   useEffect(() => {
-    loadClasses();
-  }, [loadClasses]);
+    loadClasses(true);
+  }, []);
+
+  // Load classes when tab changes
+  useEffect(() => {
+    loadClasses(false);
+  }, [activeTab]);
 
   // Handle join class
   const handleJoinClass = async (e) => {
@@ -58,8 +70,20 @@ export default function Classes() {
       toast.success('Successfully joined class!');
       setShowJoinModal(false);
       setClassCode('');
-      // Refresh classes
-      await loadClasses();
+      // Refresh both my classes and all classes to update UI
+      setLoading(true);
+      try {
+        const [myData, allData] = await Promise.all([
+          classService.getMyClasses(),
+          classService.getAllClasses()
+        ]);
+        setMyClasses(Array.isArray(myData) ? myData : []);
+        setAllClasses(Array.isArray(allData) ? allData : []);
+      } catch (refreshErr) {
+        console.error('Error refreshing classes:', refreshErr);
+      } finally {
+        setLoading(false);
+      }
       // Switch to my-classes tab to show the newly joined class
       setActiveTab('my-classes');
     } catch (err) {
@@ -70,18 +94,36 @@ export default function Classes() {
     }
   };
 
-  // Handle leave class
-  const handleLeaveClass = async (classId) => {
-    if (!window.confirm('Are you sure you want to leave this class?')) {
-      return;
-    }
+  // Handle leave class confirmation
+  const handleLeaveClassClick = (classId, className) => {
+    setClassToLeave({ id: classId, name: className });
+    setShowLeaveModal(true);
+  };
 
-    setLeavingClassId(classId);
+  // Handle leave class
+  const handleLeaveClass = async () => {
+    if (!classToLeave) return;
+
+    setLeavingClassId(classToLeave.id);
     try {
-      await classService.leaveClass(classId);
+      await classService.leaveClass(classToLeave.id);
       toast.success('Successfully left class');
-      // Refresh classes
-      await loadClasses();
+      // Refresh both my classes and all classes to update UI
+      setLoading(true);
+      try {
+        const [myData, allData] = await Promise.all([
+          classService.getMyClasses(),
+          classService.getAllClasses()
+        ]);
+        setMyClasses(Array.isArray(myData) ? myData : []);
+        setAllClasses(Array.isArray(allData) ? allData : []);
+      } catch (refreshErr) {
+        console.error('Error refreshing classes:', refreshErr);
+      } finally {
+        setLoading(false);
+      }
+      setShowLeaveModal(false);
+      setClassToLeave(null);
     } catch (err) {
       console.error('Error leaving class:', err);
       toast.error(err.message || 'Failed to leave class');
@@ -97,14 +139,12 @@ export default function Classes() {
     const term = searchTerm.toLowerCase();
     return classes.filter((cls) => {
       const name = (cls.name || cls.className || '').toLowerCase();
-      const subject = (cls.subject || '').toLowerCase();
       const description = (cls.description || '').toLowerCase();
-      const teacherName = (cls.teacher?.name || cls.teacherName || '').toLowerCase();
-      const classCode = (cls.classCode || cls.code || '').toLowerCase();
+      const teacherName = (cls.teacher_id?.name || cls.teacher?.name || cls.teacherName || '').toLowerCase();
+      const classCode = (cls.class_code || cls.classCode || cls.code || '').toLowerCase();
       
       return (
         name.includes(term) ||
-        subject.includes(term) ||
         description.includes(term) ||
         teacherName.includes(term) ||
         classCode.includes(term)
@@ -116,14 +156,17 @@ export default function Classes() {
   const filteredAllClasses = filterClasses(allClasses);
 
   // Format class data for display
+  // API response: { name, description, teacher_id: { name }, class_code, students: [...] }
   const formatClass = (cls) => ({
     id: cls._id || cls.id,
     name: cls.name || cls.className || 'Unnamed Class',
-    subject: cls.subject || 'General',
     description: cls.description || '',
-    teacherName: cls.teacher?.name || cls.teacherName || 'Unknown Teacher',
-    studentCount: cls.students?.length || cls.studentCount || 0,
-    classCode: cls.classCode || cls.code || '',
+    // API returns teacher_id object with name property, not teacher
+    teacherName: cls.teacher_id?.name || cls.teacher?.name || cls.teacherName || 'Unknown Teacher',
+    // API returns students as array
+    studentCount: Array.isArray(cls.students) ? cls.students.length : (cls.studentCount || 0),
+    // API returns class_code (with underscore), not classCode
+    classCode: cls.class_code || cls.classCode || cls.code || '',
     schedule: cls.schedule || '',
     createdAt: cls.createdAt || cls.created_at,
   });
@@ -238,12 +281,9 @@ export default function Classes() {
                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
                                   {formatted.name}
                                 </h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                  {formatted.subject}
-                                </p>
                               </div>
                               <button
-                                onClick={() => handleLeaveClass(formatted.id)}
+                                onClick={() => handleLeaveClassClick(formatted.id, formatted.name)}
                                 disabled={leavingClassId === formatted.id}
                                 className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
                                 title="Leave class"
@@ -319,9 +359,6 @@ export default function Classes() {
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
                               {formatted.name}
                             </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {formatted.subject}
-                            </p>
                           </CardHeader>
                           <CardContent>
                             {formatted.description && (
@@ -437,6 +474,79 @@ export default function Classes() {
                   </div>
                 </CardFooter>
               </form>
+            </Card>
+          </div>
+        )}
+
+        {/* Leave Class Confirmation Modal */}
+        {showLeaveModal && classToLeave && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                    Leave Class
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setShowLeaveModal(false);
+                      setClassToLeave(null);
+                    }}
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mr-4">
+                    <LogOut className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Are you sure you want to leave this class?
+                    </p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white mt-1">
+                      {classToLeave.name}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  You will lose access to all class materials, exams, and submissions. This action cannot be undone.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <div className="flex gap-3 w-full">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowLeaveModal(false);
+                      setClassToLeave(null);
+                    }}
+                    className="flex-1"
+                    disabled={leavingClassId === classToLeave.id}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleLeaveClass}
+                    disabled={leavingClassId === classToLeave.id}
+                    className="flex-1 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600"
+                  >
+                    {leavingClassId === classToLeave.id ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Leaving...
+                      </div>
+                    ) : (
+                      'Leave Class'
+                    )}
+                  </Button>
+                </div>
+              </CardFooter>
             </Card>
           </div>
         )}
