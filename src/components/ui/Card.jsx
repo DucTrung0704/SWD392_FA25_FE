@@ -8,7 +8,16 @@ export function Card({ children, className = '' }) {
   );
 }
 
-export function CardHeader({ title, subtitle, className = '' }) {
+export function CardHeader({ title, subtitle, children, className = '' }) {
+  // If children are provided, render them instead of title/subtitle
+  if (children) {
+    return (
+      <div className={`mb-4 ${className}`}>
+        {children}
+      </div>
+    );
+  }
+  // Otherwise, use title and subtitle props
   return (
     <div className={`mb-4 ${className}`}>
       {title && <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h3>}
