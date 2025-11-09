@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Eye, Edit, TrendingUp, Search, FileText, Users, Clock, CheckCircle, Trash2, X, Filter, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, MoreVertical, Sparkles, Loader2, Check, Brain, AlertCircle, ThumbsUp, AlertTriangle } from 'lucide-react';
+import { Plus, Eye, Edit, TrendingUp, Search, FileText, Users, Clock, CheckCircle, Trash2, X, Filter, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, MoreVertical, Sparkles, Loader2, Check, Brain, AlertCircle, ThumbsUp, AlertTriangle, Lightbulb, Clipboard, RotateCw, ArrowRight, Circle } from 'lucide-react';
 import { examService } from '../../services/examService';
 import { questionService } from '../../services/questionService';
 import { aiService } from '../../services/aiService';
@@ -19,7 +19,7 @@ export default function TeacherExams() {
   const defaultFormState = {
     title: '',
     description: '',
-    subject: '',
+    subject: 'Mathematics',
     className: '',
     date: '',
     time: '',
@@ -39,6 +39,14 @@ export default function TeacherExams() {
   const [filterRules, setFilterRules] = useState([]);
   const [tempFilter, setTempFilter] = useState({ field: 'title', operator: 'contains', value: '' });
   const questionTagOptions = ['geometry', 'algebra', 'probability', 'calculus', 'statistics', 'other'];
+  const questionTagLabels = {
+    'geometry': 'Hình học',
+    'algebra': 'Đại số',
+    'probability': 'Xác suất',
+    'calculus': 'Giải tích',
+    'statistics': 'Thống kê',
+    'other': 'Khác'
+  };
   const questionDifficultyOptions = [
     { value: 'easy', label: 'Dễ', helper: 'Nhớ lại và kiến thức cơ bản' },
     { value: 'medium', label: 'Trung Bình', helper: 'Mức độ luyện tập cân bằng' },
@@ -81,6 +89,8 @@ export default function TeacherExams() {
   const [showValidationResult, setShowValidationResult] = useState(false);
   const [showCorrectAnswerModal, setShowCorrectAnswerModal] = useState(false);
   const [suggestedCorrectOption, setSuggestedCorrectOption] = useState(null);
+  const [showSubjectRelevanceModal, setShowSubjectRelevanceModal] = useState(false);
+  const [subjectRelevanceMessage, setSubjectRelevanceMessage] = useState('');
 
   useEffect(() => {
     loadExams();
@@ -412,29 +422,20 @@ export default function TeacherExams() {
           setStepError('Vui lòng nhập tiêu đề bài thi.');
           return false;
         }
-        if (!form.subject) {
-          setStepError('Vui lòng chọn môn học.');
-          return false;
-        }
+        // Subject is always Mathematics, no need to validate
         if (!form.className) {
           setStepError('Vui lòng chọn lớp.');
           return false;
         }
-        if (!form.date) {
-          setStepError('Vui lòng chọn ngày thi.');
+        if (!form.date || !form.time) {
+          setStepError('Vui lòng chọn ngày và giờ thi.');
           return false;
         }
-        // Kiểm tra ngày không được trong quá khứ
-        const selectedDate = new Date(form.date);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Reset giờ về 00:00:00 để so sánh chỉ ngày
-        selectedDate.setHours(0, 0, 0, 0);
-        if (selectedDate < today) {
-          setStepError('Ngày thi không được trong quá khứ. Vui lòng chọn ngày hôm nay hoặc ngày trong tương lai.');
-          return false;
-        }
-        if (!form.time) {
-          setStepError('Vui lòng chọn giờ thi.');
+        // Kiểm tra ngày và giờ không được trong quá khứ
+        const selectedDateTime = new Date(`${form.date}T${form.time}`);
+        const now = new Date();
+        if (selectedDateTime < now) {
+          setStepError('Ngày và giờ thi không được trong quá khứ. Vui lòng chọn thời gian trong tương lai.');
           return false;
         }
         const parsedDuration = Number(form.time_limit);
@@ -586,6 +587,15 @@ export default function TeacherExams() {
 
       const validation = validationResponse?.validation || validationResponse?.data?.validation;
       
+      // Kiểm tra nếu câu hỏi không liên quan đến toán
+      if (validation && validation.isSubjectRelevant === false) {
+        const subjectMessage = validation.subjectRelevance || 'Câu hỏi này không liên quan đến Toán học. Vui lòng tạo câu hỏi về Toán.';
+        setSubjectRelevanceMessage(subjectMessage);
+        setShowSubjectRelevanceModal(true);
+        setIsQuestionSubmitting(false);
+        return;
+      }
+      
       // Kiểm tra nếu đáp án sai
       if (validation && validation.isAnswerCorrect === false) {
         // Hiển thị modal để người dùng chọn sửa đáp án
@@ -596,7 +606,7 @@ export default function TeacherExams() {
         return;
       }
 
-      // Nếu đáp án đúng, tiếp tục lưu
+      // Nếu đáp án đúng và liên quan đến toán, tiếp tục lưu
       await saveQuestion(trimmedQuestion, trimmedAnswer, optionsPayload, questionForm.correctOption);
     } catch (err) {
       console.error('Error validating or saving question:', err);
@@ -856,10 +866,12 @@ export default function TeacherExams() {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
+    if (isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleDateString('vi-VN', { 
+      day: 'numeric',
+      month: 'numeric', 
       year: 'numeric' 
     });
   };
@@ -877,7 +889,7 @@ export default function TeacherExams() {
         date: e.date || e.scheduled_at || e.createdAt,
         time: e.time || '09:00',
         duration: e.time_limit || e.duration || 60,
-        totalQuestions: Array.isArray(e.flashcards) ? e.flashcards.length : (e.totalQuestions || 0),
+        totalQuestions: e.total_questions ?? (Array.isArray(e.questions) ? e.questions.length : (Array.isArray(e.questionIds) ? e.questionIds.length : (e.totalQuestions || 0))),
         enrolledStudents: 0,
         completedStudents: 0,
         avgScore: 0,
@@ -1350,9 +1362,6 @@ export default function TeacherExams() {
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Học Sinh
                   </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                    Điểm TB
-                  </th>
                       <th 
                         className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                         onClick={() => handleSort('status')}
@@ -1428,15 +1437,6 @@ export default function TeacherExams() {
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         đã hoàn thành
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
-                      {exam.avgScore > 0 ? (
-                        <span className={`text-sm font-medium ${getScoreColor(exam.avgScore)}`}>
-                          {exam.avgScore}%
-                        </span>
-                      ) : (
-                        <span className="text-sm text-gray-400">-</span>
-                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(exam.status)}`}>
@@ -1616,24 +1616,6 @@ export default function TeacherExams() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Môn Học <span className="text-red-500">*</span>
-                          </label>
-                          <select
-                            value={form.subject}
-                            onChange={(e) => setForm((prev) => ({ ...prev, subject: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
-                          >
-                            <option value="">Chọn môn học</option>
-                            <option value="Mathematics">Mathematics</option>
-                            <option value="Biology">Biology</option>
-                            <option value="Physics">Physics</option>
-                            <option value="Chemistry">Chemistry</option>
-                            <option value="English">English</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
                             Lớp <span className="text-red-500">*</span>
                           </label>
                           <select
@@ -1650,39 +1632,41 @@ export default function TeacherExams() {
                             <option value="12B">Class 12B</option>
                           </select>
                         </div>
-                      </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Ngày <span className="text-red-500">*</span>
+                            Ngày và Giờ <span className="text-red-500">*</span>
                           </label>
                           <input
-                            type="date"
-                            value={form.date}
-                            min={new Date().toISOString().split('T')[0]}
+                            type="datetime-local"
+                            value={form.date && form.time ? `${form.date}T${form.time}` : ''}
+                            min={new Date().toISOString().slice(0, 16)}
                             onChange={(e) => {
-                              const selectedDate = e.target.value;
-                              const today = new Date().toISOString().split('T')[0];
-                              if (selectedDate < today) {
-                                setStepError('Ngày thi không được trong quá khứ. Vui lòng chọn ngày hôm nay hoặc ngày trong tương lai.');
+                              const datetimeValue = e.target.value;
+                              if (datetimeValue) {
+                                const [date, time] = datetimeValue.split('T');
+                                const selectedDateTime = new Date(datetimeValue);
+                                const now = new Date();
+                                
+                                if (selectedDateTime < now) {
+                                  setStepError('Ngày và giờ thi không được trong quá khứ. Vui lòng chọn thời gian trong tương lai.');
+                                } else {
+                                  setStepError('');
+                                }
+                                
+                                setForm((prev) => ({ 
+                                  ...prev, 
+                                  date: date || '', 
+                                  time: time || '' 
+                                }));
                               } else {
-                                setStepError('');
+                                setForm((prev) => ({ 
+                                  ...prev, 
+                                  date: '', 
+                                  time: '' 
+                                }));
                               }
-                              setForm((prev) => ({ ...prev, date: selectedDate }));
                             }}
-                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Giờ <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="time"
-                            value={form.time}
-                            onChange={(e) => setForm((prev) => ({ ...prev, time: e.target.value }))}
                             className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                           />
                         </div>
@@ -1868,7 +1852,7 @@ export default function TeacherExams() {
                               {validationResult.isAnswerCorrect === false ? (
                                 <div className="flex items-center gap-2 text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 px-3 py-2 rounded-lg border-2 border-red-300 dark:border-red-700">
                                   <AlertCircle className="w-5 h-5" />
-                                  <span className="text-sm font-bold">⚠️ ĐÁP ÁN KHÔNG ĐÚNG!</span>
+                                  <span className="text-sm font-bold">ĐÁP ÁN KHÔNG ĐÚNG!</span>
                                 </div>
                               ) : validationResult.isValid ? (
                                 <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
@@ -1921,7 +1905,7 @@ export default function TeacherExams() {
                                 <ul className="space-y-1">
                                   {validationResult.strengths.map((strength, idx) => (
                                     <li key={idx} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-2">
-                                      <span className="text-green-500 mt-0.5">•</span>
+                                      <Circle className="w-2 h-2 text-green-500 mt-1.5 fill-green-500" />
                                       <span>{strength}</span>
                                     </li>
                                   ))}
@@ -1939,7 +1923,7 @@ export default function TeacherExams() {
                                 <ul className="space-y-1">
                                   {validationResult.issues.map((issue, idx) => (
                                     <li key={idx} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-2">
-                                      <span className="text-red-500 mt-0.5">•</span>
+                                      <Circle className="w-2 h-2 text-red-500 mt-1.5 fill-red-500" />
                                       <span>{issue}</span>
                                     </li>
                                   ))}
@@ -1993,7 +1977,7 @@ export default function TeacherExams() {
                                 <ul className="space-y-1">
                                   {validationResult.suggestions.map((suggestion, idx) => (
                                     <li key={idx} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-2 bg-white/60 dark:bg-gray-800/60 rounded-lg p-2">
-                                      <span className="text-blue-500 mt-0.5">→</span>
+                                      <ArrowRight className="w-3 h-3 text-blue-500 mt-0.5" />
                                       <span>{suggestion}</span>
                                     </li>
                                   ))}
@@ -2070,7 +2054,7 @@ export default function TeacherExams() {
                                         : 'bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-orange-400 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:scale-105'
                                     }`}
                                   >
-                                    {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                                    {questionTagLabels[tag]}
                                   </button>
                                 );
                               })}
@@ -2118,7 +2102,7 @@ export default function TeacherExams() {
 
                         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
                           <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
-                            <span className="text-gray-400">💡</span>
+                            <Lightbulb className="w-4 h-4 text-gray-400" />
                             Giải Thích <span className="text-xs font-normal text-gray-500 dark:text-gray-400">(tùy chọn)</span>
                           </label>
                           <textarea
@@ -2133,7 +2117,7 @@ export default function TeacherExams() {
                         <div className="bg-gradient-to-br from-orange-50/50 via-amber-50/30 to-orange-50/50 dark:from-orange-900/10 dark:via-orange-800/5 dark:to-orange-900/10 border-2 border-orange-200 dark:border-orange-800 rounded-2xl p-5 shadow-md">
                           <div className="mb-4">
                             <h5 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-1 flex items-center gap-2">
-                              <span className="text-orange-500">📋</span>
+                              <Clipboard className="w-4 h-4 text-orange-500" />
                               Multiple Choice Options <span className="text-red-500">*</span>
                             </h5>
                             <p className="text-xs text-gray-600 dark:text-gray-400">Nhập các lựa chọn A–D và chọn đáp án đúng.</p>
@@ -2201,7 +2185,8 @@ export default function TeacherExams() {
                             onClick={resetQuestionForm}
                             className="w-full sm:w-auto px-5 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md"
                           >
-                            ↻ Đặt Lại
+                            <RotateCw className="w-4 h-4 inline mr-1" />
+                            Đặt Lại
                           </button>
                           <button
                             type="submit"
@@ -2247,7 +2232,7 @@ export default function TeacherExams() {
                             >
                               <option value="all">Tất cả thể loại</option>
                               {questionTagOptions.map(tag => (
-                                <option key={tag} value={tag}>{tag.charAt(0).toUpperCase() + tag.slice(1)}</option>
+                                <option key={tag} value={tag}>{questionTagLabels[tag]}</option>
                               ))}
                             </select>
 
@@ -2323,7 +2308,7 @@ export default function TeacherExams() {
                                         </p>
                                         <div className="flex flex-wrap items-center gap-2 text-xs">
                                           <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
-                                            {question.tag}
+                                            {questionTagLabels[question.tag] || question.tag}
                                           </span>
                                           <span className={`px-2 py-1 rounded-full ${
                                             question.difficulty === 'easy' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-200' :
@@ -2428,7 +2413,7 @@ export default function TeacherExams() {
                                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                   >
                                     {questionTagOptions.map(tag => (
-                                      <option key={tag} value={tag}>{tag.charAt(0).toUpperCase() + tag.slice(1)}</option>
+                                      <option key={tag} value={tag}>{questionTagLabels[tag]}</option>
                                     ))}
                                   </select>
                                 </div>
@@ -2465,7 +2450,8 @@ export default function TeacherExams() {
                             <div className="space-y-4">
                               <div className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3">
                                 <p className="text-sm font-medium text-green-800 dark:text-green-300">
-                                  ✅ Đã tạo {aiGeneratedQuestions.length} câu hỏi thành công!
+                                  <CheckCircle className="w-4 h-4 inline mr-1" />
+                                  Đã tạo {aiGeneratedQuestions.length} câu hỏi thành công!
                                 </p>
                               </div>
 
@@ -2805,6 +2791,70 @@ export default function TeacherExams() {
           </div>
         )}
 
+        {/* Subject Relevance Warning Modal */}
+        {showSubjectRelevanceModal && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div className="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" onClick={() => setShowSubjectRelevanceModal(false)}></div>
+              
+              <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-gray-700">
+                <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-orange-50 via-red-50 to-pink-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                        <AlertCircle className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Câu Hỏi Không Liên Quan Đến Toán</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">AI đã phát hiện vấn đề với chủ đề câu hỏi</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowSubjectRelevanceModal(false)}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="px-6 py-6 space-y-4">
+                  <div className="bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-200 dark:border-orange-800 rounded-xl p-4">
+                    <p className="text-sm text-orange-800 dark:text-orange-300 font-semibold mb-2 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Thông Báo
+                    </p>
+                    <p className="text-sm text-orange-700 dark:text-orange-400">
+                      {subjectRelevanceMessage}
+                    </p>
+                  </div>
+
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-1">Lưu ý:</p>
+                    <p className="text-xs text-blue-700 dark:text-blue-400">
+                      Vui lòng tạo câu hỏi về Toán học (ví dụ: Đại số, Hình học, Giải tích, Xác suất, Thống kê)
+                    </p>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowSubjectRelevanceModal(false);
+                        setSubjectRelevanceMessage('');
+                      }}
+                      className="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <X className="w-4 h-4" />
+                      Đã Hiểu
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Correct Answer Suggestion Modal */}
         {showCorrectAnswerModal && suggestedCorrectOption && (
           <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -2834,8 +2884,9 @@ export default function TeacherExams() {
                 
                 <div className="px-6 py-6 space-y-4">
                   <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-4">
-                    <p className="text-sm text-red-800 dark:text-red-300 font-semibold mb-2">
-                      ⚠️ Đáp án hiện tại: <span className="font-bold">{questionForm.correctOption}</span>
+                    <p className="text-sm text-red-800 dark:text-red-300 font-semibold mb-2 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Đáp án hiện tại: <span className="font-bold">{questionForm.correctOption}</span>
                     </p>
                     <p className="text-sm text-red-700 dark:text-red-400">
                       {questionForm.options[questionForm.correctOption]}
@@ -2843,8 +2894,9 @@ export default function TeacherExams() {
                   </div>
 
                   <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-xl p-4">
-                    <p className="text-sm text-green-800 dark:text-green-300 font-semibold mb-2">
-                      ✅ Đáp án đúng (AI đề xuất): <span className="font-bold">{suggestedCorrectOption}</span>
+                    <p className="text-sm text-green-800 dark:text-green-300 font-semibold mb-2 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      Đáp án đúng (AI đề xuất): <span className="font-bold">{suggestedCorrectOption}</span>
                     </p>
                     <p className="text-sm text-green-700 dark:text-green-400">
                       {questionForm.options[suggestedCorrectOption]}
