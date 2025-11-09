@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Bell, Lock, Settings as SettingsIcon, Shield } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function TeacherSettings() {
-  const { user, refresh } = useAuth();
+  const { user, refresh, logout } = useAuth();
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
   const [activeTab, setActiveTab] = useState('profile');
@@ -47,6 +49,16 @@ export default function TeacherSettings() {
     allowStudentMessages: true,
     showGradeHistory: false
   });
+
+  // Password change states
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
+  const [passwordMessageType, setPasswordMessageType] = useState('success');
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: 'profile' },
@@ -205,6 +217,65 @@ export default function TeacherSettings() {
   const handlePrivacyToggle = (setting) => {
     setPrivacySettings(prev => ({ ...prev, [setting]: !prev[setting] }));
   };
+
+  async function handleChangePassword(e) {
+    e.preventDefault();
+    setPasswordMessage('');
+    setPasswordMessageType('success');
+
+    // Validate
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordMessage('Please fill in all password fields');
+      setPasswordMessageType('error');
+      setTimeout(() => setPasswordMessage(''), 3000);
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordMessage('New password and confirm password do not match');
+      setPasswordMessageType('error');
+      setTimeout(() => setPasswordMessage(''), 3000);
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordMessage('New password must be at least 6 characters long');
+      setPasswordMessageType('error');
+      setTimeout(() => setPasswordMessage(''), 3000);
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await authService.changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword,
+        passwordData.confirmPassword
+      );
+      
+      setPasswordMessage('Password changed successfully! Please login again with your new password.');
+      setPasswordMessageType('success');
+      
+      // Reset form
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      
+      // Auto logout after 2 seconds
+      setTimeout(() => {
+        logout();
+        navigate('/login', { replace: true });
+      }, 2000);
+    } catch (error) {
+      setPasswordMessage(error.message || 'Failed to change password. Please try again.');
+      setPasswordMessageType('error');
+      setTimeout(() => setPasswordMessage(''), 5000);
+    } finally {
+      setIsChangingPassword(false);
+    }
+  }
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -563,16 +634,32 @@ export default function TeacherSettings() {
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Security Settings</h2>
                 
                 <div className="space-y-6">
+                  {/* Password Change Message */}
+                  {passwordMessage && (
+                    <div className={`p-4 rounded-xl border ${
+                      passwordMessageType === 'success' 
+                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400'
+                        : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400'
+                    }`}>
+                      {passwordMessage}
+                    </div>
+                  )}
+
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Change Password</h3>
-                    <div className="space-y-4">
+                    <form onSubmit={handleChangePassword} className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Current Password
                         </label>
                         <input
                           type="password"
+                          value={passwordData.currentPassword}
+                          onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter current password"
+                          required
+                          disabled={isChangingPassword}
                         />
                       </div>
                       <div>
@@ -581,7 +668,12 @@ export default function TeacherSettings() {
                         </label>
                         <input
                           type="password"
+                          value={passwordData.newPassword}
+                          onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter new password (min 6 characters)"
+                          required
+                          disabled={isChangingPassword}
                         />
                       </div>
                       <div>
@@ -590,13 +682,29 @@ export default function TeacherSettings() {
                         </label>
                         <input
                           type="password"
+                          value={passwordData.confirmPassword}
+                          onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Confirm new password"
+                          required
+                          disabled={isChangingPassword}
                         />
                       </div>
-                      <button className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
-                        Update Password
+                      <button 
+                        type="submit"
+                        disabled={isChangingPassword}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {isChangingPassword ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Updating Password...
+                          </>
+                        ) : (
+                          'Update Password'
+                        )}
                       </button>
-                    </div>
+                    </form>
                   </div>
 
                   <div>

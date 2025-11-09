@@ -25,6 +25,15 @@ export default function Profile() {
   const [messageType, setMessageType] = useState('success');
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Change password states
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   // Debug log
   console.log('Profile component - user:', user);
@@ -196,6 +205,65 @@ export default function Profile() {
     navigate('/login', { replace: true });
   }
 
+  async function handleChangePassword(e) {
+    e.preventDefault();
+    setMessage('');
+    setMessageType('success');
+
+    // Validate
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setMessage('Please fill in all password fields');
+      setMessageType('error');
+      setTimeout(() => setMessage(''), 3000);
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setMessage('New password and confirm password do not match');
+      setMessageType('error');
+      setTimeout(() => setMessage(''), 3000);
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setMessage('New password must be at least 6 characters long');
+      setMessageType('error');
+      setTimeout(() => setMessage(''), 3000);
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await authService.changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword,
+        passwordData.confirmPassword
+      );
+      
+      setMessage('Password changed successfully! Please login again with your new password.');
+      setMessageType('success');
+      
+      // Reset form
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      setShowChangePassword(false);
+      
+      // Auto logout after 2 seconds
+      setTimeout(() => {
+        handleLogout();
+      }, 2000);
+    } catch (error) {
+      setMessage(error.message || 'Failed to change password. Please try again.');
+      setMessageType('error');
+      setTimeout(() => setMessage(''), 5000);
+    } finally {
+      setIsChangingPassword(false);
+    }
+  }
+
   const cancelEdit = () => {
     const avatarUrl = getAvatarUrl(currentUser.avatar);
     
@@ -299,7 +367,7 @@ export default function Profile() {
               <nav className="space-y-2">
                 {[
                   { id: 'profile', label: 'Profile', icon: 'profile' },
-                  { id: 'stats', label: 'Statistics', icon: 'stats' },
+                  // { id: 'stats', label: 'Statistics', icon: 'stats' },
                   { id: 'settings', label: 'Settings', icon: 'settings' }
                 ].map(item => (
                   <button
@@ -560,7 +628,116 @@ export default function Profile() {
                   Account Settings
                 </h3>
 
+                {/* Change Password Section */}
+                <div className="mb-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                        Change Password
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Update your password to keep your account secure
+                      </p>
+                    </div>
+                    {!showChangePassword && (
+                      <Button
+                        onClick={() => setShowChangePassword(true)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Icon name="lock" className="w-4 h-4 mr-2" />
+                        Change Password
+                      </Button>
+                    )}
+                  </div>
+
+                  {showChangePassword && (
+                    <form onSubmit={handleChangePassword} className="space-y-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Current Password
+                        </label>
+                        <input
+                          type="password"
+                          value={passwordData.currentPassword}
+                          onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                          placeholder="Enter current password"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          New Password
+                        </label>
+                        <input
+                          type="password"
+                          value={passwordData.newPassword}
+                          onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                          placeholder="Enter new password (min 6 characters)"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Confirm New Password
+                        </label>
+                        <input
+                          type="password"
+                          value={passwordData.confirmPassword}
+                          onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                          placeholder="Confirm new password"
+                          required
+                        />
+                      </div>
+
+                      <div className="flex space-x-3 pt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setShowChangePassword(false);
+                            setPasswordData({
+                              currentPassword: '',
+                              newPassword: '',
+                              confirmPassword: ''
+                            });
+                          }}
+                          disabled={isChangingPassword}
+                          className="border-gray-300 dark:border-gray-600"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={isChangingPassword}
+                          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                          {isChangingPassword ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                              Changing Password...
+                            </>
+                          ) : (
+                            <>
+                              <Icon name="save" className="w-4 h-4 mr-2" />
+                              Change Password
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+
+                {/* Other Settings */}
                 <div className="space-y-6">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Other Settings
+                  </h4>
                   {[
                     {
                       title: 'Notifications',

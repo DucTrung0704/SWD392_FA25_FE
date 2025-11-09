@@ -105,6 +105,47 @@ export default function StudentExams() {
       if (!examId) return;
       try {
         setActionState({ id: examId, type: 'start' });
+        setError(''); // Clear previous errors
+        
+        // Optional: Validate exam before starting (non-blocking)
+        // If validation fails, we'll still try to start and let backend validate
+        try {
+          const examData = await examService.getStudentExamById(examId);
+          const exam = examData?.exam || examData;
+          const flashcards = exam?.flashcards || exam?.questions || [];
+          
+          if (Array.isArray(flashcards) && flashcards.length > 0) {
+            // Check if all questions have required fields for multiple choice
+            const incompleteQuestions = flashcards.filter((question) => {
+              // Check if question has options and correctOption
+              const hasOptions = question?.options && typeof question.options === 'object' && Object.keys(question.options).length > 0;
+              const hasCorrectOption = question?.correctOption && 
+                typeof question.correctOption === 'string' &&
+                ['A', 'B', 'C', 'D'].includes(question.correctOption.toUpperCase().trim());
+              
+              // Questions without options/correctOption are incomplete for exams
+              return !hasOptions || !hasCorrectOption;
+            });
+            
+            if (incompleteQuestions.length > 0) {
+              const questionCount = incompleteQuestions.length;
+              const totalCount = flashcards.length;
+              throw new Error(
+                `Kỳ thi này chứa ${questionCount}/${totalCount} câu hỏi chưa hoàn chỉnh (thiếu đáp án hoặc lựa chọn). ` +
+                `Vui lòng liên hệ giáo viên để được hỗ trợ.`
+              );
+            }
+          }
+        } catch (validationError) {
+          // If validation error is about incomplete questions, throw it
+          if (validationError.message && validationError.message.includes('chưa hoàn chỉnh')) {
+            throw validationError;
+          }
+          // Otherwise, log and continue (backend will validate)
+          console.warn('Exam validation warning (non-blocking):', validationError);
+        }
+        
+        // Start the exam
         const res = await submissionService.startExam(examId);
         const submissionId = res?.submission?._id || res?.submissionId || res?._id;
         if (submissionId) {
@@ -113,8 +154,46 @@ export default function StudentExams() {
           throw new Error('Không xác định được bài làm');
         }
       } catch (e) {
-        console.error(e);
-        setError(e.message || 'Không thể bắt đầu kỳ thi');
+        console.error('Error starting exam:', e);
+        
+        // Parse error message to provide more helpful feedback
+        // Check multiple possible error message locations
+        let errorMessage = e.message || 
+                          e.data?.message || 
+                          e.response?.data?.message || 
+                          e.error?.message ||
+                          'Không thể bắt đầu kỳ thi';
+        
+        // Also check error.data for nested messages
+        if (!errorMessage || errorMessage === 'Không thể bắt đầu kỳ thi') {
+          if (e.data && typeof e.data === 'object') {
+            errorMessage = e.data.message || e.data.error || errorMessage;
+          }
+        }
+        
+        // Check for specific error patterns from backend
+        const errorStr = String(errorMessage).toLowerCase();
+        
+        if (errorStr.includes('missing options') || 
+            errorStr.includes('correctoption') || 
+            errorStr.includes('missing options or correctoption') ||
+            errorStr.includes('is missing options') ||
+            errorStr.includes('chưa hoàn chỉnh') ||
+            errorStr.includes('thiếu đáp án') ||
+            errorStr.includes('thiếu lựa chọn') ||
+            (errorStr.includes('question') && errorStr.includes('missing'))) {
+          errorMessage = 'Kỳ thi này chứa câu hỏi chưa hoàn chỉnh (thiếu đáp án hoặc lựa chọn). Vui lòng liên hệ giáo viên để được hỗ trợ.';
+        } else if (errorStr.includes('404') || errorStr.includes('not found') || errorStr.includes('không tìm thấy')) {
+          errorMessage = 'Không tìm thấy kỳ thi này. Vui lòng thử lại.';
+        } else if (errorStr.includes('permission') || errorStr.includes('unauthorized') || errorStr.includes('quyền') || errorStr.includes('forbidden')) {
+          errorMessage = 'Bạn không có quyền truy cập kỳ thi này.';
+        } else if (errorStr.includes('already started') || errorStr.includes('already exists') || errorStr.includes('đã bắt đầu')) {
+          errorMessage = 'Bạn đã bắt đầu kỳ thi này. Vui lòng tiếp tục bài làm của bạn.';
+        } else if (errorStr.includes('question') && (errorStr.includes('invalid') || errorStr.includes('error'))) {
+          errorMessage = 'Kỳ thi này chứa câu hỏi không hợp lệ. Vui lòng liên hệ giáo viên để được hỗ trợ.';
+        }
+        
+        setError(errorMessage);
       } finally {
         setActionState({});
       }

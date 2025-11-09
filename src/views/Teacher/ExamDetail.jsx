@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Trash2, Clock, User, Globe, Lock, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { examService } from '../../services/examService';
@@ -19,6 +19,11 @@ export default function TeacherExamDetail() {
     time_limit: 60,
     isPublic: false
   });
+  
+  // Ref to track if we're currently loading to prevent duplicate calls
+  const isLoadingRef = useRef(false);
+  // Ref to track if we've already gotten a 404 error
+  const has404ErrorRef = useRef(false);
 
   const getTimeAgo = (dateString) => {
     if (!dateString) return 'Unknown';
@@ -48,39 +53,104 @@ export default function TeacherExamDetail() {
   };
 
   const loadExam = useCallback(async () => {
+    if (!id) {
+      setError('Exam ID is required');
+      setIsLoading(false);
+      isLoadingRef.current = false;
+      return;
+    }
+
+    // Prevent duplicate calls
+    if (isLoadingRef.current) {
+      return;
+    }
+
+    // If we already have a 404 error for this ID, don't retry
+    if (has404ErrorRef.current) {
+      return;
+    }
+
     try {
+      isLoadingRef.current = true;
       setIsLoading(true);
       setError('');
-      const data = await examService.getExamById(id);
+      has404ErrorRef.current = false; // Reset 404 flag for new attempt
+      
+      // Normalize exam ID - ensure it's a string
+      const examId = typeof id === 'string' 
+        ? id 
+        : (id?._id || id?.id || String(id));
+      
+      if (!examId || examId === 'undefined' || examId === 'null') {
+        throw new Error('Invalid exam ID');
+      }
+      
+      const data = await examService.getExamById(examId);
+
+      // Handle different response formats: { exam: {...} } or directly the exam object
+      const examData = data?.exam || data;
+      
+      if (!examData) {
+        throw new Error('Exam not found');
+      }
 
       // Transform API response to match component expectations
       const transformedExam = {
-        ...data,
-        id: data._id || data.id,
-        createdAt: data.created_at || data.createdAt,
-        updatedAt: data.updated_at || data.updatedAt,
-        createdBy: data.created_by?.name || data.createdBy || 'Unknown',
-        createdByEmail: data.created_by?.email,
-        isPublic: data.isPublic !== undefined ? data.isPublic : false,
-        flashcards: Array.isArray(data.flashcards) ? data.flashcards : [],
-        totalQuestions: data.total_questions || (Array.isArray(data.flashcards) ? data.flashcards.length : 0),
-        timeLimit: data.time_limit || 60
+        ...examData,
+        id: examData._id || examData.id || examId,
+        title: examData.title || 'Untitled Exam',
+        description: examData.description || '',
+        createdAt: examData.created_at || examData.createdAt,
+        updatedAt: examData.updated_at || examData.updatedAt,
+        createdBy: examData.created_by?.name || examData.created_by || examData.createdBy || 'Unknown',
+        createdByEmail: examData.created_by?.email || examData.createdByEmail,
+        isPublic: examData.isPublic !== undefined ? examData.isPublic : false,
+        flashcards: Array.isArray(examData.flashcards) ? examData.flashcards : [],
+        totalQuestions: examData.total_questions || (Array.isArray(examData.flashcards) ? examData.flashcards.length : 0),
+        timeLimit: examData.time_limit || examData.duration || 60,
+        subject: examData.subject || 'General'
       };
 
       setExam(transformedExam);
+      setError(''); // Clear any previous errors
     } catch (err) {
-      console.error('Failed to load exam:', err);
-      setError(err.message || 'Failed to load exam details. Please try again.');
+      // Only log error once to avoid spam
+      if (!has404ErrorRef.current) {
+        console.error('Failed to load exam:', err);
+      }
+      
+      const errorMessage = err?.response?.data?.message || err?.data?.message || err?.message || 'Không thể tải thông tin kỳ thi. Vui lòng thử lại.';
+      
+      // Nếu là lỗi 404, hiển thị thông báo rõ ràng hơn và marquer comme 404
+      if (err?.status === 404 || err?.response?.status === 404 || 
+          err?.message?.includes('404') || 
+          err?.message?.includes('Cannot GET') ||
+          errorMessage.includes('404') ||
+          errorMessage.includes('không tồn tại')) {
+        has404ErrorRef.current = true; // Mark as 404 to prevent retries
+        setError('Kỳ thi không tồn tại hoặc bạn không có quyền truy cập.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
+      isLoadingRef.current = false;
     }
   }, [id]);
 
   useEffect(() => {
+    // Reset 404 flag when ID changes
+    has404ErrorRef.current = false;
+    
     if (id) {
       loadExam();
+    } else {
+      setIsLoading(false);
+      setError('Exam ID is required');
     }
-  }, [id, loadExam]);
+    // Only depend on id, not loadExam to avoid infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const openEditModal = () => {
     if (!exam) return;
@@ -149,8 +219,10 @@ export default function TeacherExamDetail() {
       <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading exam details...</span>
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-gray-600 dark:text-gray-400">Đang tải thông tin kỳ thi...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -162,13 +234,22 @@ export default function TeacherExamDetail() {
       <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6">
-            <p className="text-red-700 dark:text-red-400 text-center">{error}</p>
-            <div className="mt-4 text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              <h2 className="text-xl font-semibold text-red-700 dark:text-red-400">
+                Không thể tải kỳ thi
+              </h2>
+            </div>
+            <p className="text-red-700 dark:text-red-400 text-center mb-2">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-500 text-center mb-4">
+              ID kỳ thi: {id}
+            </p>
+            <div className="mt-6 text-center">
               <button
                 onClick={() => navigate('/dashboard/teacher/exams')}
                 className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
               >
-                Back to Exams
+                Quay lại danh sách kỳ thi
               </button>
             </div>
           </div>

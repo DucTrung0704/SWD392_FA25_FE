@@ -34,10 +34,12 @@ export default function StudentLayout() {
     { name: 'Exams', href: '/dashboard/student/exams', icon: 'exams' },
     { name: 'History', href: '/dashboard/student/submissions', icon: 'progress' },
     { name: 'Progress', href: '/dashboard/student/progress', icon: 'progress' },
+    { name: 'Profile', href: '/dashboard/student/profile', icon: 'profile' },
   ];
 
   const isActiveLink = (href) => {
     if (href === '/dashboard/student') return location.pathname === '/dashboard/student';
+    if (href === '/dashboard/student/profile') return location.pathname === '/dashboard/student/profile' || location.pathname === '/profile';
     return location.pathname.startsWith(href);
   };
 
@@ -152,7 +154,7 @@ export default function StudentLayout() {
             {/* Profile and Theme Toggle */}
             <div className="flex items-center gap-4">
               <ThemeToggle />
-              <div className="flex items-center gap-3">
+              <Link to="/dashboard/student/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Student'}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
@@ -160,7 +162,7 @@ export default function StudentLayout() {
                 <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-orange-500 transition-all">
                   <span className="text-white font-bold text-sm">{user?.name?.charAt(0).toUpperCase() || 'U'}</span>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
