@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Eye, Edit, TrendingUp, Search, FileText, Users, Clock, CheckCircle, Trash2, X, Filter, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, MoreVertical, Sparkles, Loader2, Check } from 'lucide-react';
+import { Plus, Eye, Edit, TrendingUp, Search, FileText, Users, Clock, CheckCircle, Trash2, X, Filter, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, MoreVertical, Sparkles, Loader2, Check, Brain, AlertCircle, ThumbsUp, AlertTriangle } from 'lucide-react';
 import { examService } from '../../services/examService';
 import { questionService } from '../../services/questionService';
 import { aiService } from '../../services/aiService';
@@ -76,6 +76,11 @@ export default function TeacherExams() {
     count: 5,
     tag: 'other'
   });
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState(null);
+  const [showValidationResult, setShowValidationResult] = useState(false);
+  const [showCorrectAnswerModal, setShowCorrectAnswerModal] = useState(false);
+  const [suggestedCorrectOption, setSuggestedCorrectOption] = useState(null);
 
   useEffect(() => {
     loadExams();
@@ -330,6 +335,8 @@ export default function TeacherExams() {
     });
     setQuestionError('');
     setQuestionSuccess('');
+    setValidationResult(null);
+    setShowValidationResult(false);
   };
 
   // Load questions from bank
@@ -559,9 +566,59 @@ export default function TeacherExams() {
     const trimmedAnswer = selectedOptionValue.trim();
     const optionsPayload = trimmedOptions;
 
+    // Tự động gọi AI để kiểm tra đáp án trước khi lưu
     try {
       setIsQuestionSubmitting(true);
       setQuestionError('');
+      setQuestionSuccess('');
+
+      // Gọi AI để validate câu hỏi
+      const validationResponse = await aiService.validateQuestion({
+        question: trimmedQuestion,
+        options: trimmedOptions,
+        correctOption: questionForm.correctOption,
+        answer: trimmedAnswer,
+        tag: questionForm.tag,
+        difficulty: questionForm.difficulty,
+        subject: form.subject,
+        explanation: questionForm.explanation?.trim() || undefined
+      });
+
+      const validation = validationResponse?.validation || validationResponse?.data?.validation;
+      
+      // Kiểm tra nếu đáp án sai
+      if (validation && validation.isAnswerCorrect === false) {
+        // Hiển thị modal để người dùng chọn sửa đáp án
+        setSuggestedCorrectOption(validation.correctOption);
+        setValidationResult(validation);
+        setShowCorrectAnswerModal(true);
+        setIsQuestionSubmitting(false);
+        return;
+      }
+
+      // Nếu đáp án đúng, tiếp tục lưu
+      await saveQuestion(trimmedQuestion, trimmedAnswer, optionsPayload, questionForm.correctOption);
+    } catch (err) {
+      console.error('Error validating or saving question:', err);
+      // Nếu lỗi AI, vẫn cho phép lưu (fallback)
+      if (err.message && err.message.includes('AI')) {
+        setQuestionError('Không thể kiểm tra bằng AI. Bạn có muốn tiếp tục lưu không?');
+        // Vẫn cho phép lưu nếu AI service không khả dụng
+        await saveQuestion(trimmedQuestion, trimmedAnswer, optionsPayload, questionForm.correctOption);
+      } else {
+        setQuestionError(err?.message || 'Không thể tạo câu hỏi. Vui lòng thử lại.');
+        setIsQuestionSubmitting(false);
+      }
+    }
+  };
+
+  // Hàm riêng để lưu câu hỏi
+  const saveQuestion = async (trimmedQuestion, trimmedAnswer, optionsPayload, correctOptionToUse = null) => {
+    try {
+      setIsQuestionSubmitting(true);
+      setQuestionError('');
+
+      const correctOption = correctOptionToUse || questionForm.correctOption;
 
       const payload = {
         question: trimmedQuestion,
@@ -570,7 +627,7 @@ export default function TeacherExams() {
         difficulty: questionForm.difficulty,
         explanation: questionForm.explanation?.trim() || undefined,
         options: optionsPayload,
-        correctOption: questionForm.correctOption
+        correctOption: correctOption
       };
 
       const response = await questionService.createQuestion(payload);
@@ -585,7 +642,7 @@ export default function TeacherExams() {
         tag: created?.tag || questionForm.tag,
         difficulty: created?.difficulty || questionForm.difficulty,
         options: created?.options || optionsPayload,
-        correctOption: created?.correctOption || (optionsPayload ? questionForm.correctOption : undefined)
+        correctOption: created?.correctOption || (optionsPayload ? correctOption : undefined)
       };
 
       setQuestionList((prev) => [...prev, normalizedQuestion]);
@@ -601,9 +658,48 @@ export default function TeacherExams() {
       console.error('Failed to create question:', err);
       setQuestionError(err?.message || 'Không thể tạo câu hỏi. Vui lòng thử lại.');
       setQuestionSuccess('');
+      throw err; // Re-throw để handleAddQuestion có thể xử lý
     } finally {
       setIsQuestionSubmitting(false);
     }
+  };
+
+  // Xử lý khi người dùng chọn sửa đáp án
+  const handleFixCorrectAnswer = async () => {
+    if (suggestedCorrectOption) {
+      const newAnswer = questionForm.options[suggestedCorrectOption]?.trim() || '';
+      const trimmedQuestion = questionForm.question.trim();
+      const trimmedOptions = Object.entries(questionForm.options || {}).reduce((acc, [key, value]) => {
+        acc[key] = (value || '').trim();
+        return acc;
+      }, { ...emptyOptions });
+      
+      // Cập nhật form với đáp án đúng
+      setQuestionForm(prev => ({
+        ...prev,
+        correctOption: suggestedCorrectOption,
+        answer: newAnswer
+      }));
+      
+      setShowCorrectAnswerModal(false);
+      setValidationResult(null);
+      setSuggestedCorrectOption(null);
+      
+      // Lưu với đáp án đúng
+      await saveQuestion(trimmedQuestion, newAnswer, trimmedOptions, suggestedCorrectOption);
+    }
+  };
+
+  // Xử lý khi người dùng chọn giữ nguyên đáp án
+  const handleKeepCurrentAnswer = async () => {
+    setShowCorrectAnswerModal(false);
+    const trimmedQuestion = questionForm.question.trim();
+    const trimmedOptions = Object.entries(questionForm.options || {}).reduce((acc, [key, value]) => {
+      acc[key] = (value || '').trim();
+      return acc;
+    }, { ...emptyOptions });
+    const trimmedAnswer = trimmedOptions[questionForm.correctOption]?.trim() || '';
+    await saveQuestion(trimmedQuestion, trimmedAnswer, trimmedOptions);
   };
 
   const handleRemoveQuestion = (questionId) => {
@@ -668,6 +764,58 @@ export default function TeacherExams() {
       setQuestionError(err.message || 'Không thể tạo câu hỏi bằng AI. Vui lòng thử lại.');
     } finally {
       setIsAIGenerating(false);
+    }
+  };
+
+  // Validate question using AI
+  const handleValidateQuestion = async () => {
+    const trimmedQuestion = questionForm.question.trim();
+    const trimmedOptions = Object.entries(questionForm.options || {}).reduce((acc, [key, value]) => {
+      acc[key] = (value || '').trim();
+      return acc;
+    }, { ...emptyOptions });
+
+    // Basic validation
+    if (!trimmedQuestion) {
+      setQuestionError('Vui lòng nhập câu hỏi trước khi kiểm thử.');
+      return;
+    }
+
+    const missingOption = Object.entries(trimmedOptions).find(([, value]) => !value);
+    if (missingOption) {
+      setQuestionError('Vui lòng điền đầy đủ tất cả các lựa chọn (A, B, C, D) trước khi kiểm thử.');
+      return;
+    }
+
+    if (!questionForm.correctOption) {
+      setQuestionError('Vui lòng chọn đáp án đúng trước khi kiểm thử.');
+      return;
+    }
+
+    try {
+      setIsValidating(true);
+      setQuestionError('');
+      setShowValidationResult(true);
+
+      const response = await aiService.validateQuestion({
+        question: trimmedQuestion,
+        options: trimmedOptions,
+        correctOption: questionForm.correctOption,
+        answer: trimmedOptions[questionForm.correctOption] || questionForm.answer,
+        tag: questionForm.tag,
+        difficulty: questionForm.difficulty,
+        subject: form.subject,
+        explanation: questionForm.explanation?.trim() || undefined
+      });
+
+      const validation = response?.validation || response?.data?.validation;
+      setValidationResult(validation);
+    } catch (err) {
+      console.error('Error validating question:', err);
+      setQuestionError(err.message || 'Không thể kiểm thử câu hỏi bằng AI. Vui lòng thử lại.');
+      setShowValidationResult(false);
+    } finally {
+      setIsValidating(false);
     }
   };
 
@@ -1677,11 +1825,221 @@ export default function TeacherExams() {
                           </div>
                         )}
 
+                        {/* AI Validation Result */}
+                        {showValidationResult && validationResult && (
+                          <div className={`rounded-xl border-2 p-5 shadow-lg ${
+                            validationResult.overallScore >= 80
+                              ? 'border-green-300 dark:border-green-700 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/10'
+                              : validationResult.overallScore >= 60
+                              ? 'border-yellow-300 dark:border-yellow-700 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/10'
+                              : 'border-red-300 dark:border-red-700 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/10'
+                          }`}>
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                                  validationResult.overallScore >= 80
+                                    ? 'bg-green-500'
+                                    : validationResult.overallScore >= 60
+                                    ? 'bg-yellow-500'
+                                    : 'bg-red-500'
+                                }`}>
+                                  <Brain className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                  <h5 className="text-sm font-bold text-gray-900 dark:text-white">
+                                    Kết Quả Kiểm Thử AI
+                                  </h5>
+                                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                                    Điểm tổng thể: <span className="font-semibold">{validationResult.overallScore}/100</span>
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setShowValidationResult(false)}
+                                className="p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded-lg transition-colors"
+                              >
+                                <X className="w-4 h-4 text-gray-500" />
+                              </button>
+                            </div>
+
+                            {/* Overall Status */}
+                            <div className="mb-4 flex items-center gap-2 flex-wrap">
+                              {validationResult.isAnswerCorrect === false ? (
+                                <div className="flex items-center gap-2 text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 px-3 py-2 rounded-lg border-2 border-red-300 dark:border-red-700">
+                                  <AlertCircle className="w-5 h-5" />
+                                  <span className="text-sm font-bold">⚠️ ĐÁP ÁN KHÔNG ĐÚNG!</span>
+                                </div>
+                              ) : validationResult.isValid ? (
+                                <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                                  <CheckCircle className="w-4 h-4" />
+                                  <span className="text-sm font-semibold">Câu hỏi hợp lệ</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 text-red-700 dark:text-red-300">
+                                  <AlertCircle className="w-4 h-4" />
+                                  <span className="text-sm font-semibold">Cần cải thiện</span>
+                                </div>
+                              )}
+                              {validationResult.isReady && validationResult.isAnswerCorrect !== false && (
+                                <span className="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded-full">
+                                  Sẵn sàng sử dụng
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Answer Correctness Warning */}
+                            {validationResult.isAnswerCorrect === false && (
+                              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700 rounded-xl">
+                                <div className="flex items-start gap-3">
+                                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                                  <div>
+                                    <h6 className="text-sm font-bold text-red-800 dark:text-red-300 mb-1">
+                                      CẢNH BÁO: Đáp án được đánh dấu không đúng!
+                                    </h6>
+                                    <p className="text-xs text-red-700 dark:text-red-400">
+                                      AI đã phát hiện rằng đáp án bạn chọn ({questionForm.correctOption}) không phải là câu trả lời đúng cho câu hỏi này. 
+                                      Vui lòng kiểm tra lại và chọn đáp án đúng trước khi lưu câu hỏi.
+                                    </p>
+                                    {validationResult.feedback?.correctness && (
+                                      <p className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
+                                        Chi tiết: {validationResult.feedback.correctness}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Strengths */}
+                            {validationResult.strengths && validationResult.strengths.length > 0 && (
+                              <div className="mb-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <ThumbsUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                  <h6 className="text-xs font-bold text-gray-800 dark:text-gray-200">Điểm Mạnh</h6>
+                                </div>
+                                <ul className="space-y-1">
+                                  {validationResult.strengths.map((strength, idx) => (
+                                    <li key={idx} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                                      <span className="text-green-500 mt-0.5">•</span>
+                                      <span>{strength}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Issues */}
+                            {validationResult.issues && validationResult.issues.length > 0 && (
+                              <div className="mb-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                                  <h6 className="text-xs font-bold text-gray-800 dark:text-gray-200">Vấn Đề</h6>
+                                </div>
+                                <ul className="space-y-1">
+                                  {validationResult.issues.map((issue, idx) => (
+                                    <li key={idx} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                                      <span className="text-red-500 mt-0.5">•</span>
+                                      <span>{issue}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Feedback Details */}
+                            {validationResult.feedback && (
+                              <div className="mb-4 space-y-2">
+                                <h6 className="text-xs font-bold text-gray-800 dark:text-gray-200">Chi Tiết Đánh Giá</h6>
+                                <div className="grid grid-cols-1 gap-2 text-xs">
+                                  {validationResult.feedback.clarity && (
+                                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-2">
+                                      <span className="font-semibold text-gray-700 dark:text-gray-300">Độ rõ ràng: </span>
+                                      <span className="text-gray-600 dark:text-gray-400">{validationResult.feedback.clarity}</span>
+                                    </div>
+                                  )}
+                                  {validationResult.feedback.difficulty && (
+                                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-2">
+                                      <span className="font-semibold text-gray-700 dark:text-gray-300">Độ khó: </span>
+                                      <span className="text-gray-600 dark:text-gray-400">{validationResult.feedback.difficulty}</span>
+                                    </div>
+                                  )}
+                                  {validationResult.feedback.options && (
+                                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-2">
+                                      <span className="font-semibold text-gray-700 dark:text-gray-300">Lựa chọn: </span>
+                                      <span className="text-gray-600 dark:text-gray-400">{validationResult.feedback.options}</span>
+                                    </div>
+                                  )}
+                                  {validationResult.feedback.correctness && (
+                                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-2">
+                                      <span className="font-semibold text-gray-700 dark:text-gray-300">Tính chính xác: </span>
+                                      <span className="text-gray-600 dark:text-gray-400">{validationResult.feedback.correctness}</span>
+                                    </div>
+                                  )}
+                                  {validationResult.feedback.educationalValue && (
+                                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-2">
+                                      <span className="font-semibold text-gray-700 dark:text-gray-300">Giá trị giáo dục: </span>
+                                      <span className="text-gray-600 dark:text-gray-400">{validationResult.feedback.educationalValue}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Suggestions */}
+                            {validationResult.suggestions && validationResult.suggestions.length > 0 && (
+                              <div>
+                                <h6 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-2">Đề Xuất Cải Thiện</h6>
+                                <ul className="space-y-1">
+                                  {validationResult.suggestions.map((suggestion, idx) => (
+                                    <li key={idx} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-2 bg-white/60 dark:bg-gray-800/60 rounded-lg p-2">
+                                      <span className="text-blue-500 mt-0.5">→</span>
+                                      <span>{suggestion}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Recommended Difficulty */}
+                            {validationResult.recommendedDifficulty && validationResult.recommendedDifficulty !== questionForm.difficulty && (
+                              <div className="mt-4 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                                <p className="text-xs text-blue-700 dark:text-blue-300">
+                                  <span className="font-semibold">Đề xuất độ khó: </span>
+                                  {validationResult.recommendedDifficulty === 'easy' ? 'Dễ' :
+                                   validationResult.recommendedDifficulty === 'medium' ? 'Trung Bình' : 'Khó'}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
-                          <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-orange-500" />
-                            Nội Dung Câu Hỏi <span className="text-red-500">*</span>
-                          </label>
+                          <div className="flex items-center justify-between mb-3">
+                            <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-orange-500" />
+                              Nội Dung Câu Hỏi <span className="text-red-500">*</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={handleValidateQuestion}
+                              disabled={isValidating || !questionForm.question.trim() || !Object.values(questionForm.options || {}).every(v => v?.trim()) || !questionForm.correctOption}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Kiểm thử câu hỏi bằng AI"
+                            >
+                              {isValidating ? (
+                                <>
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Đang kiểm thử...
+                                </>
+                              ) : (
+                                <>
+                                  <Brain className="w-3 h-3" />
+                                  Kiểm thử bằng AI
+                                </>
+                              )}
+                            </button>
+                          </div>
                           <textarea
                             rows={4}
                             value={questionForm.question}
@@ -1847,7 +2205,7 @@ export default function TeacherExams() {
                           </button>
                           <button
                             type="submit"
-                            disabled={isQuestionSubmitting}
+                            disabled={isQuestionSubmitting || (validationResult && validationResult.isAnswerCorrect === false)}
                             className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-500/50 dark:hover:shadow-orange-900/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] disabled:transform-none"
                           >
                             {isQuestionSubmitting ? (
@@ -2441,6 +2799,87 @@ export default function TeacherExams() {
                       </>
                     )}
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Correct Answer Suggestion Modal */}
+        {showCorrectAnswerModal && suggestedCorrectOption && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div className="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" onClick={() => setShowCorrectAnswerModal(false)}></div>
+              
+              <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-gray-700">
+                <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-50 via-orange-50 to-yellow-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
+                        <AlertTriangle className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Đáp Án Không Đúng</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">AI đã phát hiện vấn đề với đáp án</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowCorrectAnswerModal(false)}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="px-6 py-6 space-y-4">
+                  <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-4">
+                    <p className="text-sm text-red-800 dark:text-red-300 font-semibold mb-2">
+                      ⚠️ Đáp án hiện tại: <span className="font-bold">{questionForm.correctOption}</span>
+                    </p>
+                    <p className="text-sm text-red-700 dark:text-red-400">
+                      {questionForm.options[questionForm.correctOption]}
+                    </p>
+                  </div>
+
+                  <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-xl p-4">
+                    <p className="text-sm text-green-800 dark:text-green-300 font-semibold mb-2">
+                      ✅ Đáp án đúng (AI đề xuất): <span className="font-bold">{suggestedCorrectOption}</span>
+                    </p>
+                    <p className="text-sm text-green-700 dark:text-green-400">
+                      {questionForm.options[suggestedCorrectOption]}
+                    </p>
+                  </div>
+
+                  {validationResult?.feedback?.correctness && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                      <p className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-1">Lý do:</p>
+                      <p className="text-xs text-blue-700 dark:text-blue-400">{validationResult.feedback.correctness}</p>
+                    </div>
+                  )}
+
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                      Bạn muốn làm gì?
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        type="button"
+                        onClick={handleFixCorrectAnswer}
+                        className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Sửa Thành {suggestedCorrectOption}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleKeepCurrentAnswer}
+                        className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                      >
+                        Giữ Nguyên
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

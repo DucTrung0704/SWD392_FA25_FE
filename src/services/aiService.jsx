@@ -54,6 +54,38 @@ export const aiService = {
   },
 
   /**
+   * Validate/review a question using AI
+   * @param {Object} questionData - Question data to validate
+   * @param {string} questionData.question - Question text
+   * @param {Object} questionData.options - Options object with A, B, C, D
+   * @param {string} questionData.correctOption - Correct option (A, B, C, or D)
+   * @param {string} [questionData.answer] - Answer text
+   * @param {string} [questionData.tag] - Tag
+   * @param {string} [questionData.difficulty] - Difficulty level
+   * @param {string} [questionData.subject] - Subject
+   * @param {string} [questionData.explanation] - Explanation
+   * @returns {Promise} Validation result
+   */
+  validateQuestion: async (questionData) => {
+    const { question, options, correctOption, answer, tag, difficulty, subject, explanation } = questionData;
+    
+    if (!question || !options || !correctOption) {
+      throw new Error('Question, options, and correctOption are required');
+    }
+
+    return await api.post('/ai/validate-question', {
+      question,
+      options,
+      correctOption,
+      answer,
+      tag,
+      difficulty,
+      subject,
+      explanation
+    });
+  },
+
+  /**
    * Check AI service health
    * @returns {Promise} Health check response
    */

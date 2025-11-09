@@ -90,7 +90,7 @@ export default function TeacherFlashcards() {
     return {
       id: deck._id,
       title: deck.title,
-      subject: deck.subject || 'General',
+      subject: deck.subject || 'Chung',
       cardCount: deck.flashcards?.length || 0,
       difficulty: difficulty,
       createdDate: deck.created_at || deck.createdAt || new Date().toISOString(),
@@ -99,8 +99,8 @@ export default function TeacherFlashcards() {
       avgScore: 0, // API doesn't provide this
       status: statusString,
       isPublic: isPublic, // Store the boolean value
-      description: deck.description || 'No description available',
-      createdBy: deck.created_by?.name || deck.createdBy || 'Unknown'
+      description: deck.description || 'Không có mô tả',
+      createdBy: deck.created_by?.name || deck.createdBy || 'Không xác định'
     };
   };
 
@@ -119,7 +119,7 @@ export default function TeacherFlashcards() {
         setFlashcardDecks(transformedDecks);
       } catch (err) {
         console.error('Failed to load decks:', err);
-        setError(err.message || 'Failed to load flashcard decks. Please try again.');
+        setError(err.message || 'Không thể tải bộ thẻ flashcard. Vui lòng thử lại.');
       } finally {
         setIsLoading(false);
       }
@@ -130,18 +130,18 @@ export default function TeacherFlashcards() {
 
   // Helper function to format time ago
   const getTimeAgo = (dateString) => {
-    if (!dateString) return 'Unknown';
+    if (!dateString) return 'Không xác định';
     
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
     
-    if (seconds < 60) return 'Just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
-    if (seconds < 2592000) return `${Math.floor(seconds / 604800)} weeks ago`;
-    return `${Math.floor(seconds / 2592000)} months ago`;
+    if (seconds < 60) return 'Vừa xong';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} phút trước`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} giờ trước`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)} ngày trước`;
+    if (seconds < 2592000) return `${Math.floor(seconds / 604800)} tuần trước`;
+    return `${Math.floor(seconds / 2592000)} tháng trước`;
   };
 
   // Reset form
@@ -207,7 +207,7 @@ export default function TeacherFlashcards() {
     e.preventDefault();
     
     if (!formData.title.trim()) {
-      setError('Please enter a deck title');
+      setError('Vui lòng nhập tiêu đề bộ thẻ');
       return;
     }
     
@@ -269,7 +269,7 @@ export default function TeacherFlashcards() {
       });
     } catch (err) {
       console.error('Failed to create deck:', err);
-      setError(err.message || 'Failed to create deck. Please try again.');
+      setError(err.message || 'Không thể tạo bộ thẻ. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -280,7 +280,7 @@ export default function TeacherFlashcards() {
     e.preventDefault();
     
     if (!formData.title.trim()) {
-      setError('Please enter a deck title');
+      setError('Vui lòng nhập tiêu đề bộ thẻ');
       return;
     }
     
@@ -328,7 +328,7 @@ export default function TeacherFlashcards() {
       resetForm();
     } catch (err) {
       console.error('Failed to update deck:', err);
-      setError(err.message || 'Failed to update deck. Please try again.');
+      setError(err.message || 'Không thể cập nhật bộ thẻ. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -352,7 +352,7 @@ export default function TeacherFlashcards() {
       setSelectedDeck(null);
     } catch (err) {
       console.error('Failed to delete deck:', err);
-      setError(err.message || 'Failed to delete deck. Please try again.');
+      setError(err.message || 'Không thể xóa bộ thẻ. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -466,10 +466,10 @@ export default function TeacherFlashcards() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
-                Flashcard Management
+                Quản lý Flashcard
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">
-                Create, manage, and track your flashcard decks for effective teaching.
+                Tạo, quản lý và theo dõi các bộ thẻ flashcard của bạn để giảng dạy hiệu quả.
               </p>
             </div>
             <button
@@ -480,7 +480,7 @@ export default function TeacherFlashcards() {
               className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              Create Deck
+              Tạo Bộ Thẻ
             </button>
           </div>
         </div>
@@ -490,7 +490,7 @@ export default function TeacherFlashcards() {
           <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Decks</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tổng Số Bộ Thẻ</p>
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{flashcardDecks.length}</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center">
@@ -502,7 +502,7 @@ export default function TeacherFlashcards() {
           <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Cards</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tổng Số Thẻ</p>
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   {flashcardDecks.reduce((sum, deck) => sum + deck.cardCount, 0)}
                 </p>
@@ -516,12 +516,12 @@ export default function TeacherFlashcards() {
           <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Public Decks</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Bộ Thẻ Công Khai</p>
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   {flashcardDecks.filter(deck => deck.status === 'active').length}
                 </p>
                 <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                  {flashcardDecks.filter(deck => deck.status === 'draft').length} private
+                  {flashcardDecks.filter(deck => deck.status === 'draft').length} riêng tư
                 </p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center">
@@ -533,7 +533,7 @@ export default function TeacherFlashcards() {
           <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Cards</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tổng Số Thẻ</p>
                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   {flashcardDecks.reduce((sum, deck) => sum + deck.cardCount, 0)}
                 </p>
@@ -548,13 +548,13 @@ export default function TeacherFlashcards() {
         {/* Filter Bar */}
         <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-5">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-            In this view show records
+            Trong chế độ xem này hiển thị bản ghi
           </h3>
           
           {filterRules.length === 0 ? (
             <div className="mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">Where</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">Ở đâu</span>
                 <select
                   value={tempFilter.field}
                   onChange={(e) => {
@@ -565,10 +565,10 @@ export default function TeacherFlashcards() {
                   }}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="title">Title</option>
-                  <option value="subject">Subject</option>
-                  <option value="difficulty">Difficulty</option>
-                  <option value="status">Status</option>
+                  <option value="title">Tiêu đề</option>
+                  <option value="subject">Môn học</option>
+                  <option value="difficulty">Độ khó</option>
+                  <option value="status">Trạng thái</option>
                 </select>
                 <select
                   value={tempFilter.operator}
@@ -580,14 +580,14 @@ export default function TeacherFlashcards() {
                   }}
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="contains">contains</option>
-                  <option value="equals">equals</option>
-                  <option value="startsWith">starts with</option>
-                  <option value="endsWith">ends with</option>
+                  <option value="contains">chứa</option>
+                  <option value="equals">bằng</option>
+                  <option value="startsWith">bắt đầu bằng</option>
+                  <option value="endsWith">kết thúc bằng</option>
                 </select>
                 <input
                   type="text"
-                  placeholder="Enter value..."
+                  placeholder="Nhập giá trị..."
                   value={tempFilter.value}
                   onChange={(e) => {
                     const newTemp = { ...tempFilter, value: e.target.value };
@@ -610,7 +610,7 @@ export default function TeacherFlashcards() {
               {filterRules.map((rule, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                    {index === 0 ? 'Where' : 'And'}
+                    {index === 0 ? 'Ở đâu' : 'Và'}
                   </span>
                   <select
                     value={rule.field}
@@ -642,7 +642,7 @@ export default function TeacherFlashcards() {
                   </select>
                   <input
                     type="text"
-                    placeholder="Enter value..."
+                    placeholder="Nhập giá trị..."
                     value={rule.value}
                     onChange={(e) => {
                       const newRules = [...filterRules];
@@ -676,7 +676,7 @@ export default function TeacherFlashcards() {
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Add filter
+              Thêm bộ lọc
             </button>
             {filterRules.length > 0 && (
               <button
@@ -686,7 +686,7 @@ export default function TeacherFlashcards() {
                 }}
                 className="text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
               >
-                Clear all filters
+                Xóa tất cả bộ lọc
               </button>
             )}
           </div>
@@ -703,25 +703,25 @@ export default function TeacherFlashcards() {
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading flashcard decks...</span>
+            <span className="ml-3 text-gray-600 dark:text-gray-400">Đang tải bộ thẻ flashcard...</span>
           </div>
         ) : filteredDecks.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center border border-gray-100 dark:border-gray-700">
             <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              No flashcard decks found
+              Không tìm thấy bộ thẻ flashcard
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               {filterRules.length > 0
-                ? 'Try adjusting your filters to see more results.'
-                : 'Get started by creating your first flashcard deck'}
+                ? 'Thử điều chỉnh bộ lọc để xem thêm kết quả.'
+                : 'Bắt đầu bằng cách tạo bộ thẻ flashcard đầu tiên của bạn'}
             </p>
             <button
               onClick={() => setShowCreateModal(true)}
               className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2"
             >
               <Plus className="w-5 h-5" />
-              Create Your First Deck
+              Tạo Bộ Thẻ Đầu Tiên
             </button>
           </div>
         ) : (
@@ -738,18 +738,18 @@ export default function TeacherFlashcards() {
                 <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-2 flex items-center justify-between flex-shrink-0">
                   <div className="flex items-center gap-2 text-white">
                     <Globe className="w-4 h-4" />
-                    <span className="text-sm font-semibold">Public Deck</span>
+                    <span className="text-sm font-semibold">Bộ Thẻ Công Khai</span>
                   </div>
-                  <span className="text-xs text-green-100">Visible to all students</span>
+                  <span className="text-xs text-green-100">Hiển thị cho tất cả học sinh</span>
                 </div>
               )}
               {deck.status !== 'active' && (
                 <div className="bg-gradient-to-r from-orange-500 to-amber-600 px-4 py-2 flex items-center justify-between flex-shrink-0">
                   <div className="flex items-center gap-2 text-white">
                     <Lock className="w-4 h-4" />
-                    <span className="text-sm font-semibold">Private Deck</span>
+                    <span className="text-sm font-semibold">Bộ Thẻ Riêng Tư</span>
                   </div>
-                  <span className="text-xs text-orange-100">Only visible to you</span>
+                  <span className="text-xs text-orange-100">Chỉ bạn mới thấy</span>
                 </div>
               )}
               
@@ -761,11 +761,11 @@ export default function TeacherFlashcards() {
                         {deck.title}
                       </h3>
                       {deck.status === 'draft' && (
-                        <Lock className="w-4 h-4 text-gray-400 flex-shrink-0" title="Private deck" />
+                        <Lock className="w-4 h-4 text-gray-400 flex-shrink-0" title="Bộ thẻ riêng tư" />
                       )}
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-3 min-h-[4rem]">
-                      {deck.description || 'No description available'}
+                      {deck.description || 'Không có mô tả'}
                     </p>
                   </div>
                   <div className="flex flex-col gap-2 ml-4 flex-shrink-0">
@@ -777,21 +777,21 @@ export default function TeacherFlashcards() {
 
                 <div className="space-y-3 mb-4 flex-shrink-0">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Cards:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Thẻ:</span>
                     <span className="font-medium text-gray-900 dark:text-white">{deck.cardCount}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Students:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Học sinh:</span>
                     <span className="font-medium text-gray-900 dark:text-white">{deck.students}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Avg Score:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Điểm TB:</span>
                     <span className={`font-medium ${getScoreColor(deck.avgScore)}`}>
                       {deck.avgScore}%
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Last Modified:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Sửa lần cuối:</span>
                     <span className="font-medium text-gray-900 dark:text-white">{deck.lastModified}</span>
                   </div>
                 </div>
@@ -800,41 +800,41 @@ export default function TeacherFlashcards() {
                   <button 
                     onClick={() => navigate(`/dashboard/teacher/flashcards/${deck.id}/study`)}
                     className="w-12 h-12 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all duration-200 flex items-center justify-center group relative"
-                    title="Preview"
+                    title="Xem trước"
                   >
                     <Play className="w-5 h-5" />
                     <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                      Preview
+                      Xem trước
                     </span>
                   </button>
                   <button 
                     onClick={() => navigate(`/dashboard/teacher/flashcards/${deck.id}`)}
                     className="w-12 h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 flex items-center justify-center group relative"
-                    title="View"
+                    title="Xem"
                   >
                     <Eye className="w-5 h-5" />
                     <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                      View
+                      Xem
                     </span>
                   </button>
                   <button 
                     onClick={() => openEditModal(deck)}
                     className="w-12 h-12 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center justify-center group relative"
-                    title="Edit"
+                    title="Chỉnh sửa"
                   >
                     <Edit className="w-5 h-5" />
                     <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                      Edit
+                      Chỉnh sửa
                     </span>
                   </button>
                   <button 
                     onClick={() => openDeleteModal(deck)}
                     className="w-12 h-12 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 flex items-center justify-center group relative"
-                    title="Delete"
+                    title="Xóa"
                   >
                     <Trash2 className="w-5 h-5" />
                     <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                      Delete
+                      Xóa
                     </span>
                   </button>
                 </div>
@@ -847,10 +847,10 @@ export default function TeacherFlashcards() {
           {filteredDecks.length > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-6">
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>
+                Hiển thị <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>
                 {' - '}
                 <span className="font-medium text-gray-900 dark:text-white">{Math.min(endIndex, filteredDecks.length)}</span>
-                {' of '}
+                {' trong tổng số '}
                 <span className="font-medium text-gray-900 dark:text-white">{filteredDecks.length}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -863,10 +863,10 @@ export default function TeacherFlashcards() {
                       : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
-                  Prev
+                  Trước
                 </button>
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
+                  Trang <span className="font-semibold">{currentPage}</span> / <span className="font-semibold">{totalPages}</span>
                 </span>
                 <button
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
@@ -877,7 +877,7 @@ export default function TeacherFlashcards() {
                       : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
-                  Next
+                  Sau
                 </button>
               </div>
             </div>
@@ -894,7 +894,7 @@ export default function TeacherFlashcards() {
               <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <form onSubmit={handleCreateDeck}>
                   <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Create New Flashcard Deck</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tạo Bộ Thẻ Flashcard Mới</h3>
                   </div>
                   
                   <div className="px-6 py-4 space-y-4">
@@ -1019,34 +1019,34 @@ export default function TeacherFlashcards() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Deck Title <span className="text-red-500">*</span>
+                        Tiêu đề Bộ Thẻ <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter deck title"
+                        placeholder="Nhập tiêu đề bộ thẻ"
                         required
                       />
                     </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Subject
+                        Môn học
                       </label>
                       <input
                         type="text"
                         value={formData.subject}
                         onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="e.g., Biology, Mathematics"
+                        placeholder="ví dụ: Sinh học, Toán học"
                       />
                     </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Difficulty Level
+                        Mức Độ Khó
                       </label>
                       <select 
                         value={formData.difficulty}
@@ -1061,14 +1061,14 @@ export default function TeacherFlashcards() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Description
+                        Mô tả
                       </label>
                       <textarea
                         rows={3}
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                        placeholder="Describe the content of this deck"
+                        placeholder="Mô tả nội dung của bộ thẻ này"
                       />
                     </div>
                     
@@ -1090,19 +1090,19 @@ export default function TeacherFlashcards() {
                             {formData.isPublic ? (
                               <>
                                 <Globe className="w-4 h-4 text-green-600 dark:text-green-400" />
-                                Make this deck public
+                                Công khai bộ thẻ này
                               </>
                             ) : (
                               <>
                                 <Lock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                Keep this deck private
+                                Giữ bộ thẻ này ở chế độ riêng tư
                               </>
                             )}
                           </label>
                           <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                             {formData.isPublic 
-                              ? 'Students will be able to view and study this deck' 
-                              : 'Only you can see this deck'}
+                              ? 'Học sinh sẽ có thể xem và học bộ thẻ này' 
+                              : 'Chỉ bạn mới thấy bộ thẻ này'}
                           </p>
                         </div>
                       </div>
@@ -1119,7 +1119,7 @@ export default function TeacherFlashcards() {
                       disabled={isSubmitting}
                       className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Cancel
+                      Hủy
                     </button>
                     <button 
                       type="submit"
@@ -1129,12 +1129,12 @@ export default function TeacherFlashcards() {
                       {isSubmitting ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Creating...
+                          Đang tạo...
                         </>
                       ) : (
                         <>
                           <Plus className="w-4 h-4" />
-                          Create Deck
+                          Tạo Bộ Thẻ
                         </>
                       )}
                     </button>
@@ -1154,40 +1154,40 @@ export default function TeacherFlashcards() {
               <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <form onSubmit={handleEditDeck}>
                   <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Flashcard Deck</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Chỉnh Sửa Bộ Thẻ Flashcard</h3>
                   </div>
                   
                   <div className="px-6 py-4 space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Deck Title <span className="text-red-500">*</span>
+                        Tiêu đề Bộ Thẻ <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter deck title"
+                        placeholder="Nhập tiêu đề bộ thẻ"
                         required
                       />
                     </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Subject
+                        Môn học
                       </label>
                       <input
                         type="text"
                         value={formData.subject}
                         onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="e.g., Biology, Mathematics"
+                        placeholder="ví dụ: Sinh học, Toán học"
                       />
                     </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Difficulty Level
+                        Mức Độ Khó
                       </label>
                       <select 
                         value={formData.difficulty}
@@ -1202,14 +1202,14 @@ export default function TeacherFlashcards() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Description
+                        Mô tả
                       </label>
                       <textarea
                         rows={3}
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                        placeholder="Describe the content of this deck"
+                        placeholder="Mô tả nội dung của bộ thẻ này"
                       />
                     </div>
                     
@@ -1231,19 +1231,19 @@ export default function TeacherFlashcards() {
                             {formData.isPublic ? (
                               <>
                                 <Globe className="w-4 h-4 text-green-600 dark:text-green-400" />
-                                Make this deck public
+                                Công khai bộ thẻ này
                               </>
                             ) : (
                               <>
                                 <Lock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                Keep this deck private
+                                Giữ bộ thẻ này ở chế độ riêng tư
                               </>
                             )}
                           </label>
                           <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                             {formData.isPublic 
-                              ? 'Students will be able to view and study this deck' 
-                              : 'Only you can see this deck'}
+                              ? 'Học sinh sẽ có thể xem và học bộ thẻ này' 
+                              : 'Chỉ bạn mới thấy bộ thẻ này'}
                           </p>
                         </div>
                       </div>
@@ -1261,7 +1261,7 @@ export default function TeacherFlashcards() {
                       disabled={isSubmitting}
                       className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Cancel
+                      Hủy
                     </button>
                     <button 
                       type="submit"
@@ -1271,12 +1271,12 @@ export default function TeacherFlashcards() {
                       {isSubmitting ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Updating...
+                          Đang cập nhật...
                         </>
                       ) : (
                         <>
                           <Edit className="w-4 h-4" />
-                          Update Deck
+                          Cập nhật Bộ Thẻ
                         </>
                       )}
                     </button>
@@ -1300,15 +1300,15 @@ export default function TeacherFlashcards() {
                   </div>
                   
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
-                    Delete Deck
+                    Xóa Bộ Thẻ
                   </h3>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">
-                    Are you sure you want to delete "{selectedDeck.title}"?
+                    Bạn có chắc chắn muốn xóa "{selectedDeck.title}"?
                   </p>
                   
                   <p className="text-sm text-red-600 dark:text-red-400 text-center">
-                    This action cannot be undone and will delete all {selectedDeck.cardCount} flashcards in this deck.
+                    Hành động này không thể hoàn tác và sẽ xóa tất cả {selectedDeck.cardCount} thẻ flashcard trong bộ thẻ này.
                   </p>
                 </div>
                 
@@ -1322,7 +1322,7 @@ export default function TeacherFlashcards() {
                     disabled={isSubmitting}
                     className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    Hủy
                   </button>
                   <button 
                     onClick={handleDeleteDeck}
@@ -1332,12 +1332,12 @@ export default function TeacherFlashcards() {
                     {isSubmitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Deleting...
+                        Đang xóa...
                       </>
                     ) : (
                       <>
                         <Trash2 className="w-4 h-4" />
-                        Delete Deck
+                        Xóa Bộ Thẻ
                       </>
                     )}
                   </button>
