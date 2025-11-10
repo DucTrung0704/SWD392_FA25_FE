@@ -55,7 +55,7 @@ export default function Login() {
 
     // Basic validation
     if (!email || !password) {
-      setError('Please fill in all fields');
+      setError('Vui lòng điền đầy đủ thông tin');
       setLoading(false);
       return;
     }
@@ -65,7 +65,7 @@ export default function Login() {
       refresh(); // Refresh auth state
       navigate(getDashboardPathForRole(loggedIn.role));
     } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.');
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ export default function Login() {
       refresh(); // Refresh auth state
       navigate(getDashboardPathForRole(loggedIn.role));
     } catch (err) {
-      setError(err.message || 'Google login failed. Please try again.');
+      setError(err.message || 'Đăng nhập bằng Google thất bại. Vui lòng thử lại.');
     } finally {
       setGoogleLoading(false);
     }
@@ -98,10 +98,10 @@ export default function Login() {
               </div>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent mb-2">
-              Welcome Back
+              Chào Mừng Trở Lại
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Sign in to continue your learning journey
+              Đăng nhập để tiếp tục hành trình học tập của bạn
             </p>
           </CardHeader>
 
@@ -129,10 +129,10 @@ export default function Login() {
           <form onSubmit={handleLogin} className="space-y-5 px-6">
             <div className="space-y-4">
               <Input 
-                label="Email Address" 
+                label="Địa Chỉ Email" 
                 value={email} 
                 onChange={e => setEmail(e.target.value)} 
-                placeholder="you@example.com" 
+                placeholder="ban@example.com" 
                 type="email"
                 required
                 icon={<Mail className="w-4 h-4" />}
@@ -140,7 +140,7 @@ export default function Login() {
               />
               
               <Input 
-                label="Password" 
+                label="Mật Khẩu" 
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
                 placeholder="••••••••" 
@@ -157,7 +157,7 @@ export default function Login() {
                 to="/forgot-password" 
                 className="text-sm text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:underline transition-colors duration-200"
               >
-                Forgot your password?
+                Quên mật khẩu?
               </Link>
             </div>
 
@@ -170,12 +170,12 @@ export default function Login() {
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Signing In...
+                  Đang đăng nhập...
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
                   <Rocket className="w-4 h-4" />
-                  Sign In
+                  Đăng Nhập
                 </div>
               )}
             </Button>
@@ -188,7 +188,7 @@ export default function Login() {
                 <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Or continue with</span>
+                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Hoặc tiếp tục với</span>
               </div>
             </div>
           </div>
@@ -204,12 +204,12 @@ export default function Login() {
               {googleLoading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
-                  Connecting...
+                  Đang kết nối...
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
                   <GoogleIcon className="w-5 h-5" />
-                  Sign in with Google
+                  Đăng nhập bằng Google
                 </div>
               )}
             </Button>
@@ -219,7 +219,7 @@ export default function Login() {
           <CardFooter className="text-center pt-6 border-t border-gray-200 dark:border-gray-700">
             <div className="space-y-4">
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Don't have an account? Choose your role:
+                Chưa có tài khoản? Chọn vai trò của bạn:
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link 
@@ -227,14 +227,14 @@ export default function Login() {
                   className="flex-1 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors duration-200 text-sm font-medium text-center flex items-center justify-center gap-2"
                 >
                   <GraduationCap className="w-4 h-4" />
-                  Student
+                  Học Sinh
                 </Link>
                 <Link 
                   to="/register/teacher" 
                   className="flex-1 px-4 py-2 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800 rounded-xl hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors duration-200 text-sm font-medium text-center flex items-center justify-center gap-2"
                 >
                   <UserCheck className="w-4 h-4" />
-                  Teacher
+                  Giáo Viên
                 </Link>
               </div>
               
@@ -249,7 +249,7 @@ export default function Login() {
         <div className="text-center mt-6 sm:mt-8">
           <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
             <Lock className="w-3 h-3" />
-            Your data is securely encrypted and protected
+            Dữ liệu của bạn được mã hóa và bảo vệ an toàn
           </p>
         </div>
       </div>

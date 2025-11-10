@@ -69,12 +69,12 @@ export default function TeacherClassDetail() {
       const now = new Date();
       const seconds = Math.floor((now - date) / 1000);
       
-      if (seconds < 60) return 'Just now';
-      if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
-      if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-      if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
-      if (seconds < 2592000) return `${Math.floor(seconds / 604800)} weeks ago`;
-      return `${Math.floor(seconds / 2592000)} months ago`;
+      if (seconds < 60) return 'Vừa xong';
+      if (seconds < 3600) return `${Math.floor(seconds / 60)} phút trước`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)} giờ trước`;
+      if (seconds < 604800) return `${Math.floor(seconds / 86400)} ngày trước`;
+      if (seconds < 2592000) return `${Math.floor(seconds / 604800)} tuần trước`;
+      return `${Math.floor(seconds / 2592000)} tháng trước`;
     } catch (e) {
       return 'Unknown';
     }
@@ -603,19 +603,19 @@ export default function TeacherClassDetail() {
       case 'completed':
         return (
           <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-400 rounded-full">
-            Completed
+            Đã hoàn thành
           </span>
         );
       case 'in_progress':
         return (
           <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-400 rounded-full">
-            In Progress
+            Đang làm
           </span>
         );
       default:
         return (
           <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 rounded-full">
-            {status || 'Unknown'}
+            {status || 'Không xác định'}
           </span>
         );
     }
@@ -623,7 +623,7 @@ export default function TeacherClassDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-4">
@@ -638,7 +638,7 @@ export default function TeacherClassDetail() {
 
   if (error && !classData) {
     return (
-      <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-4">
@@ -664,15 +664,15 @@ export default function TeacherClassDetail() {
   }
 
   return (
-    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <button
           onClick={() => navigate('/dashboard/teacher/classes')}
-          className="mb-6 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          className="mb-6 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to Classes
+          Quay lại Lớp học
         </button>
 
         {/* Class Header */}
@@ -696,27 +696,27 @@ export default function TeacherClassDetail() {
                       {classData.isActive ? (
                         <>
                           <CheckCircle className="w-4 h-4" />
-                          Active
+                          Hoạt động
                         </>
                       ) : (
                         <>
                           <XCircle className="w-4 h-4" />
-                          Inactive
+                          Không hoạt động
                         </>
                       )}
                     </span>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 mb-3">
-                    {classData.description || 'No description available'}
+                    {classData.description || 'Chưa có mô tả'}
                   </p>
                   <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4" />
-                      <span>Class Code: <span className="font-semibold text-gray-900 dark:text-white">{classData.classCode}</span></span>
+                      <span>Mã lớp: <span className="font-semibold text-gray-900 dark:text-white">{classData.classCode}</span></span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4" />
-                      <span>Created {getTimeAgo(classData.createdAt)}</span>
+                      <span>Tạo {getTimeAgo(classData.createdAt)}</span>
                     </div>
                   </div>
                 </div>
@@ -726,17 +726,17 @@ export default function TeacherClassDetail() {
             <div className="flex gap-3">
               <button 
                 onClick={openEditModal}
-                className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
               >
                 <Edit className="w-4 h-4" />
-                Edit Class
+                Chỉnh sửa
               </button>
               <button 
                 onClick={() => setShowDeleteModal(true)}
                 className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2"
               >
                 <Trash2 className="w-4 h-4" />
-                Delete
+                Xóa
               </button>
             </div>
           </div>
@@ -744,47 +744,47 @@ export default function TeacherClassDetail() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-orange-100 dark:border-orange-900/50 hover:shadow-xl transition-all">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Students</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tổng số học sinh</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {classData.students.length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Users className="w-6 h-6 text-white" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-orange-100 dark:border-orange-900/50 hover:shadow-xl transition-all">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Exams</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tổng số bài thi</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {classData.exams.length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                <FileText className="w-6 h-6 text-white" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-orange-100 dark:border-orange-900/50 hover:shadow-xl transition-all">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Status</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Trạng thái</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
-                  {classData.isActive ? 'Active' : 'Inactive'}
+                  {classData.isActive ? 'Hoạt động' : 'Không hoạt động'}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
                 {classData.isActive ? (
-                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <CheckCircle className="w-6 h-6 text-white" />
                 ) : (
-                  <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  <XCircle className="w-6 h-6 text-white" />
                 )}
               </div>
             </div>
@@ -792,10 +792,10 @@ export default function TeacherClassDetail() {
         </div>
 
         {/* Students Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8 border border-orange-100 dark:border-orange-900/50 mb-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Students ({classData.students.length})
+              Học sinh ({classData.students.length})
             </h2>
           </div>
 
@@ -815,7 +815,7 @@ export default function TeacherClassDetail() {
                 return (
                   <div
                     key={studentIdStr || index}
-                    className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
+                    className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-colors"
                   >
                     <div className="flex items-start gap-3 mb-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -835,7 +835,7 @@ export default function TeacherClassDetail() {
                           </p>
                         )}
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                          Member
+                          Thành viên
                         </p>
                       </div>
                     </div>
@@ -845,10 +845,10 @@ export default function TeacherClassDetail() {
                         openRemoveStudentModal(studentIdStr);
                       }}
                       className="w-full px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
-                      title="Remove student from class"
+                      title="Xóa học sinh khỏi lớp"
                     >
                       <Trash2 className="w-4 h-4" />
-                      Remove
+                      Xóa
                     </button>
                   </div>
                 );
@@ -858,27 +858,27 @@ export default function TeacherClassDetail() {
             <div className="text-center py-12">
               <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                No students enrolled
+                Chưa có học sinh
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Students can join this class using the class code: <span className="font-semibold text-gray-900 dark:text-white">{classData.classCode}</span>
+                Học sinh có thể tham gia lớp này bằng mã lớp: <span className="font-semibold text-gray-900 dark:text-white">{classData.classCode}</span>
               </p>
             </div>
           )}
         </div>
 
         {/* Exams Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8 border border-orange-100 dark:border-orange-900/50 mb-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Exams ({classData.exams.length})
+              Bài thi ({classData.exams.length})
             </h2>
             <button
               onClick={openAddExamModal}
-              className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              Add Exam
+              Thêm bài thi
             </button>
           </div>
 
@@ -894,7 +894,7 @@ export default function TeacherClassDetail() {
                 return (
                   <div
                     key={examId || index}
-                    className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
+                    className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-colors"
                   >
                     <div className="flex items-start gap-3 mb-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -902,28 +902,28 @@ export default function TeacherClassDetail() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p 
-                          className="text-sm font-medium text-gray-900 dark:text-white truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                          className="text-sm font-medium text-gray-900 dark:text-white truncate cursor-pointer hover:text-orange-600 dark:hover:text-orange-400"
                           onClick={() => navigate(`/dashboard/teacher/exams/${examId}`)}
                         >
-                          {exam?.title || `Exam ${index + 1}`}
+                          {exam?.title || `Bài thi ${index + 1}`}
                         </p>
                         {exam && (
                           <div className="mt-1 space-y-1">
                             {exam.totalQuestions > 0 && (
                               <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {exam.totalQuestions} questions
+                                {exam.totalQuestions} câu hỏi
                               </p>
                             )}
                             {exam.timeLimit && (
                               <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {exam.timeLimit} min
+                                {exam.timeLimit} phút
                               </p>
                             )}
                           </div>
                         )}
                         {!exam && (
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Loading...
+                            Đang tải...
                           </p>
                         )}
                       </div>
@@ -934,10 +934,10 @@ export default function TeacherClassDetail() {
                           e.stopPropagation();
                           navigate(`/dashboard/teacher/exams/${examId}`);
                         }}
-                        className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
+                        className="flex-1 px-3 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-1"
                       >
                         <Eye className="w-4 h-4" />
-                        View
+                        Xem
                       </button>
                       <button
                         onClick={(e) => {
@@ -945,7 +945,7 @@ export default function TeacherClassDetail() {
                           openRemoveExamModal(examId);
                         }}
                         className="px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-1"
-                        title="Remove exam from class"
+                        title="Xóa bài thi khỏi lớp"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -958,35 +958,35 @@ export default function TeacherClassDetail() {
             <div className="text-center py-12">
               <FileText className="w-16 h-16 mx-auto mb-4 text-gray-400" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                No exams assigned
+                Chưa có bài thi
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                This class doesn't have any exams yet. Create exams to assign them to this class.
+                Lớp này chưa có bài thi nào. Tạo bài thi để gán cho lớp này.
               </p>
               <button
                 onClick={() => navigate('/dashboard/teacher/exams')}
-                className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl"
               >
-                Create Exam
+                Tạo bài thi
               </button>
             </div>
           )}
         </div>
 
         {/* Submissions Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8 border border-orange-100 dark:border-orange-900/50 mb-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Submissions ({submissionsData?.total || 0})
+              Bài nộp ({submissionsData?.total || 0})
             </h2>
             <div className="flex items-center gap-3">
               <Filter className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               <select
                 value={filterExamId}
                 onChange={(e) => setFilterExamId(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="px-4 py-2 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all text-sm"
               >
-                <option value="">All Exams</option>
+                <option value="">Tất cả bài thi</option>
                 {classData.exams.map((examIdItem, index) => {
                   // Ensure examId is a string
                   const examId = typeof examIdItem === 'string' 
@@ -1019,7 +1019,7 @@ export default function TeacherClassDetail() {
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mb-1">Total Submissions</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mb-1">Tổng bài nộp</p>
                     <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
                       {submissionsData.total || 0}
                     </p>
@@ -1030,7 +1030,7 @@ export default function TeacherClassDetail() {
               <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-green-600 dark:text-green-400 mb-1">Students</p>
+                    <p className="text-xs text-green-600 dark:text-green-400 mb-1">Học sinh</p>
                     <p className="text-2xl font-bold text-green-900 dark:text-green-100">
                       {submissionsData.total_students || 0}
                     </p>
@@ -1041,7 +1041,7 @@ export default function TeacherClassDetail() {
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-purple-600 dark:text-purple-400 mb-1">Average Score</p>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mb-1">Điểm trung bình</p>
                     <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
                       {submissions.length > 0 
                         ? Math.round(
@@ -1059,7 +1059,7 @@ export default function TeacherClassDetail() {
               <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-xl p-4 border border-orange-200 dark:border-orange-800">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-orange-600 dark:text-orange-400 mb-1">Completed</p>
+                    <p className="text-xs text-orange-600 dark:text-orange-400 mb-1">Đã hoàn thành</p>
                     <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
                       {submissions.filter(s => s.status === 'completed').length}
                     </p>
@@ -1085,8 +1085,8 @@ export default function TeacherClassDetail() {
                 </p>
               )}
               <div className="flex flex-wrap gap-4 text-xs text-gray-500 dark:text-gray-400">
-                <span>Total Questions: {submissionsData.exam.total_questions || 0}</span>
-                <span>Time Limit: {submissionsData.exam.time_limit || 0} min</span>
+                <span>Tổng câu hỏi: {submissionsData.exam.total_questions || 0}</span>
+                <span>Thời gian: {submissionsData.exam.time_limit || 0} phút</span>
               </div>
             </div>
           )}
@@ -1094,20 +1094,20 @@ export default function TeacherClassDetail() {
           {isLoadingSubmissions ? (
             <div className="flex items-center justify-center py-12">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-gray-600 dark:text-gray-400">Loading submissions...</p>
+                <div className="w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-gray-600 dark:text-gray-400">Đang tải bài nộp...</p>
               </div>
             </div>
           ) : submissions.length === 0 ? (
             <div className="text-center py-12">
               <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                No submissions found
+                Chưa có bài nộp
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
                 {filterExamId 
-                  ? 'No submissions for this exam yet. Students need to take the exam first.'
-                  : 'No submissions in this class yet. Students need to take exams first.'}
+                  ? 'Chưa có bài nộp cho bài thi này. Học sinh cần làm bài thi trước.'
+                  : 'Chưa có bài nộp trong lớp này. Học sinh cần làm bài thi trước.'}
               </p>
             </div>
           ) : (
@@ -1116,22 +1116,22 @@ export default function TeacherClassDetail() {
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Student
+                      Học sinh
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Score
+                      Điểm
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Status
+                      Trạng thái
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Time Spent
+                      Thời gian làm
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Submitted
+                      Đã nộp
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Actions
+                      Thao tác
                     </th>
                   </tr>
                 </thead>
@@ -1192,10 +1192,10 @@ export default function TeacherClassDetail() {
                         <td className="px-4 py-4 whitespace-nowrap text-sm">
                           <button
                             onClick={() => openSubmissionModal(submission)}
-                            className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1"
+                            className="px-3 py-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all flex items-center gap-1"
                           >
                             <Eye className="w-4 h-4" />
-                            View
+                            Xem
                           </button>
                         </td>
                       </tr>
@@ -1208,43 +1208,43 @@ export default function TeacherClassDetail() {
         </div>
 
         {/* Class Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8 border border-orange-100 dark:border-orange-900/50">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Class Information
+            Thông tin lớp học
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Class Name</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tên lớp</p>
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {classData.name}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Class Code</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Mã lớp</p>
               <p className="text-sm font-medium text-gray-900 dark:text-white font-mono">
                 {classData.classCode}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Created At</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Ngày tạo</p>
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatDate(classData.createdAt)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Last Updated</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Cập nhật lần cuối</p>
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatDate(classData.updatedAt)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Status</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Trạng thái</p>
               <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {classData.isActive ? 'Active' : 'Inactive'}
+                {classData.isActive ? 'Hoạt động' : 'Không hoạt động'}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Teacher ID</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">ID Giáo viên</p>
               <p className="text-sm font-medium text-gray-900 dark:text-white font-mono text-xs">
                 {typeof classData.teacher_id === 'object' 
                   ? (classData.teacher_id._id || classData.teacher_id.id || 'N/A')
@@ -1262,7 +1262,7 @@ export default function TeacherClassDetail() {
               
               <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Class</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Chỉnh sửa lớp học</h3>
                 </div>
                 
                 <form onSubmit={handleEditClass}>
@@ -1279,14 +1279,14 @@ export default function TeacherClassDetail() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Class Name <span className="text-red-500">*</span>
+                        Tên lớp <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={editForm.name}
                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="e.g., Mathematics 10A"
+                        className="w-full px-4 py-2 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all"
+                        placeholder="Ví dụ: Toán 10A"
                         required
                         disabled={isSubmitting}
                       />
@@ -1294,14 +1294,14 @@ export default function TeacherClassDetail() {
                   
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Description <span className="text-red-500">*</span>
+                        Mô tả <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         rows={4}
                         value={editForm.description}
                         onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                        placeholder="Describe the class content and objectives"
+                        className="w-full px-4 py-2 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-400 resize-none"
+                        placeholder="Mô tả nội dung và mục tiêu của lớp học"
                         required
                         disabled={isSubmitting}
                       />
@@ -1313,11 +1313,11 @@ export default function TeacherClassDetail() {
                         id="isActiveEdit"
                         checked={editForm.isActive}
                         onChange={(e) => setEditForm({ ...editForm, isActive: e.target.checked })}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                        className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 dark:focus:ring-orange-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                         disabled={isSubmitting}
                       />
                       <label htmlFor="isActiveEdit" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Active (Class is currently active and visible to students)
+                        Hoạt động (Lớp học hiện đang hoạt động và hiển thị cho học sinh)
                       </label>
                     </div>
                   </div>
@@ -1332,22 +1332,22 @@ export default function TeacherClassDetail() {
                       disabled={isSubmitting}
                       className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Cancel
+                      Hủy
                     </button>
                     <button 
                       type="submit"
                       disabled={isSubmitting}
-                      className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Updating...
+                          Đang cập nhật...
                         </>
                       ) : (
                         <>
                           <Edit className="w-4 h-4" />
-                          Update Class
+                          Cập nhật lớp học
                         </>
                       )}
                     </button>
@@ -1371,15 +1371,15 @@ export default function TeacherClassDetail() {
                   </div>
                   
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
-                    Delete Class
+                    Xóa lớp học
                   </h3>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">
-                    Are you sure you want to delete "{classData?.name}"?
+                    Bạn có chắc chắn muốn xóa "{classData?.name}"?
                   </p>
                   
                   <p className="text-sm text-red-600 dark:text-red-400 text-center mb-4">
-                    This action cannot be undone. All students and exams associated with this class will be affected.
+                    Hành động này không thể hoàn tác. Tất cả học sinh và bài thi liên quan đến lớp này sẽ bị ảnh hưởng.
                   </p>
                   
                   {deleteError && (
@@ -1399,7 +1399,7 @@ export default function TeacherClassDetail() {
                     disabled={isDeleting}
                     className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    Hủy
                   </button>
                   <button 
                     onClick={handleDeleteClass}
@@ -1409,12 +1409,12 @@ export default function TeacherClassDetail() {
                     {isDeleting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Deleting...
+                        Đang xóa...
                       </>
                     ) : (
                       <>
                         <Trash2 className="w-4 h-4" />
-                        Delete Class
+                        Xóa lớp học
                       </>
                     )}
                   </button>
@@ -1432,7 +1432,7 @@ export default function TeacherClassDetail() {
               
               <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Add Exam to Class</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Thêm bài thi vào lớp</h3>
                 </div>
                 
                 <form onSubmit={handleAddExam}>
@@ -1450,20 +1450,20 @@ export default function TeacherClassDetail() {
                     {isLoadingExams ? (
                       <div className="flex items-center justify-center py-8">
                         <div className="flex flex-col items-center gap-4">
-                          <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                          <p className="text-gray-600 dark:text-gray-400 text-sm">Loading available exams...</p>
+                          <div className="w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+                          <p className="text-gray-600 dark:text-gray-400 text-sm">Đang tải danh sách bài thi...</p>
                         </div>
                       </div>
                     ) : availableExams.length === 0 ? (
                       <div className="text-center py-8">
                         <FileText className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                          No exams available
+                          Không có bài thi
                         </h3>
                         <p className="text-gray-600 dark:text-gray-400 mb-6">
                           {classData?.exams.length > 0 
-                            ? 'All your exams are already assigned to this class.'
-                            : 'You need to create exams first before adding them to this class.'}
+                            ? 'Tất cả bài thi của bạn đã được gán cho lớp này.'
+                            : 'Bạn cần tạo bài thi trước khi thêm vào lớp này.'}
                         </p>
                         <button
                           type="button"
@@ -1471,27 +1471,27 @@ export default function TeacherClassDetail() {
                             setShowAddExamModal(false);
                             navigate('/dashboard/teacher/exams');
                           }}
-                          className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                          className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl"
                         >
-                          Create Exam
+                          Tạo bài thi
                         </button>
                       </div>
                     ) : (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Select Exam <span className="text-red-500">*</span>
+                          Chọn bài thi <span className="text-red-500">*</span>
                         </label>
                         <select
                           value={selectedExamId}
                           onChange={(e) => setSelectedExamId(e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all"
                           required
                           disabled={isAddingExam}
                         >
-                          <option value="">-- Select an exam --</option>
+                          <option value="">-- Chọn bài thi --</option>
                           {availableExams.map((exam) => (
                             <option key={exam.id} value={exam.id}>
-                              {exam.title} ({exam.totalQuestions} questions, {exam.timeLimit} min)
+                              {exam.title} ({exam.totalQuestions} câu hỏi, {exam.timeLimit} phút)
                             </option>
                           ))}
                         </select>
@@ -1503,27 +1503,27 @@ export default function TeacherClassDetail() {
                               return selectedExam ? (
                                 <div className="space-y-2">
                                   <div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Title</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Tiêu đề</p>
                                     <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedExam.title}</p>
                                   </div>
                                   {selectedExam.description && (
                                     <div>
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Description</p>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Mô tả</p>
                                       <p className="text-sm text-gray-700 dark:text-gray-300">{selectedExam.description}</p>
                                     </div>
                                   )}
                                   <div className="flex gap-4">
                                     <div>
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Subject</p>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Môn học</p>
                                       <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedExam.subject}</p>
                                   </div>
                                     <div>
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Questions</p>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Câu hỏi</p>
                                       <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedExam.totalQuestions}</p>
                                     </div>
                                     <div>
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Time Limit</p>
-                                      <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedExam.timeLimit} min</p>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Thời gian</p>
+                                      <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedExam.timeLimit} phút</p>
                                     </div>
                                   </div>
                                 </div>
@@ -1547,22 +1547,22 @@ export default function TeacherClassDetail() {
                         disabled={isAddingExam}
                         className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Cancel
+                        Hủy
                       </button>
                       <button 
                         type="submit"
                         disabled={isAddingExam || !selectedExamId}
-                        className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isAddingExam ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Adding...
+                            Đang thêm...
                           </>
                         ) : (
                           <>
                             <Plus className="w-4 h-4" />
-                            Add Exam
+                            Thêm bài thi
                           </>
                         )}
                       </button>
@@ -1587,15 +1587,15 @@ export default function TeacherClassDetail() {
                   </div>
                   
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
-                    Remove Exam from Class
+                    Xóa bài thi khỏi lớp
                   </h3>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">
-                    Are you sure you want to remove "{examToRemove?.title || 'this exam'}" from this class?
+                    Bạn có chắc chắn muốn xóa "{examToRemove?.title || 'bài thi này'}" khỏi lớp này?
                   </p>
                   
                   <p className="text-sm text-red-600 dark:text-red-400 text-center mb-4">
-                    Students will no longer have access to this exam through this class. The exam itself will not be deleted.
+                    Học sinh sẽ không còn quyền truy cập bài thi này thông qua lớp này. Bài thi sẽ không bị xóa.
                   </p>
                   
                   {removeExamError && (
@@ -1616,7 +1616,7 @@ export default function TeacherClassDetail() {
                     disabled={isRemovingExam}
                     className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    Hủy
                   </button>
                   <button 
                     onClick={handleRemoveExam}
@@ -1626,12 +1626,12 @@ export default function TeacherClassDetail() {
                     {isRemovingExam ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Removing...
+                        Đang xóa...
                       </>
                     ) : (
                       <>
                         <Trash2 className="w-4 h-4" />
-                        Remove Exam
+                        Xóa bài thi
                       </>
                     )}
                   </button>
@@ -1654,11 +1654,11 @@ export default function TeacherClassDetail() {
                   </div>
                   
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
-                    Remove Student from Class
+                    Xóa học sinh khỏi lớp
                   </h3>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">
-                    Are you sure you want to remove "{studentToRemove?.name || 'this student'}" from this class?
+                    Bạn có chắc chắn muốn xóa "{studentToRemove?.name || 'học sinh này'}" khỏi lớp này?
                   </p>
                   
                   {studentToRemove?.email && (
@@ -1668,7 +1668,7 @@ export default function TeacherClassDetail() {
                   )}
                   
                   <p className="text-sm text-red-600 dark:text-red-400 text-center mb-4">
-                    The student will lose access to this class and all its exams. They can rejoin using the class code if needed.
+                    Học sinh sẽ mất quyền truy cập vào lớp này và tất cả bài thi của lớp. Họ có thể tham gia lại bằng mã lớp nếu cần.
                   </p>
                   
                   {removeStudentError && (
@@ -1689,7 +1689,7 @@ export default function TeacherClassDetail() {
                     disabled={isRemovingStudent}
                     className="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    Hủy
                   </button>
                   <button 
                     onClick={handleRemoveStudent}
@@ -1699,12 +1699,12 @@ export default function TeacherClassDetail() {
                     {isRemovingStudent ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Removing...
+                        Đang xóa...
                       </>
                     ) : (
                       <>
                         <Trash2 className="w-4 h-4" />
-                        Remove Student
+                        Xóa học sinh
                       </>
                     )}
                   </button>
@@ -1724,7 +1724,7 @@ export default function TeacherClassDetail() {
                 <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Submission Details
+                      Chi tiết bài nộp
                     </h3>
                     <button
                       onClick={() => setShowSubmissionModal(false)}
@@ -1739,25 +1739,25 @@ export default function TeacherClassDetail() {
                   {/* Submission Info */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Score</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Điểm</p>
                       <p className={`text-lg font-bold ${getScoreColor(selectedSubmission.score || 0, selectedSubmission.total_questions || 1)}`}>
                         {selectedSubmission.score || 0}/{selectedSubmission.total_questions || 0}
                       </p>
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Correct</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Đúng</p>
                       <p className="text-lg font-bold text-gray-900 dark:text-white">
                         {selectedSubmission.correct_answers || 0}
                       </p>
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Time Spent</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Thời gian làm</p>
                       <p className="text-lg font-bold text-gray-900 dark:text-white">
                         {formatTimeSpent(selectedSubmission.time_spent)}
                       </p>
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Status</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Trạng thái</p>
                       <div className="mt-1">
                         {getStatusBadge(selectedSubmission.status)}
                       </div>
@@ -1766,7 +1766,7 @@ export default function TeacherClassDetail() {
 
                   {/* Student Info */}
                   <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Student</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Học sinh</p>
                     {(() => {
                       // Ensure student_id is a string
                       const studentIdStr = typeof selectedSubmission.student_id === 'string' 
@@ -1777,7 +1777,7 @@ export default function TeacherClassDetail() {
                       return (
                         <>
                           <p className="text-sm text-gray-900 dark:text-white">
-                            {student?.name || `Student ${(studentIdStr || 'unknown').substring(0, 8)}...`}
+                            {student?.name || `Học sinh ${(studentIdStr || 'unknown').substring(0, 8)}...`}
                           </p>
                           {student?.email && (
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -1792,7 +1792,7 @@ export default function TeacherClassDetail() {
                   {/* Answers */}
                   {selectedSubmission.answers && selectedSubmission.answers.length > 0 && (
                     <div>
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Answers</p>
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Câu trả lời</p>
                       <div className="space-y-3">
                         {selectedSubmission.answers.map((answer, index) => (
                           <div
@@ -1805,7 +1805,7 @@ export default function TeacherClassDetail() {
                           >
                             <div className="flex items-start justify-between mb-2">
                               <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                Question {index + 1}
+                                Câu hỏi {index + 1}
                               </span>
                               {answer.is_correct ? (
                                 <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -1815,7 +1815,7 @@ export default function TeacherClassDetail() {
                             </div>
                             <div className="grid grid-cols-2 gap-2 text-xs">
                               <div>
-                                <span className="text-gray-500 dark:text-gray-400">Selected:</span>
+                                <span className="text-gray-500 dark:text-gray-400">Đã chọn:</span>
                                 <span className={`ml-2 font-medium ${
                                   answer.is_correct ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
                                 }`}>
@@ -1823,7 +1823,7 @@ export default function TeacherClassDetail() {
                                 </span>
                               </div>
                               <div>
-                                <span className="text-gray-500 dark:text-gray-400">Correct:</span>
+                                <span className="text-gray-500 dark:text-gray-400">Đúng:</span>
                                 <span className="ml-2 font-medium text-gray-900 dark:text-white">
                                   {answer.correct_option || 'N/A'}
                                 </span>
@@ -1831,7 +1831,7 @@ export default function TeacherClassDetail() {
                             </div>
                             {answer.answered_at && (
                               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                Answered at: {formatDate(answer.answered_at)}
+                                Trả lời lúc: {formatDate(answer.answered_at)}
                               </p>
                             )}
                           </div>
@@ -1845,7 +1845,7 @@ export default function TeacherClassDetail() {
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       {selectedSubmission.started_at && (
                         <div>
-                          <span className="text-gray-500 dark:text-gray-400">Started:</span>
+                          <span className="text-gray-500 dark:text-gray-400">Bắt đầu:</span>
                           <span className="ml-2 text-gray-900 dark:text-white">
                             {formatDate(selectedSubmission.started_at)}
                           </span>
@@ -1853,7 +1853,7 @@ export default function TeacherClassDetail() {
                       )}
                       {selectedSubmission.submitted_at && (
                         <div>
-                          <span className="text-gray-500 dark:text-gray-400">Submitted:</span>
+                          <span className="text-gray-500 dark:text-gray-400">Đã nộp:</span>
                           <span className="ml-2 text-gray-900 dark:text-white">
                             {formatDate(selectedSubmission.submitted_at)}
                           </span>
@@ -1868,7 +1868,7 @@ export default function TeacherClassDetail() {
                     onClick={() => setShowSubmissionModal(false)}
                     className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
                   >
-                    Close
+                    Đóng
                   </button>
                 </div>
               </div>

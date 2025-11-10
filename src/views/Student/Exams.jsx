@@ -5,6 +5,7 @@ import PageHeader from '../../components/student/PageHeader';
 import ExamGrid from '../../components/student/ExamGrid';
 import { submissionService } from '../../services/submissionService';
 import { examService } from '../../services/examService';
+import { classService } from '../../services/classService';
 
 const PAGE_SIZE = 6;
 
@@ -23,9 +24,96 @@ export default function StudentExams() {
     try {
       setLoading(true);
       setError('');
-      const list = await examService.listStudentExams();
-      const arr = Array.isArray(list?.exams) ? list.exams : Array.isArray(list) ? list : [];
-      setRawExams(arr);
+      
+      // Load enrolled classes first
+      const classes = await classService.getMyClasses();
+      const classesArray = Array.isArray(classes) ? classes : (classes?.classes || classes?.data || []);
+      
+      if (classesArray.length === 0) {
+        setRawExams([]);
+        return;
+      }
+      
+      // Collect all exam IDs from enrolled classes
+      const examIds = new Set();
+      classesArray.forEach((cls) => {
+        const exams = cls.exams || [];
+        exams.forEach((examIdItem) => {
+          // Normalize exam ID
+          const examId = typeof examIdItem === 'string' 
+            ? examIdItem 
+            : (examIdItem?._id || examIdItem?.id || String(examIdItem));
+          
+          if (examId && examId !== 'undefined' && examId !== 'null') {
+            examIds.add(examId);
+          }
+        });
+      });
+      
+      if (examIds.size === 0) {
+        setRawExams([]);
+        return;
+      }
+      
+      // Load exam details for each exam ID
+      const examPromises = Array.from(examIds).map(async (examId) => {
+        try {
+          const examData = await examService.getStudentExamById(examId);
+          const exam = examData?.exam || examData;
+          
+          // Debug: log exam data to check available fields
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Exam data for', examId, ':', {
+              time_limit: exam?.time_limit,
+              timeLimit: exam?.timeLimit,
+              duration: exam?.duration,
+              date: exam?.date,
+              scheduled_at: exam?.scheduled_at,
+              scheduledAt: exam?.scheduledAt,
+              startTime: exam?.startTime,
+              createdAt: exam?.createdAt,
+              created_at: exam?.created_at
+            });
+          }
+          
+          // Get submission for this exam to include submission data
+          let submission = null;
+          try {
+            const submissions = await submissionService.getMySubmissions();
+            const examSubmissions = Array.isArray(submissions) 
+              ? submissions 
+              : (submissions?.submissions || submissions?.data || []);
+            
+            submission = examSubmissions.find(
+              (s) => {
+                const sExamId = s.exam_id?._id || s.exam_id?.id || s.exam_id;
+                return sExamId === examId;
+              }
+            );
+          } catch (subErr) {
+            console.warn('Could not load submission for exam:', examId, subErr);
+          }
+          
+          // Attach submission to exam object
+          if (submission) {
+            exam.activeSubmission = submission;
+            exam.submission = submission;
+            if (!Array.isArray(exam.submissions)) {
+              exam.submissions = [submission];
+            }
+          }
+          
+          return exam;
+        } catch (err) {
+          console.warn('Could not load exam:', examId, err);
+          return null;
+        }
+      });
+      
+      const examResults = await Promise.all(examPromises);
+      const validExams = examResults.filter(exam => exam !== null);
+      
+      setRawExams(validExams);
     } catch (e) {
       console.error(e);
       setError(e.message || 'Không thể tải danh sách kỳ thi');
@@ -51,12 +139,37 @@ export default function StudentExams() {
         submission?.score ?? submission?.result?.score ?? submission?.summary?.score ?? submission?.finalScore ?? null;
       const maxScore = submission?.result?.maxScore ?? submission?.maxScore ?? null;
 
+      // Normalize duration - try multiple field names
+      const duration = exam.time_limit || 
+                      exam.timeLimit || 
+                      exam.duration || 
+                      exam.durationMinutes || 
+                      exam.time_limit_minutes ||
+                      exam.timeLimitMinutes ||
+                      (typeof exam.time_limit === 'number' ? exam.time_limit : null) ||
+                      60;
+
+      // Normalize date - try multiple field names
+      const date = exam.date || 
+                   exam.scheduled_at || 
+                   exam.scheduledAt ||
+                   exam.startTime || 
+                   exam.start_time ||
+                   exam.start_at ||
+                   exam.created_at ||
+                   exam.createdAt ||
+                   submission?.started_at ||
+                   submission?.startedAt ||
+                   submission?.created_at ||
+                   submission?.createdAt ||
+                   null;
+
       return {
         id,
         title: exam.title || 'Chưa đặt tên',
         subject: exam.subject || 'General',
-        duration: exam.time_limit || exam.duration || exam.durationMinutes || 60,
-        date: exam.date || exam.scheduled_at || exam.startTime || submission?.started_at || exam.createdAt,
+        duration: duration,
+        date: date,
         description: exam.description,
         status: canContinue ? 'in-progress' : canReview ? submissionStatus || baseStatus : baseStatus,
         progress: submission?.progress ?? submission?.percentage ?? null,
@@ -228,7 +341,7 @@ export default function StudentExams() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <PageHeader
           title="Kỳ thi"
-          subtitle="Bắt đầu luyện tập và theo dõi tiến trình của bạn"
+          subtitle="Các bài kiểm tra từ các lớp học bạn đã tham gia"
           actions={
             <button
               onClick={loadExams}

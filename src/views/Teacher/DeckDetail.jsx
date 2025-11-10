@@ -1021,6 +1021,36 @@ export default function TeacherDeckDetail() {
                   {(() => {
                     const currentCard = deck.flashcards[previewCardIndex];
                     const cardObj = typeof currentCard === 'object' ? currentCard : { question: currentCard };
+                    
+                    // Debug: log card data to check available fields
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log('Flashcard data:', {
+                        currentCard,
+                        cardObj,
+                        keys: typeof currentCard === 'object' ? Object.keys(currentCard) : []
+                      });
+                    }
+                    
+                    // Normalize question - try multiple field names
+                    const question = cardObj.question || 
+                                    cardObj.front || 
+                                    cardObj.front_text || 
+                                    cardObj.question_text ||
+                                    (typeof currentCard === 'string' ? currentCard : 'Không có câu hỏi');
+                    
+                    // Normalize answer - try multiple field names
+                    const answer = cardObj.answer || 
+                                  cardObj.back || 
+                                  cardObj.back_text || 
+                                  cardObj.answer_text ||
+                                  cardObj.response ||
+                                  'Không có câu trả lời';
+                    
+                    // Normalize explanation
+                    const explanation = cardObj.explanation || 
+                                       cardObj.note || 
+                                       cardObj.explanation_text ||
+                                       null;
 
                     return (
                       <div className="relative">
@@ -1043,7 +1073,7 @@ export default function TeacherDeckDetail() {
                                 CÂU HỎI
                               </div>
                               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                                {cardObj.question || 'Không có câu hỏi'}
+                                {question}
                               </p>
                               <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
                                 Nhấp để xem câu trả lời
@@ -1063,12 +1093,12 @@ export default function TeacherDeckDetail() {
                                 CÂU TRẢ LỜI
                               </div>
                               <p className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                                {cardObj.answer || 'Không có câu trả lời'}
+                                {answer}
                               </p>
-                              {cardObj.explanation || cardObj.note ? (
+                              {explanation ? (
                                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mt-4">
                                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                                    {cardObj.explanation || cardObj.note}
+                                    {explanation}
                                   </p>
                                 </div>
                               ) : null}

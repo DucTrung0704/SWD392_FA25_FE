@@ -74,11 +74,11 @@ export default function MySubmissions() {
         return !isFlashcardExam;
       })
       .map((submission) => {
-        const id = submission._id || submission.id;
-        const startedAt = submission.started_at || submission.startedAt || submission.createdAt;
-        const submittedAt = submission.submitted_at || submission.submittedAt || submission.completed_at;
-        const score =
-          submission.score ?? submission.finalScore ?? submission.result?.score ?? submission.summary?.score ?? null;
+      const id = submission._id || submission.id;
+      const startedAt = submission.started_at || submission.startedAt || submission.createdAt;
+      const submittedAt = submission.submitted_at || submission.submittedAt || submission.completed_at;
+      const score =
+        submission.score ?? submission.finalScore ?? submission.result?.score ?? submission.summary?.score ?? null;
         const maxScore = submission.maxScore ?? submission.result?.maxScore ?? submission.summary?.maxScore ?? 100;
         
         // Get exam title from multiple sources
@@ -91,16 +91,16 @@ export default function MySubmissions() {
           (examId && examTitles[examId]) ||
           'Kỳ thi';
         
-        return {
-          id,
+      return {
+        id,
           title,
           status: submission.status || 'completed',
-          startedAt,
-          submittedAt,
-          score,
+        startedAt,
+        submittedAt,
+        score,
           maxScore,
-        };
-      });
+      };
+    });
   }, [rawSubmissions, examTitles]);
 
   // Pagination calculations

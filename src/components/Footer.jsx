@@ -7,22 +7,22 @@ export default function Footer() {
 
   const footerLinks = {
     product: [
-      { name: 'Flashcards', href: '/flashcards' },
-      { name: 'Exams', href: '/exams' },
-      { name: 'Study Mode', href: '/study' },
-      { name: 'Progress Tracking', href: '/progress' }
+      { name: 'Thẻ Ghi Nhớ', href: '/flashcards' },
+      { name: 'Bài Kiểm Tra', href: '/exams' },
+      { name: 'Chế Độ Học Tập', href: '/study' },
+      { name: 'Theo Dõi Tiến Độ', href: '/progress' }
     ],
     support: [
-      { name: 'Help Center', href: '/help' },
-      { name: 'Contact Us', href: '/contact' },
-      { name: 'FAQ', href: '/faq' },
-      { name: 'Bug Report', href: '/bug-report' }
+      { name: 'Trung Tâm Trợ Giúp', href: '/help' },
+      { name: 'Liên Hệ', href: '/contact' },
+      { name: 'Câu Hỏi Thường Gặp', href: '/faq' },
+      { name: 'Báo Lỗi', href: '/bug-report' }
     ],
     company: [
-      { name: 'About Us', href: '/about' },
-      { name: 'Privacy Policy', href: '/privacy' },
-      { name: 'Terms of Service', href: '/terms' },
-      { name: 'Careers', href: '/careers' }
+      { name: 'Về Chúng Tôi', href: '/about' },
+      { name: 'Chính Sách Bảo Mật', href: '/privacy' },
+      { name: 'Điều Khoản Dịch Vụ', href: '/terms' },
+      { name: 'Tuyển Dụng', href: '/careers' }
     ],
     social: [
       { name: 'Facebook', href: '#', icon: Facebook },
@@ -51,8 +51,8 @@ export default function Footer() {
               </Link>
               
               <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base mb-4 max-w-md">
-                Master your learning with intelligent flashcards and comprehensive practice exams. 
-                Study smarter, not harder.
+                Làm chủ việc học của bạn với các thẻ ghi nhớ thông minh và bài kiểm tra thực hành toàn diện. 
+                Học thông minh hơn, không phải chăm chỉ hơn.
               </p>
               
               {/* Social Links */}
@@ -76,7 +76,7 @@ export default function Footer() {
             {/* Product Links */}
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-4 text-sm sm:text-base">
-                Product
+                Sản Phẩm
               </h3>
               <ul className="space-y-3">
                 {footerLinks.product.map((link) => (
@@ -95,7 +95,7 @@ export default function Footer() {
             {/* Support Links */}
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-4 text-sm sm:text-base">
-                Support
+                Hỗ Trợ
               </h3>
               <ul className="space-y-3">
                 {footerLinks.support.map((link) => (
@@ -114,7 +114,7 @@ export default function Footer() {
             {/* Company Links */}
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-4 text-sm sm:text-base">
-                Company
+                Công Ty
               </h3>
               <ul className="space-y-3">
                 {footerLinks.company.map((link) => (
@@ -137,21 +137,21 @@ export default function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm sm:text-base">
-                Stay Updated
+                Cập Nhật
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                Get the latest features and study tips delivered to your inbox.
+                Nhận các tính năng mới nhất và mẹo học tập được gửi đến hộp thư của bạn.
               </p>
             </div>
             
             <div className="flex gap-2 w-full sm:w-auto">
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Nhập email của bạn"
                 className="flex-1 sm:w-64 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
               />
               <button className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all duration-200 font-medium text-sm whitespace-nowrap">
-                Subscribe
+                Đăng Ký
               </button>
             </div>
           </div>
@@ -162,7 +162,7 @@ export default function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
               <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                © {currentYear} FlashLearn. All rights reserved.
+                © {currentYear} FlashLearn. Bảo lưu mọi quyền.
               </p>
             </div>
             
@@ -171,17 +171,17 @@ export default function Footer() {
                 to="/privacy"
                 className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 text-xs sm:text-sm"
               >
-                Privacy Policy
+                Chính Sách Bảo Mật
               </Link>
               <Link
                 to="/terms"
                 className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 text-xs sm:text-sm"
               >
-                Terms of Service
+                Điều Khoản Dịch Vụ
               </Link>
               <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 <Globe className="w-4 h-4" />
-                <span>English</span>
+                <span>Tiếng Việt</span>
               </div>
             </div>
           </div>

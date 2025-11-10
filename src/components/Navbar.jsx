@@ -11,12 +11,12 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigation = [
-    { name: 'Home', href: '/', icon: 'home' },
-    { name: 'Flashcards', href: '/flashcards', icon: 'flashcards' },
-    { name: 'Exams', href: '/exams', icon: 'exams' },
-    ...(user?.role === 'Teacher' ? [{ name: 'Teacher', href: '/dashboard/teacher', icon: 'teacher' }] : []),
-    ...(user?.role === 'Admin' ? [{ name: 'Admin', href: '/dashboard/admin', icon: 'admin' }] : []),
-    ...(user?.role === 'Student' ? [{ name: 'Student', href: '/dashboard/student', icon: 'student' }] : []),
+    { name: 'Trang Chủ', href: '/', icon: 'home' },
+    { name: 'Thẻ Ghi Nhớ', href: '/flashcards', icon: 'flashcards' },
+    { name: 'Bài Kiểm Tra', href: '/exams', icon: 'exams' },
+    ...(user?.role === 'Teacher' ? [{ name: 'Giáo Viên', href: '/dashboard/teacher', icon: 'teacher' }] : []),
+    ...(user?.role === 'Admin' ? [{ name: 'Quản Trị Viên', href: '/dashboard/admin', icon: 'admin' }] : []),
+    ...(user?.role === 'Student' ? [{ name: 'Học Sinh', href: '/dashboard/student', icon: 'student' }] : []),
   ];
 
   const isActiveLink = (href) => {
@@ -85,7 +85,7 @@ export default function Navbar() {
                     )}
                   </div>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-24 truncate">
-                    {user.name || 'User'}
+                    {user.name || 'Người Dùng'}
                   </span>
                 </Link>
               </div>
@@ -116,7 +116,7 @@ export default function Navbar() {
                 to="/login" 
                 className="hidden sm:block px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
               >
-                Login
+                Đăng Nhập
               </Link>
               
             </div>
@@ -171,7 +171,7 @@ export default function Navbar() {
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
                     <Icon name="login" className="w-4 h-4" />
-                    Login
+                    Đăng Nhập
                   </Link>
                   <Link
                     to="/register"
@@ -179,7 +179,7 @@ export default function Navbar() {
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                   >
                     <Icon name="register" className="w-4 h-4" />
-                    Get Started
+                    Bắt Đầu
                   </Link>
                 </div>
               )}

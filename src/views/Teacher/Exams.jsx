@@ -4,6 +4,8 @@ import { Plus, Eye, Edit, TrendingUp, Search, FileText, Users, Clock, CheckCircl
 import { examService } from '../../services/examService';
 import { questionService } from '../../services/questionService';
 import { aiService } from '../../services/aiService';
+import { submissionService } from '../../services/submissionService';
+import { api } from '../../services/api';
 
 export default function TeacherExams() {
   const navigate = useNavigate();
@@ -20,7 +22,7 @@ export default function TeacherExams() {
     title: '',
     description: '',
     subject: 'Mathematics',
-    className: '',
+    classId: '',
     date: '',
     time: '',
     time_limit: '90',
@@ -28,6 +30,8 @@ export default function TeacherExams() {
     isPublic: true
   };
   const [form, setForm] = useState(defaultFormState);
+  const [classes, setClasses] = useState([]);
+  const [loadingClasses, setLoadingClasses] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [stepError, setStepError] = useState('');
   const [sortField, setSortField] = useState(null);
@@ -394,7 +398,22 @@ export default function TeacherExams() {
     }
   }, [questionMode, showCreateModal, bankSearchTerm, bankTagFilter, bankDifficultyFilter]);
 
-  const openCreateModal = () => {
+  // Load classes from API
+  const loadClasses = async () => {
+    try {
+      setLoadingClasses(true);
+      const data = await api.get('/class/teacher/my-classes');
+      const classesArray = Array.isArray(data) ? data : (data.classes || []);
+      setClasses(classesArray);
+    } catch (err) {
+      console.error('Error loading classes:', err);
+      setError('Không thể tải danh sách lớp học. Vui lòng thử lại.');
+    } finally {
+      setLoadingClasses(false);
+    }
+  };
+
+  const openCreateModal = async () => {
     setForm({ ...defaultFormState });
     setQuestionList([]);
     resetQuestionForm();
@@ -406,6 +425,8 @@ export default function TeacherExams() {
     setBankSearchTerm('');
     setBankTagFilter('all');
     setBankDifficultyFilter('all');
+    // Load classes when opening modal
+    await loadClasses();
     setShowCreateModal(true);
   };
 
@@ -423,7 +444,7 @@ export default function TeacherExams() {
           return false;
         }
         // Subject is always Mathematics, no need to validate
-        if (!form.className) {
+        if (!form.classId) {
           setStepError('Vui lòng chọn lớp.');
           return false;
         }
@@ -880,23 +901,170 @@ export default function TeacherExams() {
     try {
       setLoading(true);
       setError('');
+      
+      // Load exams
       const res = await examService.listMyExams();
       const list = Array.isArray(res?.exams) ? res.exams : (Array.isArray(res) ? res : []);
-      const normalized = list.map(e => ({
-        id: e._id || e.id,
-        title: e.title,
-        subject: e.subject || 'General',
-        date: e.date || e.scheduled_at || e.createdAt,
-        time: e.time || '09:00',
-        duration: e.time_limit || e.duration || 60,
-        totalQuestions: e.total_questions ?? (Array.isArray(e.questions) ? e.questions.length : (Array.isArray(e.questionIds) ? e.questionIds.length : (e.totalQuestions || 0))),
-        enrolledStudents: 0,
-        completedStudents: 0,
-        avgScore: 0,
-        status: e.status || (e.isPublic ? 'scheduled' : 'draft'),
-        type: e.type || 'Exam',
-        description: e.description || ''
-      }));
+      
+      // Load classes to map class IDs to names and find which class contains each exam
+      let classesMap = {};
+      let examToClassMap = {}; // Map exam ID to class name
+      let examToClassIdMap = {}; // Map exam ID to class ID
+      let classStudentsMap = {}; // Map class ID to number of students
+      try {
+        const classesRes = await api.get('/class/teacher/my-classes');
+        const classesArray = Array.isArray(classesRes) ? classesRes : (classesRes.classes || []);
+        
+        // Create map of class ID to class name and student count
+        classesMap = classesArray.reduce((acc, cls) => {
+          const classId = cls._id || cls.id;
+          acc[classId] = cls.name || 'Lớp không có tên';
+          return acc;
+        }, {});
+        
+        // Find which class contains each exam and get student count
+        classesArray.forEach((cls) => {
+          const classId = cls._id || cls.id;
+          const className = cls.name || 'Lớp không có tên';
+          const exams = cls.exams || [];
+          const students = cls.students || [];
+          const studentCount = Array.isArray(students) ? students.length : 0;
+          
+          classStudentsMap[classId] = studentCount;
+          
+          exams.forEach((examIdItem) => {
+            // Normalize exam ID
+            const examId = typeof examIdItem === 'string' 
+              ? examIdItem 
+              : (examIdItem?._id || examIdItem?.id || String(examIdItem));
+            
+            if (examId && examId !== 'undefined' && examId !== 'null') {
+              // If exam is in multiple classes, use the first one found
+              if (!examToClassMap[examId]) {
+                examToClassMap[examId] = className;
+                examToClassIdMap[examId] = classId;
+              }
+            }
+          });
+        });
+      } catch (classError) {
+        console.error('Error loading classes for exam display:', classError);
+      }
+      
+      // Load submissions to count completed students
+      let examSubmissionsMap = {}; // Map exam ID to submissions array
+      try {
+        const submissionsRes = await submissionService.getAllSubmissions();
+        const submissionsArray = Array.isArray(submissionsRes) 
+          ? submissionsRes 
+          : (submissionsRes?.submissions || submissionsRes?.data || []);
+        
+        // Group submissions by exam ID
+        submissionsArray.forEach((submission) => {
+          const examId = submission.exam_id?._id || submission.exam_id?.id || submission.exam_id;
+          if (examId) {
+            if (!examSubmissionsMap[examId]) {
+              examSubmissionsMap[examId] = [];
+            }
+            examSubmissionsMap[examId].push(submission);
+          }
+        });
+      } catch (submissionError) {
+        console.error('Error loading submissions for exam display:', submissionError);
+      }
+      
+      const normalized = list.map(e => {
+        const examId = e._id || e.id;
+        
+        // Find class name - first try from exam object, then from examToClassMap
+        let className = 'N/A';
+        let classId = null;
+        if (e.class || e.class_id || e.classId) {
+          classId = e.class || e.class_id || e.classId;
+          className = classesMap[classId] || classId || 'N/A';
+        } else if (examToClassMap[examId]) {
+          className = examToClassMap[examId];
+          classId = examToClassIdMap[examId];
+        }
+        
+        // Get enrolled students count from class
+        let enrolledStudents = 0;
+        if (classId && classStudentsMap[classId] !== undefined) {
+          enrolledStudents = classStudentsMap[classId];
+        }
+        
+        // Get completed students count from submissions
+        let completedStudents = 0;
+        let totalScore = 0;
+        let scoreCount = 0;
+        if (examSubmissionsMap[examId]) {
+          const submissions = examSubmissionsMap[examId];
+          // Count completed submissions (status: completed, submitted, graded)
+          const completedSubmissions = submissions.filter(sub => {
+            const status = (sub.status || '').toLowerCase();
+            return ['completed', 'submitted', 'graded'].includes(status);
+          });
+          completedStudents = completedSubmissions.length;
+          
+          // Calculate average score
+          completedSubmissions.forEach(sub => {
+            const score = sub.score ?? sub.result?.score ?? sub.summary?.score ?? sub.finalScore ?? null;
+            if (score != null) {
+              totalScore += Number(score);
+              scoreCount++;
+            }
+          });
+        }
+        
+        // Calculate average score
+        const avgScore = scoreCount > 0 ? Math.round((totalScore / scoreCount) * 100) / 100 : 0;
+        
+        // Normalize date - try multiple field names and formats
+        let dateValue = null;
+        if (e.date) {
+          dateValue = e.date;
+        } else if (e.scheduled_at) {
+          dateValue = e.scheduled_at;
+        } else if (e.scheduledAt) {
+          dateValue = e.scheduledAt;
+        } else if (e.startTime) {
+          dateValue = e.startTime;
+        } else if (e.start_time) {
+          dateValue = e.start_time;
+        } else if (e.createdAt) {
+          dateValue = e.createdAt;
+        } else if (e.created_at) {
+          dateValue = e.created_at;
+        }
+        
+        // Normalize time
+        let timeValue = e.time || '09:00';
+        // If date contains time, extract it
+        if (dateValue && typeof dateValue === 'string' && dateValue.includes('T')) {
+          const timeMatch = dateValue.match(/T(\d{2}:\d{2})/);
+          if (timeMatch) {
+            timeValue = timeMatch[1];
+          }
+        }
+        
+        return {
+          id: examId,
+          title: e.title,
+          subject: e.subject || 'General',
+          date: dateValue,
+          time: timeValue,
+          duration: e.time_limit || e.timeLimit || e.duration || e.durationMinutes || 60,
+          totalQuestions: e.total_questions ?? (Array.isArray(e.questions) ? e.questions.length : (Array.isArray(e.questionIds) ? e.questionIds.length : (e.totalQuestions || 0))),
+          enrolledStudents: enrolledStudents,
+          completedStudents: completedStudents,
+          avgScore: avgScore,
+          status: e.status || (e.isPublic ? 'scheduled' : 'draft'),
+          type: e.type || 'Exam',
+          description: e.description || '',
+          class: e.class || e.class_id || e.classId || '',
+          className: className
+        };
+      });
       setExams(normalized);
     } catch (e) {
       console.error(e);
@@ -964,34 +1132,51 @@ export default function TeacherExams() {
       setStepError('');
       setError('');
 
-      // Save AI-generated questions to question bank first
+      // Save AI-generated questions to question bank first and get their IDs
       const aiQuestions = questionList.filter(q => q._temp && q._aiData);
+      const aiQuestionIds = [];
       if (aiQuestions.length > 0) {
         try {
-          await Promise.all(aiQuestions.map(q => questionService.createQuestion(q._aiData)));
+          // Create questions one by one to get IDs
+          for (const q of aiQuestions) {
+            try {
+              const response = await questionService.createQuestion(q._aiData);
+              const created = response?.question || response?.data?.question || response;
+              const createdId = created?._id || created?.id;
+              if (createdId) {
+                aiQuestionIds.push({ originalId: q.id, newId: createdId });
+              }
+            } catch (aiError) {
+              console.error('Error saving AI question:', aiError);
+              // Try to find existing question by exact match
+              try {
+                // Get all questions and filter client-side to avoid regex issues
+                const allQuestions = await questionService.listMyQuestions();
+                const questionsList = allQuestions?.questions || allQuestions?.data?.questions || (Array.isArray(allQuestions) ? allQuestions : []);
+                const found = questionsList.find(
+                  existingQ => existingQ.question === q.question
+                );
+                if (found) {
+                  aiQuestionIds.push({ originalId: q.id, newId: found._id || found.id });
+                }
+              } catch (findError) {
+                console.error('Error finding existing question:', findError);
+              }
+            }
+          }
         } catch (aiError) {
           console.error('Error saving AI questions:', aiError);
-          // Continue anyway, questions might already exist
         }
       }
 
-      // Reload questions to get IDs for AI-generated ones
+      // Map question IDs
       const questionIds = [];
       for (const question of questionList) {
         if (question._temp && question._aiData) {
-          // Try to find the question we just created
-          try {
-            const response = await questionService.listMyQuestions({ 
-              search: question.question.substring(0, 50) 
-            });
-            const found = (response?.questions || []).find(
-              q => q.question === question.question
-            );
-            if (found) {
-              questionIds.push(found._id || found.id);
-            }
-          } catch (err) {
-            console.error('Error finding AI question:', err);
+          // Find the ID from the saved AI questions
+          const saved = aiQuestionIds.find(item => item.originalId === question.id);
+          if (saved) {
+            questionIds.push(saved.newId);
           }
         } else if (question.id && !question.id.startsWith('ai-')) {
           questionIds.push(question.id);
@@ -1004,11 +1189,11 @@ export default function TeacherExams() {
         return;
       }
 
-      await examService.createExam({
+      const createResponse = await examService.createExam({
         title: form.title.trim(),
         description: form.description.trim(),
         subject: form.subject,
-        'class': form.className,
+        'class': form.classId,
         date: form.date,
         time: form.time,
         time_limit: Number(form.time_limit) || 90,
@@ -1017,6 +1202,81 @@ export default function TeacherExams() {
         questions: questionIds
       });
 
+      console.log('Create exam response:', createResponse);
+
+      // Nếu có classId, thêm exam vào class
+      let examIdToAdd = null;
+      if (form.classId) {
+        try {
+          // Thử nhiều cách để lấy exam ID từ response
+          examIdToAdd = createResponse?.exam?._id || 
+                        createResponse?.exam?.id || 
+                        createResponse?.data?.exam?._id ||
+                        createResponse?.data?.exam?.id ||
+                        createResponse?._id || 
+                        createResponse?.id ||
+                        createResponse?.data?._id ||
+                        createResponse?.data?.id;
+          
+          console.log('Attempting to add exam to class:', {
+            classId: form.classId,
+            examId: examIdToAdd,
+            fullResponse: createResponse
+          });
+
+          if (examIdToAdd) {
+            const addExamResponse = await api.post(`/class/teacher/${form.classId}/add-exam`, {
+              exam_id: examIdToAdd
+            });
+            console.log('Exam đã được thêm vào class thành công:', addExamResponse);
+          }
+        } catch (addExamError) {
+          console.error('Lỗi khi thêm exam vào class:', addExamError);
+          // Sẽ thử lại sau khi load exams
+        }
+      }
+
+      // Nếu không lấy được exam ID từ response, tìm exam vừa tạo trong danh sách
+      if (form.classId && !examIdToAdd) {
+        try {
+          // Lấy danh sách exams mới nhất từ API
+          const res = await examService.listMyExams();
+          const list = Array.isArray(res?.exams) ? res.exams : (Array.isArray(res) ? res : []);
+          
+          // Tìm exam mới nhất có title giống với title vừa tạo
+          const examTitle = form.title.trim();
+          const foundExam = list.find(e => {
+            const eTitle = (e.title || '').trim();
+            const eClassId = e.class || e.class_id || e.classId || '';
+            return eTitle === examTitle && eClassId === form.classId;
+          });
+          
+          if (foundExam) {
+            examIdToAdd = foundExam._id || foundExam.id;
+            console.log('Tìm thấy exam trong danh sách:', foundExam);
+            
+            // Thử thêm exam vào class
+            try {
+              const addExamResponse = await api.post(`/class/teacher/${form.classId}/add-exam`, {
+                exam_id: examIdToAdd
+              });
+              console.log('Exam đã được thêm vào class thành công (sau khi tìm trong danh sách):', addExamResponse);
+            } catch (retryError) {
+              console.error('Lỗi khi thêm exam vào class (lần thử lại):', retryError);
+              setError(`Exam đã được tạo nhưng không thể thêm vào class: ${retryError.message || 'Unknown error'}`);
+            }
+          } else {
+            console.warn('Không tìm thấy exam vừa tạo trong danh sách. Có thể exam chưa được load hoặc title không khớp.');
+            console.log('Danh sách exams:', list.map(e => ({ title: e.title, class: e.class || e.class_id || e.classId })));
+            setError('Exam đã được tạo nhưng không thể tự động thêm vào class. Vui lòng thêm thủ công từ trang Class Detail.');
+          }
+        } catch (findError) {
+          console.error('Lỗi khi tìm exam trong danh sách:', findError);
+          setError('Exam đã được tạo nhưng không thể tự động thêm vào class. Vui lòng thêm thủ công từ trang Class Detail.');
+        }
+      }
+
+      // Reload exams để cập nhật danh sách
       await loadExams();
       setForm({ ...defaultFormState });
       setQuestionList([]);
@@ -1032,7 +1292,7 @@ export default function TeacherExams() {
   };
 
   return (
-    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-slate-50 to-orange-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
@@ -1115,7 +1375,7 @@ export default function TeacherExams() {
         </div>
 
         {/* Filter Bar */}
-        <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-5">
+        <div className="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-orange-100 dark:border-orange-900/50 p-5">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
             Hiển thị bản ghi trong chế độ xem này
           </h3>
@@ -1132,7 +1392,7 @@ export default function TeacherExams() {
                       setFilterRules([{ ...tempFilter, field: e.target.value }]);
                     }
                   }}
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="px-3 py-2 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all"
                 >
                   <option value="title">Tiêu đề</option>
                   <option value="subject">Môn học</option>
@@ -1147,7 +1407,7 @@ export default function TeacherExams() {
                       setFilterRules([{ ...tempFilter, operator: e.target.value }]);
                     }
                   }}
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="px-3 py-2 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all"
                 >
                   <option value="contains">chứa</option>
                   <option value="equals">bằng</option>
@@ -1167,7 +1427,7 @@ export default function TeacherExams() {
                       setFilterRules([]);
                     }
                   }}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="flex-1 px-3 py-2 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all"
                 />
                 <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                   <MoreVertical className="w-4 h-4" />
@@ -1188,7 +1448,7 @@ export default function TeacherExams() {
                       newRules[index].field = e.target.value;
                       setFilterRules(newRules);
                     }}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="px-3 py-2 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all"
                   >
                     <option value="title">Tiêu đề</option>
                     <option value="subject">Môn học</option>
@@ -1202,7 +1462,7 @@ export default function TeacherExams() {
                       newRules[index].operator = e.target.value;
                       setFilterRules(newRules);
                     }}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="px-3 py-2 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all"
                   >
                     <option value="contains">contains</option>
                     <option value="equals">equals</option>
@@ -1218,7 +1478,7 @@ export default function TeacherExams() {
                       newRules[index].value = e.target.value;
                       setFilterRules(newRules);
                     }}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-3 py-2 border border-orange-200 dark:border-orange-500/40 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all"
                   />
                   <button
                     onClick={() => {
@@ -1414,7 +1674,7 @@ export default function TeacherExams() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
                       <div className="text-sm text-gray-900 dark:text-white font-medium">
-                        {exam.class || 'N/A'}
+                        {exam.className || exam.class || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/dashboard/teacher/exams/${exam.id}`)}>
@@ -1482,38 +1742,56 @@ export default function TeacherExams() {
 
             {/* Pagination */}
             {sortedExams.length > 0 && (
-              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+              <div className="px-6 py-4 border-t border-orange-100 dark:border-gray-700 bg-gradient-to-r from-orange-50/50 to-amber-50/50 dark:from-gray-800 dark:to-gray-800">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Hiển thị <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>
-                    {' - '}
-                    <span className="font-medium text-gray-900 dark:text-white">{Math.min(endIndex, sortedExams.length)}</span>
-                    {' trong '}
-                    <span className="font-medium text-gray-900 dark:text-white">{sortedExams.length}</span>
+                    Hiển thị <span className="font-semibold text-orange-600 dark:text-orange-400">{startIndex + 1}</span> - <span className="font-semibold text-orange-600 dark:text-orange-400">{Math.min(endIndex, sortedExams.length)}</span> trong tổng số <span className="font-semibold text-orange-600 dark:text-orange-400">{sortedExams.length}</span> bài thi
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
-                        currentPage === 1
-                          ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
-                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
-                      }`}
+                      className="inline-flex items-center gap-1 rounded-xl border border-orange-200 bg-white px-4 py-2 text-sm font-medium text-orange-600 transition-all hover:border-orange-300 hover:bg-orange-50 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed dark:border-orange-500/40 dark:bg-gray-800 dark:text-orange-400 dark:hover:bg-orange-900/30"
                     >
                       Trước
                     </button>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Trang <span className="font-semibold">{currentPage}</span> / <span className="font-semibold">{totalPages}</span>
-                    </span>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                        const showPage = 
+                          page === 1 || 
+                          page === totalPages || 
+                          (page >= currentPage - 1 && page <= currentPage + 1);
+                        
+                        if (!showPage) {
+                          if (page === currentPage - 2 || page === currentPage + 2) {
+                            return (
+                              <span key={page} className="px-2 text-gray-500 dark:text-gray-400">
+                                ...
+                              </span>
+                            );
+                          }
+                          return null;
+                        }
+                        
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`h-10 w-10 rounded-xl text-sm font-semibold transition-all ${
+                              page === currentPage
+                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg scale-105'
+                                : 'border border-orange-200 bg-white text-orange-600 hover:border-orange-300 hover:bg-orange-50 dark:border-orange-500/40 dark:bg-gray-800 dark:text-orange-400 dark:hover:bg-orange-900/30'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
+                    </div>
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
-                        currentPage === totalPages
-                          ? 'border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed'
-                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
-                      }`}
+                      className="inline-flex items-center gap-1 rounded-xl border border-orange-200 bg-white px-4 py-2 text-sm font-medium text-orange-600 transition-all hover:border-orange-300 hover:bg-orange-50 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed dark:border-orange-500/40 dark:bg-gray-800 dark:text-orange-400 dark:hover:bg-orange-900/30"
                     >
                       Sau
                     </button>
@@ -1618,19 +1896,30 @@ export default function TeacherExams() {
                           <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
                             Lớp <span className="text-red-500">*</span>
                           </label>
-                          <select
-                            value={form.className}
-                            onChange={(e) => setForm((prev) => ({ ...prev, className: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
-                          >
-                            <option value="">Chọn lớp</option>
-                            <option value="10A">Class 10A</option>
-                            <option value="10B">Class 10B</option>
-                            <option value="11A">Class 11A</option>
-                            <option value="11B">Class 11B</option>
-                            <option value="12A">Class 12A</option>
-                            <option value="12B">Class 12B</option>
-                          </select>
+                          {loadingClasses ? (
+                            <div className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
+                              <Loader2 className="w-4 h-4 animate-spin text-gray-400 mr-2" />
+                              <span className="text-sm text-gray-500 dark:text-gray-400">Đang tải lớp học...</span>
+                            </div>
+                          ) : (
+                            <select
+                              value={form.classId}
+                              onChange={(e) => setForm((prev) => ({ ...prev, classId: e.target.value }))}
+                              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:focus:border-orange-400 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
+                            >
+                              <option value="">Chọn lớp</option>
+                              {classes.map((cls) => (
+                                <option key={cls._id || cls.id} value={cls._id || cls.id}>
+                                  {cls.name || 'Lớp không có tên'}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                          {classes.length === 0 && !loadingClasses && (
+                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                              Chưa có lớp học nào. Vui lòng tạo lớp học trước.
+                            </p>
+                          )}
                         </div>
 
                         <div>
@@ -1770,7 +2059,7 @@ export default function TeacherExams() {
                             setQuestionMode('ai-generate');
                             setAiGenerateForm({
                               topic: '',
-                              subject: form.subject || 'Mathematics',
+                              subject: 'Mathematics', // Mặc định là Toán học
                               difficulty: 'medium',
                               count: 5,
                               tag: 'other'
@@ -2357,21 +2646,14 @@ export default function TeacherExams() {
                                   />
                                 </div>
 
+                                {/* Môn học mặc định là Toán học - không cho chọn */}
                                 <div>
                                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                                     Môn học
                                   </label>
-                                  <select
-                                    value={aiGenerateForm.subject}
-                                    onChange={(e) => setAiGenerateForm({ ...aiGenerateForm, subject: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                  >
-                                    <option value="Mathematics">Mathematics</option>
-                                    <option value="Physics">Physics</option>
-                                    <option value="Chemistry">Chemistry</option>
-                                    <option value="Biology">Biology</option>
-                                    <option value="English">English</option>
-                                  </select>
+                                  <div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                                    Toán học (Mathematics)
+                                  </div>
                                 </div>
 
                                 <div>
@@ -2592,7 +2874,9 @@ export default function TeacherExams() {
                           </div>
                           <div className="space-y-1">
                             <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Lớp</dt>
-                            <dd className="text-gray-900 dark:text-white font-medium">{form.className || '-'}</dd>
+                            <dd className="text-gray-900 dark:text-white font-medium">
+                              {form.classId ? (classes.find(c => (c._id || c.id) === form.classId)?.name || form.classId) : '-'}
+                            </dd>
                           </div>
                           <div className="space-y-1">
                             <dt className="font-semibold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Ngày & Giờ</dt>

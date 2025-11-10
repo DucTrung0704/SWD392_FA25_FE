@@ -28,27 +28,27 @@ export default function RegisterStudent() {
 
   const validateForm = () => {
     if (!formData.name.trim()) {
-      setError('Please enter your full name');
+      setError('Vui lòng nhập họ và tên của bạn');
       return false;
     }
     if (!formData.email.trim()) {
-      setError('Please enter your email address');
+      setError('Vui lòng nhập địa chỉ email');
       return false;
     }
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      setError('Please enter a valid email address');
+      setError('Vui lòng nhập địa chỉ email hợp lệ');
       return false;
     }
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('Mật khẩu phải có ít nhất 6 ký tự');
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('Mật khẩu không khớp');
       return false;
     }
     if (!agreedToTerms) {
-      setError('Please agree to the Terms of Service and Privacy Policy');
+      setError('Vui lòng đồng ý với Điều khoản Dịch vụ và Chính sách Bảo mật');
       return false;
     }
     return true;
@@ -72,13 +72,13 @@ export default function RegisterStudent() {
       setTimeout(() => {
         navigate('/login', { 
           state: { 
-            message: 'Registration successful! Please login with your credentials.',
+            message: 'Đăng ký thành công! Vui lòng đăng nhập bằng thông tin đăng nhập của bạn.',
             email: formData.email
           }
         });
       }, 2000);
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setError(err.message || 'Đăng ký thất bại. Vui lòng thử lại.');
       setLoading(false);
     }
   }
@@ -104,10 +104,10 @@ export default function RegisterStudent() {
                 <div className="text-sm font-semibold text-orange-600 dark:text-orange-400">FlashLearn</div>
               </div>
               <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                Start Your Learning<br/>Journey Today
+                Bắt Đầu Hành Trình<br/>Học Tập Hôm Nay
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300">
-                Join thousands of students already learning with our interactive flashcards and smart study tools.
+                Tham gia cùng hàng nghìn học sinh đang học với các thẻ ghi nhớ tương tác và công cụ học tập thông minh của chúng tôi.
               </p>
             </div>
 
@@ -115,25 +115,25 @@ export default function RegisterStudent() {
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
                 <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">10K+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Students</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Học Sinh</div>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
                 <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">5K+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Decks</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Bộ Thẻ</div>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
                 <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">500+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Teachers</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Giáo Viên</div>
               </div>
             </div>
 
             {/* Benefits Grid */}
             <div className="space-y-4">
               {[
-                { icon: <Sparkles className="w-6 h-6" />, title: 'Interactive Learning', desc: 'Engage with AI-powered study tools' },
-                { icon: <Target className="w-6 h-6" />, title: 'Track Progress', desc: 'Monitor your learning journey' },
-                { icon: <TrendingUp className="w-6 h-6" />, title: 'Improve Performance', desc: 'Boost your grades with smart revision' },
-                { icon: <Users className="w-6 h-6" />, title: 'Join Community', desc: 'Connect with fellow learners' }
+                { icon: <Sparkles className="w-6 h-6" />, title: 'Học Tập Tương Tác', desc: 'Tương tác với công cụ học tập được hỗ trợ bởi AI' },
+                { icon: <Target className="w-6 h-6" />, title: 'Theo Dõi Tiến Độ', desc: 'Giám sát hành trình học tập của bạn' },
+                { icon: <TrendingUp className="w-6 h-6" />, title: 'Cải Thiện Kết Quả', desc: 'Nâng cao điểm số với ôn tập thông minh' },
+                { icon: <Users className="w-6 h-6" />, title: 'Tham Gia Cộng Đồng', desc: 'Kết nối với các học viên khác' }
               ].map((benefit, idx) => (
                 <div key={idx} className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
                   <div className="w-12 h-12 bg-gradient-to-r from-orange-100 to-orange-100 dark:from-orange-900/30 dark:to-orange-900/30 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400">
@@ -152,8 +152,8 @@ export default function RegisterStudent() {
               <div className="flex items-start gap-4">
                 <Award className="w-8 h-8 flex-shrink-0 mt-1" />
                 <div>
-                  <p className="text-lg font-medium mb-2">"The best investment you can make is in yourself."</p>
-                  <p className="text-orange-100 text-sm">Start learning today and unlock your potential.</p>
+                  <p className="text-lg font-medium mb-2">"Khoản đầu tư tốt nhất bạn có thể thực hiện là đầu tư vào chính mình."</p>
+                  <p className="text-orange-100 text-sm">Bắt đầu học tập ngay hôm nay và khám phá tiềm năng của bạn.</p>
                 </div>
               </div>
             </div>
@@ -174,10 +174,10 @@ export default function RegisterStudent() {
                   </div>
                 </div>
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent mb-2">
-                  Create Student Account
+                  Tạo Tài Khoản Học Sinh
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Join thousands of students already learning
+                  Tham gia cùng hàng nghìn học sinh đang học tập
                 </p>
               </CardHeader>
 
@@ -196,27 +196,27 @@ export default function RegisterStudent() {
                 <div className="mx-6 mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border-l-4 border-emerald-500 rounded-lg">
                   <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 text-sm font-medium">
                     <CheckCircle className="w-5 h-5 flex-shrink-0" />
-                    Account created successfully! Redirecting to login...
+                    Tài khoản đã được tạo thành công! Đang chuyển đến trang đăng nhập...
                   </div>
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-5 px-6 pb-6">
                 <Input 
-                  label="Full Name" 
+                  label="Họ Và Tên" 
                   value={formData.name} 
                   onChange={(e) => handleChange('name', e.target.value)} 
-                  placeholder="Nguyen Van A" 
+                  placeholder="Nguyễn Văn A" 
                   required
                   icon={<User className="w-4 h-4" />}
                   className="transition-all duration-200"
                 />
 
                 <Input 
-                  label="Email Address" 
+                  label="Địa Chỉ Email" 
                   value={formData.email} 
                   onChange={(e) => handleChange('email', e.target.value)} 
-                  placeholder="you@example.com" 
+                  placeholder="ban@example.com" 
                   type="email"
                   required
                   icon={<Mail className="w-4 h-4" />}
@@ -225,7 +225,7 @@ export default function RegisterStudent() {
 
                 <div>
                   <Input 
-                    label="Password" 
+                    label="Mật Khẩu" 
                     value={formData.password} 
                     onChange={(e) => handleChange('password', e.target.value)} 
                     placeholder="••••••••" 
@@ -255,17 +255,17 @@ export default function RegisterStudent() {
                         passwordStrength.weak ? 'text-red-600 dark:text-red-400' :
                         'text-gray-500'
                       }`}>
-                        {passwordStrength.strong ? '✓ Strong password' :
-                         passwordStrength.medium ? '⚠ Medium strength' :
-                         passwordStrength.weak ? '✗ Weak password' :
-                         'At least 6 characters with uppercase, lowercase, and numbers'}
+                        {passwordStrength.strong ? '✓ Mật khẩu mạnh' :
+                         passwordStrength.medium ? '⚠ Độ mạnh trung bình' :
+                         passwordStrength.weak ? '✗ Mật khẩu yếu' :
+                         'Ít nhất 6 ký tự bao gồm chữ hoa, chữ thường và số'}
                       </p>
                     </div>
                   )}
                 </div>
 
                 <Input 
-                  label="Confirm Password" 
+                  label="Xác Nhận Mật Khẩu" 
                   value={formData.confirmPassword} 
                   onChange={(e) => handleChange('confirmPassword', e.target.value)} 
                   placeholder="••••••••" 
@@ -284,13 +284,13 @@ export default function RegisterStudent() {
                     className="mt-1 w-5 h-5 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-orange-500 cursor-pointer"
                   />
                   <label className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                    I agree to the{' '}
+                    Tôi đồng ý với{' '}
                     <Link to="/terms" className="text-orange-600 dark:text-orange-400 hover:underline font-medium">
-                      Terms of Service
+                      Điều Khoản Dịch Vụ
                     </Link>{' '}
-                    and{' '}
+                    và{' '}
                     <Link to="/privacy" className="text-orange-600 dark:text-orange-400 hover:underline font-medium">
-                      Privacy Policy
+                      Chính Sách Bảo Mật
                     </Link>
                   </label>
                 </div>
@@ -303,12 +303,12 @@ export default function RegisterStudent() {
                   {loading || success ? (
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      {success ? 'Success! Redirecting...' : 'Creating Account...'}
+                      {success ? 'Thành công! Đang chuyển hướng...' : 'Đang tạo tài khoản...'}
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
                       <Rocket className="w-5 h-5" />
-                      Create Student Account
+                      Tạo Tài Khoản Học Sinh
                     </div>
                   )}
                 </Button>
@@ -320,7 +320,7 @@ export default function RegisterStudent() {
                     <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white dark:bg-gray-800 text-gray-500">Already have an account?</span>
+                    <span className="px-4 bg-white dark:bg-gray-800 text-gray-500">Đã có tài khoản?</span>
                   </div>
                 </div>
               </div>
@@ -330,7 +330,7 @@ export default function RegisterStudent() {
                   to="/login" 
                   className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium transition-colors"
                 >
-                  ← Back to Sign In
+                  ← Quay lại Đăng Nhập
                 </Link>
               </CardFooter>
             </Card>

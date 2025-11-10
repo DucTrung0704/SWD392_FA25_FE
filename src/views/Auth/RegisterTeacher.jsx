@@ -28,27 +28,27 @@ export default function RegisterTeacher() {
 
   const validateForm = () => {
     if (!formData.name.trim()) {
-      setError('Please enter your full name');
+      setError('Vui lòng nhập họ và tên của bạn');
       return false;
     }
     if (!formData.email.trim()) {
-      setError('Please enter your email address');
+      setError('Vui lòng nhập địa chỉ email');
       return false;
     }
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      setError('Please enter a valid email address');
+      setError('Vui lòng nhập địa chỉ email hợp lệ');
       return false;
     }
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('Mật khẩu phải có ít nhất 6 ký tự');
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('Mật khẩu không khớp');
       return false;
     }
     if (!agreedToTerms) {
-      setError('Please agree to the Terms of Service and Privacy Policy');
+      setError('Vui lòng đồng ý với Điều khoản Dịch vụ và Chính sách Bảo mật');
       return false;
     }
     return true;
@@ -72,13 +72,13 @@ export default function RegisterTeacher() {
       setTimeout(() => {
         navigate('/login', { 
           state: { 
-            message: 'Teacher registration successful! Please login with your credentials.',
+            message: 'Đăng ký giáo viên thành công! Vui lòng đăng nhập bằng thông tin đăng nhập của bạn.',
             email: formData.email
           }
         });
       }, 2000);
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setError(err.message || 'Đăng ký thất bại. Vui lòng thử lại.');
       setLoading(false);
     }
   }
@@ -98,10 +98,10 @@ export default function RegisterTeacher() {
                 <div className="text-sm font-semibold text-orange-600 dark:text-orange-400">FlashLearn</div>
               </div>
               <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                Share Your Knowledge<br/>With Students Worldwide
+                Chia Sẻ Kiến Thức<br/>Với Học Sinh Toàn Cầu
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300">
-                Join our community of educators and create interactive learning experiences for your students.
+                Tham gia cộng đồng giáo viên của chúng tôi và tạo trải nghiệm học tập tương tác cho học sinh của bạn.
               </p>
             </div>
 
@@ -109,25 +109,25 @@ export default function RegisterTeacher() {
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
                 <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">500+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Teachers</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Giáo Viên</div>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
                 <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">5K+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Courses</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Khóa Học</div>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
                 <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">10K+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Students</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Học Sinh</div>
               </div>
             </div>
 
             {/* Benefits Grid */}
             <div className="space-y-4">
               {[
-                { icon: <BookOpen className="w-6 h-6" />, title: 'Create Content', desc: 'Build and share interactive courses' },
-                { icon: <BarChart3 className="w-6 h-6" />, title: 'Track Performance', desc: 'Monitor student progress' },
-                { icon: <Star className="w-6 h-6" />, title: 'Build Reputation', desc: 'Establish your expertise' },
-                { icon: <Users className="w-6 h-6" />, title: 'Engage Students', desc: 'Connect with your learners' }
+                { icon: <BookOpen className="w-6 h-6" />, title: 'Tạo Nội Dung', desc: 'Xây dựng và chia sẻ khóa học tương tác' },
+                { icon: <BarChart3 className="w-6 h-6" />, title: 'Theo Dõi Hiệu Suất', desc: 'Giám sát tiến độ học sinh' },
+                { icon: <Star className="w-6 h-6" />, title: 'Xây Dựng Danh Tiếng', desc: 'Thiết lập chuyên môn của bạn' },
+                { icon: <Users className="w-6 h-6" />, title: 'Tương Tác Với Học Sinh', desc: 'Kết nối với người học của bạn' }
               ].map((benefit, idx) => (
                 <div key={idx} className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
                   <div className="w-12 h-12 bg-gradient-to-r from-orange-100 to-orange-100 dark:from-orange-900/30 dark:to-orange-900/30 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400">
@@ -146,8 +146,8 @@ export default function RegisterTeacher() {
               <div className="flex items-start gap-4">
                 <Award className="w-8 h-8 flex-shrink-0 mt-1" />
                 <div>
-                  <p className="text-lg font-medium mb-2">"Teaching is the greatest act of optimism."</p>
-                  <p className="text-orange-100 text-sm">Join us and make a difference in student learning.</p>
+                  <p className="text-lg font-medium mb-2">"Giảng dạy là hành động lạc quan vĩ đại nhất."</p>
+                  <p className="text-orange-100 text-sm">Tham gia cùng chúng tôi và tạo sự khác biệt trong việc học của học sinh.</p>
                 </div>
               </div>
             </div>
@@ -164,10 +164,10 @@ export default function RegisterTeacher() {
               </div>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent mb-2">
-              Join as Educator
+              Tham Gia Làm Giáo Viên
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Create and share knowledge with students worldwide
+              Tạo và chia sẻ kiến thức với học sinh trên toàn thế giới
             </p>
           </CardHeader>
 
@@ -186,7 +186,7 @@ export default function RegisterTeacher() {
             <div className="mx-6 mb-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
               <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 text-sm font-medium">
                 <CheckCircle className="w-5 h-5 flex-shrink-0" />
-                Teacher account created successfully! Redirecting to login...
+                Tài khoản giáo viên đã được tạo thành công! Đang chuyển đến trang đăng nhập...
               </div>
             </div>
           )}
@@ -195,20 +195,20 @@ export default function RegisterTeacher() {
           <form onSubmit={handleSubmit} className="space-y-5 px-6">
             {/* Personal Information */}
             <Input 
-              label="Full Name" 
+              label="Họ Và Tên" 
               value={formData.name} 
               onChange={(e) => handleChange('name', e.target.value)} 
-              placeholder="Tran Thi B" 
+              placeholder="Trần Thị B" 
               required
               icon={<User className="w-4 h-4" />}
               className="transition-all duration-200"
             />
 
             <Input 
-              label="Email Address" 
+              label="Địa Chỉ Email" 
               value={formData.email} 
               onChange={(e) => handleChange('email', e.target.value)} 
-              placeholder="you@example.com" 
+              placeholder="ban@example.com" 
               type="email"
               required
               icon={<Mail className="w-4 h-4" />}
@@ -218,7 +218,7 @@ export default function RegisterTeacher() {
             {/* Password Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input 
-                label="Password" 
+                label="Mật Khẩu" 
                 value={formData.password} 
                 onChange={(e) => handleChange('password', e.target.value)} 
                 placeholder="••••••••" 
@@ -229,7 +229,7 @@ export default function RegisterTeacher() {
               />
 
               <Input 
-                label="Confirm Password" 
+                label="Xác Nhận Mật Khẩu" 
                 value={formData.confirmPassword} 
                 onChange={(e) => handleChange('confirmPassword', e.target.value)} 
                 placeholder="••••••••" 
@@ -249,15 +249,15 @@ export default function RegisterTeacher() {
                 className="mt-1 w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
               />
               <label className="text-sm text-gray-600 dark:text-gray-400">
-                I agree to the{' '}
+                Tôi đồng ý với{' '}
                 <Link to="/terms" className="text-orange-600 dark:text-orange-400 hover:underline font-medium">
-                  Terms of Service
+                  Điều Khoản Dịch Vụ
                 </Link>{' '}
-                and{' '}
+                và{' '}
                 <Link to="/privacy" className="text-orange-600 dark:text-orange-400 hover:underline font-medium">
-                  Privacy Policy
+                  Chính Sách Bảo Mật
                 </Link>
-                , and confirm that I am a qualified educator
+                , và xác nhận rằng tôi là một giáo viên có trình độ
               </label>
             </div>
 
@@ -270,12 +270,12 @@ export default function RegisterTeacher() {
               {loading || success ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  {success ? 'Success! Redirecting...' : 'Submitting Application...'}
+                  {success ? 'Thành công! Đang chuyển hướng...' : 'Đang gửi đơn đăng ký...'}
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
                   <UserCheck className="w-4 h-4" />
-                  Apply for Teacher Account
+                  Đăng Ký Tài Khoản Giáo Viên
                 </div>
               )}
             </Button>
@@ -288,7 +288,7 @@ export default function RegisterTeacher() {
                 <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Already have an account?</span>
+                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Đã có tài khoản?</span>
               </div>
             </div>
           </div>
@@ -299,7 +299,7 @@ export default function RegisterTeacher() {
               to="/login" 
               className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium transition-colors duration-200"
             >
-              ← Back to Sign In
+              ← Quay lại Đăng Nhập
             </Link>
               </CardFooter>
             </Card>

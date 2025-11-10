@@ -25,13 +25,11 @@ const TeacherLayout = () => {
 
   const navigation = [
     { name: 'Bảng điều khiển', href: '/dashboard/teacher', icon: 'stats', current: location.pathname === '/dashboard/teacher' },
-    { name: 'Học sinh', href: '/dashboard/teacher/students', icon: 'users', current: location.pathname.startsWith('/dashboard/teacher/students') },
     { name: 'Thẻ ghi nhớ', href: '/dashboard/teacher/flashcards', icon: 'flashcards', current: location.pathname.startsWith('/dashboard/teacher/flashcards') },
     { name: 'Bài thi', href: '/dashboard/teacher/exams', icon: 'exams', current: location.pathname.startsWith('/dashboard/teacher/exams') },
     { name: 'Ngân hàng câu hỏi', href: '/dashboard/teacher/question-bank', icon: 'file-text', current: location.pathname.startsWith('/dashboard/teacher/question-bank') },
     { name: 'Lớp học', href: '/dashboard/teacher/classes', icon: 'home', current: location.pathname.startsWith('/dashboard/teacher/classes') },
-    { name: 'Phân tích', href: '/dashboard/teacher/analytics', icon: 'stats', current: location.pathname.startsWith('/dashboard/teacher/analytics') },
-    { name: 'Cài đặt', href: '/dashboard/teacher/settings', icon: 'settings', current: location.pathname.startsWith('/dashboard/teacher/settings') },
+    { name: 'Hồ sơ', href: '/dashboard/teacher/profile', icon: 'profile', current: location.pathname.startsWith('/dashboard/teacher/profile') },
   ];
 
   const handleLogout = async () => {
@@ -58,14 +56,15 @@ const TeacherLayout = () => {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
-            <div className={`flex items-center transition-all duration-300 ${sidebarCollapsed ? 'justify-center w-full' : ''}`}>
+            <Link 
+              to="/dashboard/teacher" 
+              className={`flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent transition-all duration-300 ${sidebarCollapsed ? 'justify-center w-full' : ''}`}
+            >
               <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-sm">T</span>
+                <span className="text-white text-sm">FL</span>
               </div>
-              {!sidebarCollapsed && (
-                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap">Giáo viên</span>
-              )}
-            </div>
+              {!sidebarCollapsed && <span className="whitespace-nowrap">FlashLearn</span>}
+            </Link>
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleSidebar}

@@ -29,7 +29,7 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent mb-3 sm:mb-4">
-            Flashcard Master
+            Toán Học Flashcard
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-4">
             Học tập thông minh với các bộ thẻ flashcard được thiết kế chuyên nghiệp
@@ -54,108 +54,8 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Loading Skeleton */}
-        {loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="rounded-xl sm:rounded-2xl bg-gray-200 dark:bg-gray-700 h-40 sm:h-48"></div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Flashcard Grid */}
-        {!loading && featured.length === 0 ? (
-          <div className="text-center py-12">
-            <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Không có bộ thẻ nào
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Hiện tại chưa có bộ thẻ flashcard nào được đề xuất.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {featured.map((deck, index) => {
-              // Ensure deck has an id
-              const deckId = deck.id || deck._id || `deck-${index}`;
-              return (
-                <div 
-                  key={deckId}
-                  className="group relative bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 sm:hover:-translate-y-2 border border-gray-100 dark:border-gray-700"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-              {/* Premium Badge */}
-              {deck.premium && (
-                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                  PREMIUM
-                </div>
-              )}
-              
-              {/* Deck Icon */}
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-4 shadow-md">
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
-              
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                {deck.title}
-              </h3>
-              
-              <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                {deck.description || 'Bộ thẻ học tập chất lượng cao'}
-              </p>
-              
-              {/* Tags */}
-              {deck.tags && Array.isArray(deck.tags) && deck.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {deck.tags.slice(0, 3).map(tag => (
-                    <span 
-                      key={tag}
-                      className="px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 text-xs rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  {deck.tags.length > 3 && (
-                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full">
-                      +{deck.tags.length - 3}
-                    </span>
-                  )}
-                </div>
-              )}
-              
-              {/* Stats */}
-              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-4">
-                <div className="flex items-center space-x-4">
-                  <span className="flex items-center">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                    {deck.cardCount || 0} thẻ
-                  </span>
-                  <span className="flex items-center">
-                    <Users className="w-3 h-3 mr-1" />
-                    {deck.followers || 0}
-                  </span>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  deck.difficulty === 'advanced' 
-                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                    : deck.difficulty === 'intermediate'
-                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                    : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                }`}>
-                  {deck.difficulty || 'beginner'}
-                </span>
-              </div>
-              
-              {/* Hover Effect Overlay */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-orange-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-              );
-            })}
-          </div>
-        )}
+       
+        
 
         {/* Quick Actions */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">

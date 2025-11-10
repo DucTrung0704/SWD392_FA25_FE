@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { classService } from '../../services/classService';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import { Card, CardHeader, CardContent, CardFooter } from '../../components/ui/Card';
-import { Search, Users, BookOpen, Calendar, User, X, LogOut, Plus } from 'lucide-react';
+import { Search, Users, BookOpen, Calendar, User, X, LogOut, Plus, Eye } from 'lucide-react';
 
 export default function Classes() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('my-classes');
   const [myClasses, setMyClasses] = useState([]);
   const [allClasses, setAllClasses] = useState([]);
@@ -326,6 +328,15 @@ export default function Classes() {
                               )}
                             </div>
                           </CardContent>
+                          <CardFooter>
+                            <Button
+                              onClick={() => navigate(`/dashboard/student/class/${formatted.id}`)}
+                              className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              Xem chi tiết
+                            </Button>
+                          </CardFooter>
                         </Card>
                       );
                     })}
