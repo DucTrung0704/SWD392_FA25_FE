@@ -7,12 +7,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://flashmath-be.onrender.com',
         changeOrigin: true,
         secure: false,
       },
       '/upload': {
-        target: 'http://localhost:5000',
+        target: 'https://flashmath-be.onrender.com',
         changeOrigin: true,
         secure: false,
       }

@@ -1,6 +1,12 @@
 // Lightweight API client with auth token, JSON handling, and timeout
 
-const API_BASE_URL = '/api';
+const getBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (!envUrl) return '/api';
+  return envUrl.endsWith('/api') ? envUrl : `${envUrl.replace(/\/$/, '')}/api`;
+};
+
+const API_BASE_URL = getBaseUrl();
 
 const getToken = () =>
   localStorage.getItem('app_auth_user_token') || localStorage.getItem('accessToken');
@@ -32,7 +38,9 @@ const withTimeout = async (promise, ms = 15000) => {
 };
 
 const request = async (method, path, { headers, params, body, raw = false, timeoutMs } = {}) => {
-  const url = new URL(path.startsWith('http') ? path : `${API_BASE_URL}${path}`, window.location.origin);
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  const fullPath = path.startsWith('http') ? path : `${API_BASE_URL.replace(/\/$/, '')}${cleanPath}`;
+  const url = new URL(fullPath, window.location.origin);
   if (params && typeof params === 'object') {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.append(k, String(v));

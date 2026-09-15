@@ -12,7 +12,7 @@ npm install
 2. Create a `.env` file in the root directory:
 ```bash
 # Copy this content to .env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=https://flashmath-be.onrender.com/api
 ```
 
 3. Start the development server:
@@ -22,7 +22,7 @@ npm run dev
 
 ## API Integration
 
-The application integrates with the backend API at `http://localhost:5000/api`.
+The application integrates with the backend API at `https://flashmath-be.onrender.com/api`.
 
 ### Login API
 - **Endpoint**: `POST /user/login`
@@ -51,7 +51,7 @@ The application integrates with the backend API at `http://localhost:5000/api`.
 ## Environment Variables
 
 Create a `.env` file with the following variable:
-- `VITE_API_URL`: Your backend API URL (default: `http://localhost:5000/api`)
+- `VITE_API_URL`: Your backend API URL (default: `https://flashmath-be.onrender.com/api`)
 
 Currently, two official plugins are available:
 
